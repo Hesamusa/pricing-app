@@ -126,7 +126,7 @@
   .chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
   .product.open .chev{transform:rotate(180deg);}
   .head-thumb{
-    width:32px; height:32px; border-radius:9px; overflow:hidden; flex-shrink:0;
+    width:46px; height:46px; border-radius:14px; overflow:hidden; flex-shrink:0;
     background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
   }
   .head-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
@@ -144,7 +144,7 @@
   .photo-field{margin-bottom:20px;}
   .photo-row{display:flex; align-items:center; gap:14px;}
   .photo-preview{
-    width:72px; height:72px; border-radius:16px; overflow:hidden; flex-shrink:0;
+    width:88px; height:88px; border-radius:18px; overflow:hidden; flex-shrink:0;
     background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
   }
   .photo-preview img{width:100%; height:100%; object-fit:cover; display:block;}
@@ -541,7 +541,10 @@
 
   <!-- SUMMARY TAB -->
   <div id="tab-summary" class="tab-panel">
-    <div class="section-title"><span class="bar"></span>خلاصه کل محصولات</div>
+    <div class="section-title"><span class="bar"></span>قیمت‌گذاری محصولات (بر اساس تعریف محصولات)</div>
+    <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+      این اعداد بر اساس قیمت و درصد سودی هست که برای هر محصول در تب «محصولات» تعریف کردی، نه فروش واقعی. برای دیدن فروش‌های ثبت‌شده، تب «فروش» رو ببین.
+    </div>
     <div id="summary-content"></div>
   </div>
 
@@ -842,7 +845,7 @@ function renderProducts(){
         </div>
         <div class="head-side">
           <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          <div class="head-thumb" id="headThumb_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(16)}</div>
+          <div class="head-thumb" id="headThumb_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(22)}</div>
         </div>
       </div>
       <div class="product-price-preview">
@@ -854,7 +857,7 @@ function renderProducts(){
           <div class="photo-field">
             <label>عکس محصول</label>
             <div class="photo-row">
-              <div class="photo-preview" id="photoPrev_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(26)}</div>
+              <div class="photo-preview" id="photoPrev_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(36)}</div>
               <div class="photo-actions" id="photoActions_${prod.id}">
                 <button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${prod.id}')">${prod.imageUrl?'تغییر عکس':'انتخاب عکس'}</button>
                 ${prod.imageUrl ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف عکس</button>` : ''}
@@ -945,9 +948,9 @@ function updateProductPhotoUI(id){
   const prod = products.find(p=>p.id===id);
   if(!prod) return;
   const headThumb = document.getElementById('headThumb_'+id);
-  if(headThumb) headThumb.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(16);
+  if(headThumb) headThumb.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(22);
   const preview = document.getElementById('photoPrev_'+id);
-  if(preview) preview.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(26);
+  if(preview) preview.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(36);
   const actions = document.getElementById('photoActions_'+id);
   if(actions){
     actions.innerHTML = `
@@ -1236,11 +1239,11 @@ function renderSummary(){
   const avgProfitR = count ? (totalR-totalCost)/count : 0;
   el.innerHTML = `
     <div class="stat-card"><span class="stat-label">تعداد محصولات ثبت‌شده</span><span class="stat-value">${fa.format(count)}</span></div>
-    <div class="stat-card"><span class="stat-label">جمع قیمت تمام‌شده کل</span><span class="stat-value">${fmt(totalCost)}</span></div>
-    <div class="stat-card"><span class="stat-label">جمع فروش عمده کل</span><span class="stat-value">${fmt(totalW)}</span></div>
-    <div class="stat-card"><span class="stat-label">جمع فروش مستقیم کل</span><span class="stat-value">${fmt(totalR)}</span></div>
-    <div class="stat-card highlight"><span class="stat-label">میانگین سود عمده / محصول</span><span class="stat-value">${fmt(avgProfitW)}</span></div>
-    <div class="stat-card highlight"><span class="stat-label">میانگین سود خرده / محصول</span><span class="stat-value">${fmt(avgProfitR)}</span></div>
+    <div class="stat-card"><span class="stat-label">جمع قیمت تمام‌شده کل محصولات</span><span class="stat-value">${fmt(totalCost)}</span></div>
+    <div class="stat-card"><span class="stat-label">جمع قیمت پیشنهادی عمده (کل محصولات)</span><span class="stat-value">${fmt(totalW)}</span></div>
+    <div class="stat-card"><span class="stat-label">جمع قیمت پیشنهادی خرده (کل محصولات)</span><span class="stat-value">${fmt(totalR)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">میانگین سود پیشنهادی عمده / محصول</span><span class="stat-value">${fmt(avgProfitW)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">میانگین سود پیشنهادی خرده / محصول</span><span class="stat-value">${fmt(avgProfitR)}</span></div>
   `;
 }
 
