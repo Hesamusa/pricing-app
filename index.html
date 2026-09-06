@@ -72,9 +72,9 @@
   /* Company logo / brand uploader */
   .brand-custom{display:flex; align-items:center; gap:10px; flex-shrink:0;}
   .company-logo{
-    width:48px; height:48px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    width:96px; height:96px; border-radius:50%; overflow:hidden; flex-shrink:0;
     background:var(--card); display:flex; align-items:center; justify-content:center;
-    color:var(--ink-soft); cursor:pointer; border:2px dashed var(--line); padding:2px;
+    color:var(--ink-soft); cursor:pointer; border:2px dashed var(--line); padding:3px;
   }
   .company-logo.has-logo{border-style:solid; border-color:var(--orange); box-shadow:0 0 0 2px var(--card);}
   .company-logo img{width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;}
@@ -803,7 +803,7 @@ function renderBrand(){
   const logoEl = document.getElementById('companyLogo');
   if(logoEl){
     logoEl.classList.toggle('has-logo', !!settings.logoUrl);
-    logoEl.innerHTML = settings.logoUrl ? `<img src="${settings.logoUrl}" alt="">` : cameraIconSVG(20);
+    logoEl.innerHTML = settings.logoUrl ? `<img src="${settings.logoUrl}" alt="">` : cameraIconSVG(36);
   }
 }
 
