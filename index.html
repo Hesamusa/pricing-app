@@ -572,12 +572,22 @@
       </div>
       <div class="grid-2">
         <div class="field">
+          <label>نام خریدار (اختیاری)</label>
+          <input type="text" class="gh-field" id="sale_buyer_name" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="نام خریدار">
+        </div>
+        <div class="field">
+          <label>شماره تماس خریدار (اختیاری)</label>
+          <input type="text" class="gh-field" id="sale_buyer_phone" inputmode="tel" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
           <label>تاریخ</label>
           <input type="date" class="gh-field" id="sale_date" style="direction:ltr; text-align:center; font-family:'Vazirmatn',sans-serif;">
         </div>
         <div class="field">
           <label>یادداشت (اختیاری)</label>
-          <input type="text" class="gh-field" id="sale_note" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً نام خریدار">
+          <input type="text" class="gh-field" id="sale_note" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="توضیح اضافه">
         </div>
       </div>
       <button class="add-btn" onclick="submitSale()">
@@ -598,6 +608,31 @@
     </div>
     <div id="sales-stats"></div>
     <div id="sales-list" style="margin-top:14px;"></div>
+  </div>
+
+  <!-- CUSTOMERS TAB -->
+  <div id="tab-customers" class="tab-panel">
+    <div class="section-title">افزودن مشتری جدید</div>
+    <div class="card">
+      <div class="field">
+        <label>نام مشتری</label>
+        <input type="text" class="gh-field" id="new_customer_name" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="نام و نام خانوادگی">
+      </div>
+      <div class="field">
+        <label>شماره تماس</label>
+        <input type="text" class="gh-field" id="new_customer_phone" inputmode="tel" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+      </div>
+      <button class="add-btn" onclick="addCustomerManual()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        افزودن مشتری
+      </button>
+    </div>
+
+    <div class="section-title"><span class="bar"></span>لیست مشتریان</div>
+    <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+      وقتی هنگام ثبت فروش، نام و شماره تماس خریدار رو وارد کنی، خودکار به این لیست اضافه می‌شه.
+    </div>
+    <div id="customers-list"></div>
   </div>
 
   <!-- SUMMARY TAB -->
@@ -624,6 +659,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
     فروش
   </button>
+  <button id="nav-customers" onclick="switchTab('customers')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    مشتریان
+  </button>
   <button id="nav-summary" onclick="switchTab('summary')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14.1"/></svg>
     خلاصه
@@ -641,6 +680,7 @@ const DEFAULT_SETTINGS = {
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
 let sales = [];
+let customers = [];
 let openProductId = null;
 let salesFilter = 'all';
 let ready = false;
@@ -716,6 +756,10 @@ function loadState(){
     const s2 = localStorage.getItem('pricing_app_sales');
     if(s2) sales = JSON.parse(s2);
   }catch(e){ /* no saved sales yet */ }
+  try{
+    const c = localStorage.getItem('pricing_app_customers');
+    if(c) customers = JSON.parse(c);
+  }catch(e){ /* no saved customers yet */ }
   if(products.length === 0){
     products = [makeProduct('مجسمه اژدها ۱۵ سانتی', 85, 6, 0.5, 1)];
   }
@@ -723,6 +767,7 @@ function loadState(){
   renderSettings();
   renderProducts();
   renderSummary();
+  renderCustomersTab();
 
   if(githubConfigured()){
     githubSyncInitialized = true;
@@ -732,9 +777,11 @@ function loadState(){
         settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
         products = Array.isArray(remote.products) ? remote.products : products;
         sales = Array.isArray(remote.sales) ? remote.sales : sales;
+        customers = Array.isArray(remote.customers) ? remote.customers : customers;
         renderSettings();
         renderProducts();
         renderSummary();
+        renderCustomersTab();
         const salesTab = document.getElementById('tab-sales');
         if(salesTab && salesTab.classList.contains('active')) renderSalesTab();
         persist({skipSync:true});
@@ -765,6 +812,7 @@ function persist(opts){
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
       localStorage.setItem('pricing_app_sales', JSON.stringify(sales));
+      localStorage.setItem('pricing_app_customers', JSON.stringify(customers));
       flashSaved();
     }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
     if(!(opts && opts.skipSync)) scheduleSync();
@@ -783,6 +831,7 @@ function switchTab(name){
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='summary') renderSummary();
   if(name==='sales') renderSalesTab();
+  if(name==='customers') renderCustomersTab();
 }
 
 function renderSettings(){
@@ -847,10 +896,12 @@ async function maybeInitGithubSync(){
       settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
       products = Array.isArray(remote.products) ? remote.products : products;
       sales = Array.isArray(remote.sales) ? remote.sales : sales;
+      customers = Array.isArray(remote.customers) ? remote.customers : customers;
       renderSettings();
       renderProducts();
       renderSummary();
       renderSalesTab();
+      renderCustomersTab();
       persist({skipSync:true});
       setSyncStatus('نسخه گیت‌هاب بارگذاری شد ✓', 'success');
       return;
@@ -1218,7 +1269,7 @@ function githubDataPath(){ return 'data.json'; }
 
 function buildSyncPayload(){
   const {githubToken, ...safeSettings} = settings; // never store the token itself in the repo
-  return { updatedAt: new Date().toISOString(), settings: safeSettings, products, sales };
+  return { updatedAt: new Date().toISOString(), settings: safeSettings, products, sales, customers };
 }
 
 function formatTimeFa(d){
@@ -1452,15 +1503,23 @@ function deleteProduct(id){
 function renderSummary(){
   const el = document.getElementById('summary-content');
   const count = products.length;
-  let totalCost=0, totalW=0, totalR=0, totalStock=0, stockValue=0;
+  // Per-product definitions (not affected by stock) — same as before.
+  let totalCost=0, totalW=0, totalR=0;
+  // Stock-weighted figures — موجودی انبار هر محصول در این اعداد ضرب می‌شه.
+  let totalStock=0, stockValueCost=0, stockValueW=0, stockValueR=0;
   products.forEach(p=>{
-    const c = calc(p);
+    const c = calc(p); // calc() خودش دست‌نخورده مونده و به موجودی کاری نداره
+    const stock = p.stock||0;
     totalCost += c.total; totalW += c.priceW; totalR += c.priceR;
-    totalStock += (p.stock||0);
-    stockValue += (p.stock||0) * c.total;
+    totalStock += stock;
+    stockValueCost += stock * c.total;
+    stockValueW += stock * c.priceW;
+    stockValueR += stock * c.priceR;
   });
   const avgProfitW = count ? (totalW-totalCost)/count : 0;
   const avgProfitR = count ? (totalR-totalCost)/count : 0;
+  const stockProfitW = stockValueW - stockValueCost;
+  const stockProfitR = stockValueR - stockValueCost;
   el.innerHTML = `
     <div class="stat-card"><span class="stat-label">تعداد محصولات ثبت‌شده</span><span class="stat-value">${fa.format(count)}</span></div>
     <div class="stat-card"><span class="stat-label">جمع قیمت تمام‌شده کل محصولات</span><span class="stat-value">${fmt(totalCost)}</span></div>
@@ -1469,16 +1528,114 @@ function renderSummary(){
     <div class="stat-card highlight"><span class="stat-label">میانگین سود پیشنهادی عمده / محصول</span><span class="stat-value">${fmt(avgProfitW)}</span></div>
     <div class="stat-card highlight"><span class="stat-label">میانگین سود پیشنهادی خرده / محصول</span><span class="stat-value">${fmt(avgProfitR)}</span></div>
     <div class="stat-card"><span class="stat-label">جمع موجودی انبار (عدد)</span><span class="stat-value">${fa.format(totalStock)}</span></div>
-    <div class="stat-card"><span class="stat-label">ارزش انبار (بر مبنای قیمت تمام‌شده)</span><span class="stat-value">${fmt(stockValue)}</span></div>
+    <div class="stat-card"><span class="stat-label">ارزش انبار (بر مبنای قیمت تمام‌شده)</span><span class="stat-value">${fmt(stockValueCost)}</span></div>
+    <div class="stat-card"><span class="stat-label">ارزش انبار به قیمت پیشنهادی عمده</span><span class="stat-value">${fmt(stockValueW)}</span></div>
+    <div class="stat-card"><span class="stat-label">ارزش انبار به قیمت پیشنهادی خرده</span><span class="stat-value">${fmt(stockValueR)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">سود بالقوه انبار (فروش عمده)</span><span class="stat-value">${fmt(stockProfitW)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">سود بالقوه انبار (فروش خرده)</span><span class="stat-value">${fmt(stockProfitR)}</span></div>
   `;
 }
 
-function makeSale(productId, productName, qty, unitPrice, costPerUnit, saleType, note, date){
+function makeSale(productId, productName, qty, unitPrice, costPerUnit, saleType, note, date, buyerName, buyerPhone){
   return {
     id: 'sl_' + Date.now() + Math.random().toString(36).slice(2,7),
     productId, productName, qty, unitPrice, costPerUnit, saleType,
-    note: note || '', date: date || new Date().toISOString().slice(0,10)
+    note: note || '', date: date || new Date().toISOString().slice(0,10),
+    buyerName: buyerName || '', buyerPhone: buyerPhone || ''
   };
+}
+
+function normalizeDigits(str){
+  if(str===null||str===undefined) return '';
+  return String(str)
+    .replace(/[۰-۹]/g, d => String(d.charCodeAt(0)-1776))
+    .replace(/[٠-٩]/g, d => String(d.charCodeAt(0)-1632))
+    .trim();
+}
+
+function makeCustomer(name, phone){
+  return {
+    id: 'c_' + Date.now() + Math.random().toString(36).slice(2,7),
+    name: (name||'').trim(),
+    phone: normalizeDigits(phone),
+    createdAt: new Date().toISOString()
+  };
+}
+
+// اگر شماره تماس از قبل در لیست مشتریان باشه، همون رکورد به‌روزرسانی می‌شه؛
+// در غیر این صورت یک مشتری جدید ساخته می‌شه. این تابع از تب فروش صدا زده می‌شه.
+function upsertCustomer(name, phone){
+  name = (name||'').trim();
+  phone = normalizeDigits(phone);
+  if(!name && !phone) return;
+  let cust = phone ? customers.find(c => c.phone === phone) : null;
+  if(!cust && !phone && name){
+    cust = customers.find(c => !c.phone && c.name === name);
+  }
+  if(cust){
+    if(name) cust.name = name;
+    if(phone) cust.phone = phone;
+  }else{
+    customers.push(makeCustomer(name, phone));
+  }
+}
+
+function customerStats(phone){
+  if(!phone) return {count:0, totalSpent:0};
+  const list = sales.filter(s => s.buyerPhone === phone);
+  const totalSpent = list.reduce((sum,s)=> sum + s.unitPrice*s.qty, 0);
+  return {count: list.length, totalSpent};
+}
+
+function addCustomerManual(){
+  const nameEl = document.getElementById('new_customer_name');
+  const phoneEl = document.getElementById('new_customer_phone');
+  const name = nameEl.value.trim();
+  const phone = normalizeDigits(phoneEl.value);
+  if(!name && !phone){ alert('نام یا شماره تماس مشتری رو وارد کن'); return; }
+  if(phone && customers.some(c => c.phone === phone)){
+    alert('مشتری‌ای با این شماره تماس قبلاً ثبت شده.');
+    return;
+  }
+  customers.push(makeCustomer(name, phone));
+  nameEl.value = '';
+  phoneEl.value = '';
+  persist();
+  renderCustomersTab();
+}
+
+function deleteCustomer(id){
+  if(!confirm('این مشتری حذف بشه؟')) return;
+  customers = customers.filter(c => c.id !== id);
+  persist();
+  renderCustomersTab();
+}
+
+function renderCustomersTab(){
+  const listEl = document.getElementById('customers-list');
+  if(!listEl) return;
+  if(customers.length === 0){
+    listEl.innerHTML = `<div class="empty"><p>هنوز مشتری‌ای ثبت نشده. از فرم بالا اضافه کن یا هنگام ثبت فروش، نام و شماره خریدار رو وارد کن.</p></div>`;
+    return;
+  }
+  const sorted = [...customers].sort((a,b)=> (a.name||'').localeCompare(b.name||'', 'fa'));
+  listEl.innerHTML = sorted.map(c => {
+    const stats = customerStats(c.phone);
+    return `
+    <div class="sale-item">
+      <div class="sale-item-top">
+        <span class="sale-item-name">${escapeHtml(c.name || 'بدون نام')}</span>
+        <button class="sale-del" onclick="deleteCustomer('${c.id}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+        </button>
+      </div>
+      <div class="sale-item-meta">
+        ${c.phone ? `<span class="mono">${escapeHtml(c.phone)}</span>` : `<span>بدون شماره</span>`}
+        <span class="tag">${fa.format(stats.count)} خرید</span>
+      </div>
+      ${stats.count ? `<div class="sale-item-bottom"><span>جمع خرید: <b>${fmt(stats.totalSpent)}</b></span></div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function productOptionsHtml(selectedId){
@@ -1547,6 +1704,8 @@ function formatDateFa(dateStr){
 function resetSaleForm(){
   document.getElementById('sale_qty').value = '۱';
   document.getElementById('sale_note').value = '';
+  document.getElementById('sale_buyer_name').value = '';
+  document.getElementById('sale_buyer_phone').value = '';
   document.getElementById('sale_date').value = new Date().toISOString().slice(0,10);
   fillSalePriceFromType('wholesale');
   updateSaleStockHint();
@@ -1565,10 +1724,16 @@ function submitSale(){
   const price = parseNum(document.getElementById('sale_price').value);
   const dateVal = document.getElementById('sale_date').value || new Date().toISOString().slice(0,10);
   const note = document.getElementById('sale_note').value;
+  const buyerName = document.getElementById('sale_buyer_name').value.trim();
+  const buyerPhone = normalizeDigits(document.getElementById('sale_buyer_phone').value);
   const type = document.getElementById('sale_price').dataset.type || 'custom';
   const c = calc(prod);
-  sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal));
+  sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone));
   prod.stock = currentStock - qty;
+  if(buyerName || buyerPhone){
+    upsertCustomer(buyerName, buyerPhone);
+    renderCustomersTab();
+  }
   updateProductDisplay(prod.id);
   persist();
   resetSaleForm();
@@ -1634,6 +1799,7 @@ function renderSalesTab(){
         <span class="mono">${fa.format(s.qty)} × ${fmt(s.unitPrice)}</span>
         <span class="tag">${typeLabel}</span>
         <span>${formatDateFa(s.date)}</span>
+        ${s.buyerName ? `<span>خریدار: ${escapeHtml(s.buyerName)}</span>` : ''}
       </div>
       <div class="sale-item-bottom">
         <span>جمع فروش: <b>${fmt(total)}</b></span>
@@ -1649,7 +1815,8 @@ function exportData(){
     exportedAt: new Date().toISOString(),
     settings: settings,
     products: products,
-    sales: sales
+    sales: sales,
+    customers: customers
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -1675,11 +1842,13 @@ function importData(event){
       settings = {...DEFAULT_SETTINGS, ...data.settings};
       products = data.products;
       sales = Array.isArray(data.sales) ? data.sales : [];
+      customers = Array.isArray(data.customers) ? data.customers : [];
       openProductId = null;
       renderSettings();
       renderProducts();
       renderSummary();
       renderSalesTab();
+      renderCustomersTab();
       persist();
       statusEl.style.color = 'var(--green)';
       statusEl.textContent = 'بازگردانی با موفقیت انجام شد ✓';
