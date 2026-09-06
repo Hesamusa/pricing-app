@@ -345,6 +345,7 @@
   .sale-item-name{font-size:16px; font-weight:700;}
   .sale-del{background:none; border:none; color:var(--ink-soft); padding:6px; flex-shrink:0; display:flex;}
   .sale-del:active{color:var(--red);}
+  .sale-del.is-disabled, .sale-del:disabled{opacity:.3; pointer-events:none; cursor:not-allowed;}
   .sale-item-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:var(--ink-soft); font-weight:600; margin-bottom:10px;}
   .sale-item-meta .mono{font-size:13px;}
   .sale-item-meta .tag{background:var(--bg); padding:3px 10px; border-radius:8px;}
@@ -369,6 +370,8 @@
   .cust-phone-display{color:var(--ink-soft); font-weight:600; font-size:13px;}
   .cust-actions{display:flex; align-items:center; gap:2px; flex-shrink:0;}
   .cust-edit-btn.is-active{color:var(--green);}
+  input.field-invalid, .cust-phone-input.field-invalid{outline:2px solid var(--red); outline-offset:0;}
+  .hint.error{color:var(--red);}
 
   /* Admin / user mode */
   .mode-badge{
@@ -646,7 +649,8 @@
         </div>
         <div class="field">
           <label>شماره تماس خریدار (اختیاری)</label>
-          <input type="text" class="gh-field" id="sale_buyer_phone" inputmode="tel" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+          <input type="text" class="gh-field" id="sale_buyer_phone" inputmode="numeric" maxlength="11" oninput="sanitizePhoneInput(this)" onblur="markPhoneValidity(this,'sale_buyer_phone_hint')" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+          <div class="hint" id="sale_buyer_phone_hint"></div>
         </div>
       </div>
       <div class="grid-2">
@@ -689,7 +693,8 @@
       </div>
       <div class="field">
         <label>شماره تماس</label>
-        <input type="text" class="gh-field" id="new_customer_phone" inputmode="tel" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+        <input type="text" class="gh-field" id="new_customer_phone" inputmode="numeric" maxlength="11" oninput="sanitizePhoneInput(this)" onblur="markPhoneValidity(this,'new_customer_phone_hint')" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+        <div class="hint" id="new_customer_phone_hint"></div>
       </div>
       <button class="add-btn" onclick="addCustomerManual()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -800,10 +805,29 @@ function toFaDigitsOnly(str){
   return String(str).replace(/[0-9]/g, d => FA_DIGITS[+d]);
 }
 function handleGroupedIntInput(el, onValue){
-  // Never mutate el.value while the user is actively typing —
-  // rewriting the value mid-keystroke is what makes mobile numeric
-  // keyboards close. Just read + report the number.
-  onValue(Math.round(parseNum(el.value)));
+  // با هر ضربه تایپ، عدد رو زنده به‌صورت سه‌رقم‌سه‌رقم جدا می‌کنه تا
+  // اشتباه تایپی (تعداد صفرهای اضافه/کم) همون لحظه مشخص بشه؛ موقعیت
+  // مکان‌نما هم بر اساس تعداد رقم‌های واردشده تا همون نقطه حفظ می‌شه.
+  const raw = el.value;
+  const caretPos = el.selectionStart == null ? raw.length : el.selectionStart;
+  const digitsBeforeCaret = normalizeDigits(raw.slice(0, caretPos)).replace(/[^0-9]/g, '').length;
+  const intVal = Math.round(parseNum(raw));
+  onValue(intVal);
+  if(raw.trim() === ''){ return; }
+  const formatted = toFaNum(intVal, 0);
+  el.value = formatted;
+  let seen = 0, pos = formatted.length;
+  if(digitsBeforeCaret <= 0){
+    pos = 0;
+  }else{
+    for(let i = 0; i < formatted.length; i++){
+      if(/[0-9۰-۹]/.test(formatted[i])){
+        seen++;
+        if(seen === digitsBeforeCaret){ pos = i + 1; break; }
+      }
+    }
+  }
+  try{ el.setSelectionRange(pos, pos); }catch(_){}
 }
 function handleDecimalInput(el, onValue){
   onValue(parseNum(el.value));
@@ -1724,6 +1748,38 @@ function normalizeDigits(str){
     .trim();
 }
 
+// اعتبارسنجی شماره تماس ایرانی: باید خالی باشه (اختیاریه) یا دقیقاً
+// ۱۱ رقم و با ۰۹ شروع بشه.
+function isValidIranPhone(v){
+  const d = normalizeDigits(v||'').replace(/[^0-9]/g,'');
+  return d.length === 0 || /^09\d{9}$/.test(d);
+}
+
+// روی هر ورودی شماره تماس صدا زده می‌شه: کاراکترهای غیرعددی رو حذف
+// می‌کنه و طول رو به ۱۱ رقم محدود می‌کنه، بدون اینکه جای مکان‌نما رو
+// به هم بریزه.
+function sanitizePhoneInput(el){
+  const caretFromEnd = el.value.length - (el.selectionStart == null ? el.value.length : el.selectionStart);
+  let v = normalizeDigits(el.value).replace(/[^0-9]/g,'');
+  if(v.length > 11) v = v.slice(0, 11);
+  el.value = v;
+  const newCaret = Math.max(0, el.value.length - caretFromEnd);
+  try{ el.setSelectionRange(newCaret, newCaret); }catch(_){}
+}
+
+// روی خروج از فیلد شماره تماس صدا زده می‌شه: اگه مقدار غیرخالی و
+// نامعتبر باشه، فیلد رو قرمز می‌کنه و پیام راهنما نشون می‌ده.
+// خروجی: true اگه معتبر باشه (یا خالی باشه).
+function markPhoneValidity(el, hintId){
+  const hintEl = hintId ? document.getElementById(hintId) : null;
+  const valid = isValidIranPhone(el.value);
+  el.classList.toggle('field-invalid', !valid);
+  if(hintEl){
+    hintEl.textContent = valid ? '' : 'شماره تماس باید ۱۱ رقم باشد و با ۰۹ شروع شود؛ مثل 09121234567.';
+  }
+  return valid;
+}
+
 function makeCustomer(name, phone){
   return {
     id: 'c_' + Date.now() + Math.random().toString(36).slice(2,7),
@@ -1764,6 +1820,11 @@ function addCustomerManual(){
   const name = nameEl.value.trim();
   const phone = normalizeDigits(phoneEl.value);
   if(!name && !phone){ alert('نام یا شماره تماس مشتری رو وارد کن'); return; }
+  if(!markPhoneValidity(phoneEl, 'new_customer_phone_hint')){
+    alert('شماره تماس نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
+    phoneEl.focus();
+    return;
+  }
   if(phone && customers.some(c => c.phone === phone)){
     alert('مشتری‌ای با این شماره تماس قبلاً ثبت شده.');
     return;
@@ -1771,6 +1832,7 @@ function addCustomerManual(){
   customers.push(makeCustomer(name, phone));
   nameEl.value = '';
   phoneEl.value = '';
+  document.getElementById('new_customer_phone_hint').textContent = '';
   persist();
   renderCustomersTab();
 }
@@ -1799,7 +1861,18 @@ function deleteCustomer(id){
 let editingCustomerId = null;
 
 function toggleCustomerEdit(id){
-  editingCustomerId = (editingCustomerId === id) ? null : id;
+  if(editingCustomerId === id){
+    // در حال بستن حالت ویرایش: قبلش شماره تماس رو اعتبارسنجی کن.
+    const phoneEl = document.getElementById('cust_phone_' + id);
+    if(phoneEl && !isValidIranPhone(phoneEl.value)){
+      alert('شماره تماس باید ۱۱ رقم باشد و با ۰۹ شروع شود (مثل 09121234567)؛ اصلاحش کن یا خالی بذار.');
+      phoneEl.focus();
+      return;
+    }
+    editingCustomerId = null;
+  }else{
+    editingCustomerId = id;
+  }
   renderCustomersTab();
   if(editingCustomerId === id){
     const el = document.getElementById('cust_name_' + id);
@@ -1822,7 +1895,7 @@ function renderCustomersTab(){
       ? `<input type="text" class="cust-name-input" id="cust_name_${c.id}" value="${escapeHtml(c.name || '')}" placeholder="نام مشتری" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','name',this.value)">`
       : `<span class="cust-name-display">${escapeHtml(c.name || 'بدون نام')}</span>`;
     const phoneField = editing
-      ? `<input type="text" class="cust-phone-input mono" inputmode="tel" value="${escapeHtml(c.phone || '')}" placeholder="بدون شماره" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','phone',this.value)">`
+      ? `<input type="text" class="cust-phone-input mono" id="cust_phone_${c.id}" inputmode="numeric" maxlength="11" value="${escapeHtml(c.phone || '')}" placeholder="بدون شماره" onclick="event.stopPropagation()" oninput="sanitizePhoneInput(this); updateCustomer('${c.id}','phone',this.value)">`
       : `<span class="cust-phone-display mono">${escapeHtml(c.phone || 'بدون شماره')}</span>`;
     return `
     <div class="sale-item">
@@ -1961,6 +2034,12 @@ function submitSale(){
   const prodId = currentSaleProductId();
   const prod = products.find(p => p.id === prodId);
   if(!prod){ alert('اول یک محصول اضافه کن'); return; }
+  const phoneEl = document.getElementById('sale_buyer_phone');
+  if(!markPhoneValidity(phoneEl, 'sale_buyer_phone_hint')){
+    alert('شماره تماس خریدار نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
+    phoneEl.focus();
+    return;
+  }
   const qty = Math.max(1, Math.round(parseNum(document.getElementById('sale_qty').value)) || 1);
   const currentStock = prod.stock || 0;
   if(qty > currentStock){
@@ -1972,7 +2051,7 @@ function submitSale(){
   const dateVal = document.getElementById('sale_date').value || new Date().toISOString().slice(0,10);
   const note = document.getElementById('sale_note').value;
   const buyerName = document.getElementById('sale_buyer_name').value.trim();
-  const buyerPhone = normalizeDigits(document.getElementById('sale_buyer_phone').value);
+  const buyerPhone = normalizeDigits(phoneEl.value);
   const type = document.getElementById('sale_price').dataset.type || 'wholesale';
   const c = calc(prod);
   sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone));
@@ -1988,6 +2067,7 @@ function submitSale(){
 }
 
 function deleteSale(id){
+  if(!isAdmin) return;
   if(!confirm('این فروش حذف بشه؟')) return;
   const sale = sales.find(s => s.id === id);
   sales = sales.filter(s => s.id !== id);
@@ -2038,7 +2118,7 @@ function renderSalesTab(){
     <div class="sale-item">
       <div class="sale-item-top">
         <span class="sale-item-name">${escapeHtml(s.productName)}</span>
-        <button class="sale-del" onclick="deleteSale('${s.id}')">
+        <button class="sale-del${isAdmin?'':' is-disabled'}" ${isAdmin ? `onclick="deleteSale('${s.id}')"` : 'disabled title="فقط مدیر می‌تونه فروش حذف کنه"'}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
         </button>
       </div>
