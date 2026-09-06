@@ -441,6 +441,18 @@
       </div>
     </div>
 
+    <div class="section-title orange"><span class="bar"></span>همگام‌سازی داده‌ها با گیت‌هاب</div>
+    <div class="card">
+      <div class="hint" style="margin-bottom:14px;">
+        با همون اطلاعات گیت‌هاب بالا (کاربر، ریپو، توکن)، تنظیمات، محصولات و فروش‌ها هم به‌صورت خودکار توی یک فایل <span class="mono">data.json</span> در ریشه همون مخزن ذخیره می‌شن. این‌طوری می‌تونی از چند گوشی/مرورگر به یک نسخه از داده وصل بشی. توکن گیت‌هاب هیچ‌وقت داخل این فایل ذخیره نمی‌شه.
+      </div>
+      <div class="hint" id="sync-status" style="margin-bottom:14px; font-weight:600;"></div>
+      <button class="add-btn" style="background:var(--blue); margin-top:0;" onclick="syncToGithub()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        همگام‌سازی الان
+      </button>
+    </div>
+
     <div class="section-title orange"><span class="bar"></span>پشتیبان‌گیری</div>
     <div class="card">
       <div class="hint" style="margin-bottom:12px;">
@@ -566,6 +578,10 @@ let sales = [];
 let openProductId = null;
 let salesFilter = 'all';
 let ready = false;
+let dataFileSha = null;
+let syncTimer;
+let syncInFlight = false;
+let githubSyncInitialized = false;
 
 function setTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
@@ -641,6 +657,27 @@ function loadState(){
   renderSettings();
   renderProducts();
   renderSummary();
+
+  if(githubConfigured()){
+    githubSyncInitialized = true;
+    setSyncStatus('در حال دریافت آخرین نسخه از گیت‌هاب...', '');
+    fetchRemoteData().then(remote => {
+      if(remote){
+        settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
+        products = Array.isArray(remote.products) ? remote.products : products;
+        sales = Array.isArray(remote.sales) ? remote.sales : sales;
+        renderSettings();
+        renderProducts();
+        renderSummary();
+        const salesTab = document.getElementById('tab-sales');
+        if(salesTab && salesTab.classList.contains('active')) renderSalesTab();
+        persist({skipSync:true});
+        setSyncStatus('همگام با گیت‌هاب ✓ (' + formatTimeFa(new Date(remote.updatedAt || Date.now())) + ')', 'success');
+      }else{
+        setSyncStatus('هنوز نسخه‌ای روی گیت‌هاب ذخیره نشده؛ با اولین تغییر ساخته می‌شه.', '');
+      }
+    });
+  }
 }
 
 function makeProduct(name, weight, printHours, manualHours, paintHours){
@@ -653,7 +690,7 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
 }
 
 let saveTimer;
-function persist(){
+function persist(opts){
   if(!ready) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
@@ -663,6 +700,7 @@ function persist(){
       localStorage.setItem('pricing_app_sales', JSON.stringify(sales));
       flashSaved();
     }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
+    if(!(opts && opts.skipSync)) scheduleSync();
   }, 250);
 }
 function flashSaved(){
@@ -713,6 +751,34 @@ function bindGithubInputs(){
       persist();
     });
   });
+  ['s_ghOwner','s_ghRepo','s_ghToken'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('blur', maybeInitGithubSync);
+  });
+}
+
+async function maybeInitGithubSync(){
+  if(githubSyncInitialized) return;
+  if(!githubConfigured()) return;
+  githubSyncInitialized = true;
+  setSyncStatus('در حال بررسی نسخه گیت‌هاب...', '');
+  const remote = await fetchRemoteData();
+  if(remote){
+    const useRemote = confirm('یک نسخه از داده‌ها از قبل روی این مخزن گیت‌هاب هست.\nبرای بارگذاری همون نسخه «OK» بزن، یا برای جایگزین کردنش با اطلاعات همین دستگاه «Cancel» رو بزن.');
+    if(useRemote){
+      settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
+      products = Array.isArray(remote.products) ? remote.products : products;
+      sales = Array.isArray(remote.sales) ? remote.sales : sales;
+      renderSettings();
+      renderProducts();
+      renderSummary();
+      renderSalesTab();
+      persist({skipSync:true});
+      setSyncStatus('نسخه گیت‌هاب بارگذاری شد ✓', 'success');
+      return;
+    }
+  }
+  syncToGithub();
 }
 
 function bindSettingsInputs(){
@@ -929,6 +995,95 @@ function githubContentsUrl(path){
   const repo = settings.githubRepo.trim();
   const encodedPath = path.split('/').map(encodeURIComponent).join('/');
   return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodedPath}`;
+}
+
+function b64EncodeUnicode(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64DecodeUnicode(str){
+  return decodeURIComponent(escape(atob(str)));
+}
+
+function githubConfigured(){
+  return !!(settings.githubOwner && settings.githubOwner.trim() &&
+            settings.githubRepo && settings.githubRepo.trim() &&
+            settings.githubToken && settings.githubToken.trim());
+}
+
+function githubDataPath(){ return 'data.json'; }
+
+function buildSyncPayload(){
+  const {githubToken, ...safeSettings} = settings; // never store the token itself in the repo
+  return { updatedAt: new Date().toISOString(), settings: safeSettings, products, sales };
+}
+
+function formatTimeFa(d){
+  try{ return new Intl.DateTimeFormat('fa-IR', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'}).format(d); }
+  catch(e){ return ''; }
+}
+
+function setSyncStatus(text, kind){
+  const el = document.getElementById('sync-status');
+  if(!el) return;
+  el.textContent = text || '';
+  el.style.color = kind==='error' ? 'var(--red)' : kind==='success' ? 'var(--green)' : 'var(--ink-soft)';
+}
+
+async function fetchRemoteData(){
+  if(!githubConfigured()) return null;
+  try{
+    const branch = (settings.githubBranch || 'main').trim();
+    const apiUrl = githubContentsUrl(githubDataPath());
+    const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers: githubHeaders() });
+    if(res.status === 404) return null;
+    if(!res.ok) throw new Error('خطای گیت‌هاب: ' + res.status);
+    const info = await res.json();
+    dataFileSha = info.sha;
+    const decoded = b64DecodeUnicode((info.content || '').replace(/\n/g, ''));
+    return JSON.parse(decoded);
+  }catch(err){
+    console.error(err);
+    return null;
+  }
+}
+
+async function syncToGithub(){
+  if(!githubConfigured()) return;
+  if(syncInFlight) return;
+  syncInFlight = true;
+  setSyncStatus('در حال همگام‌سازی با گیت‌هاب...', '');
+  try{
+    const branch = (settings.githubBranch || 'main').trim();
+    const apiUrl = githubContentsUrl(githubDataPath());
+    if(!dataFileSha){
+      try{
+        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers: githubHeaders() });
+        if(getRes.ok){ const info = await getRes.json(); dataFileSha = info.sha; }
+      }catch(e){ /* file probably doesn't exist yet — fine */ }
+    }
+    const payload = buildSyncPayload();
+    const body = { message: 'update pricing data', content: b64EncodeUnicode(JSON.stringify(payload, null, 2)), branch };
+    if(dataFileSha) body.sha = dataFileSha;
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {...githubHeaders(), 'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await putRes.json().catch(()=>({}));
+    if(!putRes.ok) throw new Error(data.message || ('خطای گیت‌هاب: ' + putRes.status));
+    dataFileSha = data.content.sha;
+    setSyncStatus('آخرین همگام‌سازی: ' + formatTimeFa(new Date()) + ' ✓', 'success');
+  }catch(err){
+    console.error(err);
+    setSyncStatus('همگام‌سازی ناموفق: ' + (err.message || 'خطای ناشناخته'), 'error');
+  }
+  syncInFlight = false;
+}
+
+function scheduleSync(){
+  if(!githubConfigured()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToGithub, 1500);
 }
 
 async function handleImageFile(id, inputEl){
