@@ -122,8 +122,14 @@
   .product-head .name-wrap{flex:1; min-width:0;}
   .product-head input[type=text]{border:none; background:transparent; padding:0; font-size:20px; font-weight:700; height:auto;}
   .product-head input[type=text]:focus{outline:none;}
+  .head-side{display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0;}
   .chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
   .product.open .chev{transform:rotate(180deg);}
+  .head-thumb{
+    width:32px; height:32px; border-radius:9px; overflow:hidden; flex-shrink:0;
+    background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+  }
+  .head-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
   .product-price-preview{
     display:flex; gap:20px; padding:0 18px 18px; font-size:14px; color:var(--ink-soft); font-weight:600;
   }
@@ -132,8 +138,35 @@
     max-height:0; overflow:hidden; transition:max-height .25s ease;
     border-top:1px solid var(--line);
   }
-  .product.open .product-body{max-height:1100px;}
+  .product.open .product-body{max-height:1400px;}
   .product-body-inner{padding:18px;}
+
+  .photo-field{margin-bottom:20px;}
+  .photo-row{display:flex; align-items:center; gap:14px;}
+  .photo-preview{
+    width:72px; height:72px; border-radius:16px; overflow:hidden; flex-shrink:0;
+    background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+  }
+  .photo-preview img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photo-actions{display:flex; flex-direction:column; gap:8px; flex:1;}
+  .photo-btn{
+    border:1.5px solid var(--line); background:var(--bg); color:var(--ink);
+    border-radius:12px; padding:10px 14px; font-size:14px; font-weight:600;
+    font-family:'Vazirmatn',sans-serif; cursor:pointer; text-align:center;
+  }
+  .photo-btn.danger{color:var(--red); border-color:var(--red);}
+  .photo-status{font-size:12px; font-weight:600; margin-top:8px;}
+  .photo-status:empty{display:none;}
+  .photo-status.uploading{color:var(--ink-soft);}
+  .photo-status.error{color:var(--red); line-height:1.6;}
+  .photo-status.success{color:var(--green);}
+  .gh-field{
+    width:100%; border:none; background:var(--bg); border-radius:14px; padding:14px;
+    font-size:16px; color:var(--ink); height:var(--tap);
+    font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr; text-align:left;
+  }
+  .gh-field:focus{outline:2px solid var(--orange); outline-offset:0;}
+
 
   .breakdown{
     background:var(--bg); border-radius:16px;
@@ -343,6 +376,36 @@
       <div class="hint">این درصدها پیش‌فرض هستند؛ برای هر محصول در تب «محصولات» قابل تغییرند.</div>
     </div>
 
+    <div class="section-title orange"><span class="bar"></span>ذخیره‌سازی عکس محصولات (گیت‌هاب)</div>
+    <div class="card">
+      <div class="hint" style="margin-bottom:14px;">
+        عکس هر محصول کوچک می‌شه و مستقیم توی یک مخزن گیت‌هاب آپلود می‌شه. یک Personal Access Token با دسترسی نوشتن روی همون مخزن بساز (ترجیحاً fine-grained و محدود به همین ریپو). این توکن روی همین گوشی/مرورگر ذخیره می‌شه؛ فقط روی دستگاه شخصی خودت استفاده‌اش کن.
+      </div>
+      <div class="field">
+        <label>نام کاربری یا سازمان گیت‌هاب</label>
+        <input type="text" class="gh-field" id="s_ghOwner" placeholder="مثلاً hesam-dev">
+      </div>
+      <div class="field">
+        <label>نام مخزن (ریپو)</label>
+        <input type="text" class="gh-field" id="s_ghRepo" placeholder="مثلاً product-images">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>شاخه (Branch)</label>
+          <input type="text" class="gh-field" id="s_ghBranch" placeholder="main">
+        </div>
+        <div class="field">
+          <label>پوشه ذخیره عکس‌ها</label>
+          <input type="text" class="gh-field" id="s_ghFolder" placeholder="product-images">
+        </div>
+      </div>
+      <div class="field">
+        <label>Personal Access Token</label>
+        <input type="password" class="gh-field" id="s_ghToken" placeholder="ghp_..." autocomplete="off">
+        <div class="hint">از github.com → Settings → Developer settings → Personal access tokens بساز؛ دسترسی نوشتن (Contents: Read and write) روی همین مخزن کافیه.</div>
+      </div>
+    </div>
+
     <div class="section-title orange"><span class="bar"></span>پشتیبان‌گیری</div>
     <div class="card">
       <div class="hint" style="margin-bottom:12px;">
@@ -396,7 +459,8 @@
 <script>
 const DEFAULT_SETTINGS = {
   filPrice: 1200000, power: 250, elec: 3000, depr: 15000,
-  labor: 200000, paint: 300000, marginW: 50, marginR: 120
+  labor: 200000, paint: 300000, marginW: 50, marginR: 120,
+  githubOwner: '', githubRepo: '', githubBranch: 'main', githubFolder: 'product-images', githubToken: ''
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -479,7 +543,8 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
   return {
     id: 'p_' + Date.now() + Math.random().toString(36).slice(2,7),
     name, weight, printHours, manualHours, paintHours,
-    marginW: null, marginR: null // null = use global default
+    marginW: null, marginR: null, // null = use global default
+    imageUrl: null, imagePath: null, imageSha: null
   };
 }
 
@@ -518,6 +583,11 @@ function renderSettings(){
   document.getElementById('s_paint').value = groupDigits(settings.paint);
   document.getElementById('s_marginW').value = toFaNum(settings.marginW, 2);
   document.getElementById('s_marginR').value = toFaNum(settings.marginR, 2);
+  document.getElementById('s_ghOwner').value = settings.githubOwner || '';
+  document.getElementById('s_ghRepo').value = settings.githubRepo || '';
+  document.getElementById('s_ghBranch').value = settings.githubBranch || 'main';
+  document.getElementById('s_ghFolder').value = settings.githubFolder || 'product-images';
+  document.getElementById('s_ghToken').value = settings.githubToken || '';
 }
 
 function groupDigits(n){
@@ -526,6 +596,18 @@ function groupDigits(n){
 
 const COMMA_FIELDS = {s_filPrice:'filPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
+const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
+
+function bindGithubInputs(){
+  Object.keys(GITHUB_FIELDS).forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', ()=>{
+      settings[GITHUB_FIELDS[id]] = el.value;
+      persist();
+    });
+  });
+}
 
 function bindSettingsInputs(){
   Object.keys(COMMA_FIELDS).forEach(id=>{
@@ -586,7 +668,10 @@ function renderProducts(){
             onclick="event.stopPropagation()"
             oninput="updateProduct('${prod.id}','name',this.value)">
         </div>
-        <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        <div class="head-side">
+          <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          <div class="head-thumb" id="headThumb_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(16)}</div>
+        </div>
       </div>
       <div class="product-price-preview">
         <span>عمده: <b id="pv_w_${prod.id}">${fmt(c.priceW)}</b></span>
@@ -594,6 +679,18 @@ function renderProducts(){
       </div>
       <div class="product-body">
         <div class="product-body-inner">
+          <div class="photo-field">
+            <label>عکس محصول</label>
+            <div class="photo-row">
+              <div class="photo-preview" id="photoPrev_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(26)}</div>
+              <div class="photo-actions" id="photoActions_${prod.id}">
+                <button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${prod.id}')">${prod.imageUrl?'تغییر عکس':'انتخاب عکس'}</button>
+                ${prod.imageUrl ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف عکس</button>` : ''}
+                <input type="file" accept="image/*" id="imgfile_${prod.id}" style="display:none" onclick="event.stopPropagation()" onchange="handleImageFile('${prod.id}', this)">
+              </div>
+            </div>
+            <div class="photo-status" id="photoStatus_${prod.id}"></div>
+          </div>
           <div class="grid-2">
             <div class="field">
               <label>وزن با ساپورت و دورریز (گرم)</label>
@@ -654,6 +751,164 @@ function renderProducts(){
 
 function escapeHtml(str){
   return (str||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function cameraIconSVG(size){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+}
+
+function triggerImageUpload(id){
+  const el = document.getElementById('imgfile_'+id);
+  if(el) el.click();
+}
+
+function setPhotoStatus(id, text, kind){
+  const el = document.getElementById('photoStatus_'+id);
+  if(!el) return;
+  el.textContent = text || '';
+  el.className = 'photo-status' + (kind ? ' '+kind : '');
+}
+
+function updateProductPhotoUI(id){
+  const prod = products.find(p=>p.id===id);
+  if(!prod) return;
+  const headThumb = document.getElementById('headThumb_'+id);
+  if(headThumb) headThumb.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(16);
+  const preview = document.getElementById('photoPrev_'+id);
+  if(preview) preview.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(26);
+  const actions = document.getElementById('photoActions_'+id);
+  if(actions){
+    actions.innerHTML = `
+      <button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${id}')">${prod.imageUrl?'تغییر عکس':'انتخاب عکس'}</button>
+      ${prod.imageUrl ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${id}')">حذف عکس</button>` : ''}
+      <input type="file" accept="image/*" id="imgfile_${id}" style="display:none" onclick="event.stopPropagation()" onchange="handleImageFile('${id}', this)">
+    `;
+  }
+}
+
+function resizeImageToBase64(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w >= h){ if(w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
+        else{ if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+      };
+      img.onerror = () => reject(new Error('فایل عکس قابل خواندن نبود'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('خواندن فایل با خطا مواجه شد'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function githubHeaders(){
+  return {
+    'Authorization': `token ${settings.githubToken.trim()}`,
+    'Accept': 'application/vnd.github+json'
+  };
+}
+
+function githubContentsUrl(path){
+  const owner = settings.githubOwner.trim();
+  const repo = settings.githubRepo.trim();
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodedPath}`;
+}
+
+async function handleImageFile(id, inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  const prod = products.find(p=>p.id===id);
+  if(!prod){ inputEl.value=''; return; }
+
+  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim()){
+    setPhotoStatus(id, 'اول در تب تنظیمات، اطلاعات گیت‌هاب (کاربر، ریپو، توکن) رو کامل کن', 'error');
+    inputEl.value = '';
+    return;
+  }
+
+  setPhotoStatus(id, 'در حال فشرده‌سازی و آپلود عکس...', 'uploading');
+  try{
+    const base64 = await resizeImageToBase64(file, 480, 0.82);
+    const branch = (settings.githubBranch || 'main').trim();
+    const folder = (settings.githubFolder || 'product-images').trim().replace(/^\/+|\/+$/g,'');
+    const path = `${folder}/${id}.jpg`;
+    const apiUrl = githubContentsUrl(path);
+
+    let sha = prod.imageSha || null;
+    if(!sha){
+      try{
+        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers: githubHeaders() });
+        if(getRes.ok){ const info = await getRes.json(); sha = info.sha; }
+      }catch(e){ /* file probably doesn't exist yet — fine */ }
+    }
+
+    const body = { message: (sha?'update':'add')+' product image '+id, content: base64, branch };
+    if(sha) body.sha = sha;
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {...githubHeaders(), 'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await putRes.json().catch(()=>({}));
+    if(!putRes.ok) throw new Error(data.message || ('خطای گیت‌هاب: '+putRes.status));
+
+    prod.imageUrl = data.content.download_url + (data.content.download_url.includes('?')?'&':'?') + 'v=' + Date.now();
+    prod.imagePath = path;
+    prod.imageSha = data.content.sha;
+    persist();
+    updateProductPhotoUI(id);
+    setPhotoStatus(id, 'عکس با موفقیت آپلود شد ✓', 'success');
+    setTimeout(()=>setPhotoStatus(id,'',''), 3000);
+  }catch(err){
+    console.error(err);
+    setPhotoStatus(id, 'آپلود ناموفق شد: ' + (err.message || 'خطای ناشناخته'), 'error');
+  }
+  inputEl.value = '';
+}
+
+function removeProductImage(id){
+  const prod = products.find(p=>p.id===id);
+  if(!prod || !prod.imageUrl) return;
+  if(!confirm('عکس این محصول حذف بشه؟')) return;
+
+  const cleanupLocal = () => {
+    prod.imageUrl = null; prod.imagePath = null; prod.imageSha = null;
+    persist();
+    updateProductPhotoUI(id);
+  };
+
+  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !prod.imagePath || !prod.imageSha){
+    cleanupLocal();
+    return;
+  }
+
+  setPhotoStatus(id, 'در حال حذف از گیت‌هاب...', 'uploading');
+  const branch = (settings.githubBranch || 'main').trim();
+  fetch(githubContentsUrl(prod.imagePath), {
+    method: 'DELETE',
+    headers: {...githubHeaders(), 'Content-Type':'application/json'},
+    body: JSON.stringify({ message: 'remove product image '+id, sha: prod.imageSha, branch })
+  }).then(()=>{
+    cleanupLocal();
+    setPhotoStatus(id, 'عکس حذف شد', 'success');
+    setTimeout(()=>setPhotoStatus(id,'',''), 2000);
+  }).catch(err=>{
+    console.error(err);
+    cleanupLocal();
+    setPhotoStatus(id, 'عکس از این محصول حذف شد ولی حذف کامل از گیت‌هاب با خطا مواجه شد', 'error');
+  });
 }
 
 function toggleProduct(id){
@@ -779,6 +1034,7 @@ function importData(event){
 }
 
 bindSettingsInputs();
+bindGithubInputs();
 loadTheme();
 loadState();
 </script>
