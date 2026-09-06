@@ -241,6 +241,18 @@
   .margin-input input{width:76px; height:40px; padding:6px 8px; font-size:15px; text-align:center; border-radius:10px;}
   .margin-input span{font-size:13px; color:var(--ink-soft); font-weight:600;}
 
+  /* دکمه کمکی برای وارد کردن مطمئن ممیز اعشار، چون بعضی کیبوردهای
+     فارسی موبایل با inputmode="decimal" کلید اعشار نشون نمی‌دن. */
+  .decimal-field{display:flex; align-items:center; gap:8px;}
+  .decimal-field input{flex:1; min-width:0;}
+  .decimal-btn{
+    width:44px; height:44px; flex-shrink:0; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--bg); color:var(--orange); font-size:19px; font-weight:800; line-height:1;
+    display:flex; align-items:center; justify-content:center; font-family:'Vazirmatn',sans-serif; cursor:pointer;
+  }
+  .decimal-btn:active{opacity:0.6;}
+  .margin-input .decimal-btn{width:36px; height:36px; font-size:16px; border-radius:10px;}
+
   .delete-btn{
     display:flex; align-items:center; justify-content:center; gap:8px;
     width:100%; margin-top:20px; padding:16px; border-radius:16px;
@@ -502,6 +514,7 @@
           <label>سود فروش عمده (مغازه‌دار)</label>
           <div class="input-row">
             <input type="text" class="num-input" id="s_marginW" inputmode="decimal">
+            <button type="button" class="decimal-btn" tabindex="-1" onclick="insertDecimalSep(document.getElementById('s_marginW'))">٫</button>
             <span class="unit">%</span>
           </div>
         </div>
@@ -509,11 +522,22 @@
           <label>سود فروش مستقیم (خرده)</label>
           <div class="input-row">
             <input type="text" class="num-input" id="s_marginR" inputmode="decimal">
+            <button type="button" class="decimal-btn" tabindex="-1" onclick="insertDecimalSep(document.getElementById('s_marginR'))">٫</button>
             <span class="unit">%</span>
           </div>
         </div>
       </div>
       <div class="hint">این درصدها پیش‌فرض هستند؛ برای هر محصول در تب «محصولات» قابل تغییرند.</div>
+
+      <div class="field">
+        <label>گرد کردن قیمت پیشنهادی (بعد از احتساب سود)</label>
+        <div class="sale-type-row" id="round-step-row">
+          <button type="button" class="sale-type-chip" data-step="0" onclick="setRoundStep(0)">بدون گرد کردن</button>
+          <button type="button" class="sale-type-chip" data-step="1000" onclick="setRoundStep(1000)">نزدیک‌ترین ۱۰۰۰</button>
+          <button type="button" class="sale-type-chip" data-step="5000" onclick="setRoundStep(5000)">نزدیک‌ترین ۵۰۰۰</button>
+        </div>
+        <div class="hint">قیمت پیشنهادی عمده/خرده (بعد از اضافه‌شدن درصد سود) به این عدد گرد می‌شه تا خرده‌ریز نداشته باشه.</div>
+      </div>
     </div>
 
     <div class="section-title orange"><span class="bar"></span>ذخیره‌سازی عکس محصولات (گیت‌هاب)</div>
@@ -629,19 +653,17 @@
           <button type="button" class="sale-type-chip" data-type="retail" onclick="fillSalePriceFromType('retail')">خرده</button>
         </div>
       </div>
-      <div class="grid-2">
-        <div class="field">
-          <label>تعداد</label>
-          <input type="text" class="num-input" id="sale_qty" inputmode="numeric" value="۱" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+      <div class="field">
+        <label>تعداد</label>
+        <input type="text" class="num-input" id="sale_qty" inputmode="numeric" value="۱" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+      </div>
+      <div class="field">
+        <label>قیمت واحد فروش</label>
+        <div class="input-row">
+          <input type="text" class="num-input" id="sale_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="clampSalePrice()">
+          <span class="unit">تومان</span>
         </div>
-        <div class="field">
-          <label>قیمت واحد فروش</label>
-          <div class="input-row">
-            <input type="text" class="num-input" id="sale_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="clampSalePrice()">
-            <span class="unit">تومان</span>
-          </div>
-          <div class="hint" id="sale_price_hint"></div>
-        </div>
+        <div class="hint" id="sale_price_hint"></div>
       </div>
       <div class="grid-2">
         <div class="field">
@@ -748,6 +770,7 @@
 const DEFAULT_SETTINGS = {
   filPrice: 1200000, power: 250, elec: 3000, depr: 15000,
   labor: 200000, paint: 300000, marginW: 50, marginR: 120,
+  roundStep: 1000,
   githubOwner: '', githubRepo: '', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
   companyName: '', logoUrl: null, logoPath: null, logoSha: null,
   productsView: 'list',
@@ -818,12 +841,15 @@ function toFaDigitsOnly(str){
 // کوچیک‌تر می‌کنه تا کل عدد داخل کادر دیده بشه و از زیر کادر بیرون
 // نزنه، مخصوصاً روی صفحه‌های کوچیک موبایل.
 function autosizeNumInput(el){
+  // فونت هیچ‌وقت کمتر از 16px نمی‌شه: روی سافاری آیفون، اگه فونت یک
+  // اینپوت فوکوس‌شده کمتر از 16px باشه، صفحه خودکار زوم می‌کنه و همین
+  // باعث می‌شد عدد واردشده از دید کاربر بیرون بره (زیر کیبورد قایم بشه).
+  // برای عددهای خیلی طولانی، به‌جای کوچیک‌تر کردن بیشتر فونت، اجازه
+  // می‌دیم اینپوت به‌صورت طبیعی و افقی اسکرول بشه (رفتار پیش‌فرض input).
   const len = (el.value || '').length;
   let size = 19;
   if(len > 8) size = 17;
-  if(len > 10) size = 15;
-  if(len > 13) size = 13;
-  if(len > 16) size = 11;
+  if(len > 11) size = 16;
   el.style.fontSize = size + 'px';
 }
 function autosizeAllNumInputs(){
@@ -858,6 +884,20 @@ function handleGroupedIntInput(el, onValue){
 function handleDecimalInput(el, onValue){
   onValue(parseNum(el.value));
   autosizeNumInput(el);
+}
+// روی بعضی کیبوردهای فارسی موبایل، حتی با inputmode="decimal"، کلید
+// نقطه/ممیز نشون داده نمی‌شه و کاربر راهی برای وارد کردن عدد اعشاری
+// نداره. این تابع با تپ روی دکمه کنار فیلد، یک نقطه در محل مکان‌نما
+// اضافه می‌کنه (یا اگه قبلاً نقطه‌ای وجود داشته باشه کاری نمی‌کنه) و
+// همون رویداد input فیلد رو صدا می‌زنه تا محاسبات به‌روز بشن.
+function insertDecimalSep(el){
+  if(!el || el.disabled) return;
+  el.focus();
+  if(String(el.value).indexOf('.') !== -1) return;
+  const pos = el.selectionStart == null ? el.value.length : el.selectionStart;
+  el.value = el.value.slice(0, pos) + '.' + el.value.slice(pos);
+  try{ el.setSelectionRange(pos+1, pos+1); }catch(_){}
+  el.dispatchEvent(new Event('input', {bubbles:true}));
 }
 function formatNumField(el, maxFrac){
   // Called on blur only: now it's safe to pretty-print (Persian digits,
@@ -1045,6 +1085,9 @@ function renderSettings(){
   document.getElementById('s_paint').value = groupDigits(settings.paint);
   document.getElementById('s_marginW').value = toFaNum(settings.marginW, 2);
   document.getElementById('s_marginR').value = toFaNum(settings.marginR, 2);
+  document.querySelectorAll('#round-step-row .sale-type-chip').forEach(b=>{
+    b.classList.toggle('active', Number(b.dataset.step) === (settings.roundStep || 0));
+  });
   document.getElementById('s_ghOwner').value = settings.githubOwner || '';
   document.getElementById('s_ghRepo').value = settings.githubRepo || '';
   document.getElementById('s_ghBranch').value = settings.githubBranch || 'main';
@@ -1123,6 +1166,16 @@ async function maybeInitGithubSync(){
   syncToGithub();
 }
 
+function setRoundStep(step){
+  settings.roundStep = step;
+  renderSettings();
+  renderProducts();
+  if(document.getElementById('sale_price')){
+    fillSalePriceFromType(document.getElementById('sale_price').dataset.type || 'wholesale');
+  }
+  persist();
+}
+
 function bindSettingsInputs(){
   Object.keys(COMMA_FIELDS).forEach(id=>{
     const el = document.getElementById(id);
@@ -1148,6 +1201,13 @@ function bindSettingsInputs(){
   });
 }
 
+// قیمت نهایی (بعد از اضافه شدن درصد سود) رو به نزدیک‌ترین «پله»
+// (مثلاً ۱۰۰۰ یا ۵۰۰۰ تومان) گرد می‌کنه تا خرده‌ریز نداشته باشه.
+function roundToStep(n){
+  const step = settings.roundStep || 0;
+  if(!step) return Math.round(n);
+  return Math.round(n / step) * step;
+}
 function calc(prod){
   const filamentCost = (prod.weight/1000) * settings.filPrice;
   const elecCost = prod.printHours * (settings.power/1000) * settings.elec;
@@ -1157,8 +1217,8 @@ function calc(prod){
   const total = filamentCost + elecCost + deprCost + laborCost + paintCost;
   const mW = (prod.marginW ?? settings.marginW) / 100;
   const mR = (prod.marginR ?? settings.marginR) / 100;
-  const priceW = total * (1 + mW);
-  const priceR = total * (1 + mR);
+  const priceW = roundToStep(total * (1 + mW));
+  const priceR = roundToStep(total * (1 + mR));
   return {filamentCost, elecCost, deprCost, laborCost, paintCost, total, priceW, priceR};
 }
 
@@ -1230,19 +1290,31 @@ function renderProducts(){
           <div class="grid-2">
             <div class="field">
               <label>وزن با ساپورت و دورریز (گرم)</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
+              <div class="decimal-field">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
+                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
+              </div>
             </div>
             <div class="field">
               <label>زمان پرینت (ساعت)</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))" onblur="formatNumField(this,2)">
+              <div class="decimal-field">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))" onblur="formatNumField(this,2)">
+                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
+              </div>
             </div>
             <div class="field">
               <label>ساعت کار دستی</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))" onblur="formatNumField(this,2)">
+              <div class="decimal-field">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))" onblur="formatNumField(this,2)">
+                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
+              </div>
             </div>
             <div class="field">
               <label>ساعت نقاشی</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
+              <div class="decimal-field">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
+                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
+              </div>
             </div>
           </div>
 
@@ -1262,6 +1334,7 @@ function renderProducts(){
               <div class="value" id="res_w_${prod.id}">${fmt(c.priceW)}</div>
               <div class="margin-input">
                 <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.marginW ?? settings.marginW,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginW',n))" onblur="formatNumField(this,2)">
+                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
                 <span>% سود</span>
               </div>
             </div>
@@ -1270,6 +1343,7 @@ function renderProducts(){
               <div class="value" id="res_r_${prod.id}">${fmt(c.priceR)}</div>
               <div class="margin-input">
                 <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.marginR ?? settings.marginR,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginR',n))" onblur="formatNumField(this,2)">
+                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
                 <span>% سود</span>
               </div>
             </div>
