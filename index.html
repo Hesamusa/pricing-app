@@ -353,6 +353,18 @@
   .sale-item-bottom .profit-pos b{color:var(--green);}
   .sale-item-bottom .profit-neg b{color:var(--red);}
   .sale-item-note{margin-top:10px; font-size:13px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px; line-height:1.6;}
+  .cust-name-input{
+    font-size:16px; font-weight:700; color:var(--ink); border:none; background:transparent;
+    padding:2px 0; min-width:0; flex:1; font-family:'Vazirmatn',sans-serif; text-align:right;
+  }
+  .cust-name-input:focus{outline:none;}
+  .cust-name-input::placeholder{color:var(--ink-soft); font-weight:600;}
+  .cust-phone-input{
+    border:none; background:transparent; color:var(--ink-soft); font-weight:600; font-size:13px;
+    padding:2px 0; min-width:0; direction:ltr; text-align:left;
+  }
+  .cust-phone-input:focus{outline:none; color:var(--ink);}
+  .cust-phone-input::placeholder{color:var(--ink-soft); font-weight:600;}
 
   /* Admin / user mode */
   .mode-badge{
@@ -920,6 +932,7 @@ function tryUnlockAdmin(){
     renderSettings();
     updateModeUI();
     renderProducts();
+    renderCustomersTab();
   }else{
     if(err) err.textContent = 'رمز اشتباهه، دوباره امتحان کن.';
     if(pinInput){ pinInput.value=''; pinInput.focus(); }
@@ -931,6 +944,7 @@ function lockAdmin(){
   try{ sessionStorage.removeItem('pricing_app_admin'); }catch(e){}
   updateModeUI();
   renderProducts();
+  renderCustomersTab();
   switchTab('sales');
 }
 
@@ -1745,7 +1759,19 @@ function addCustomerManual(){
   renderCustomersTab();
 }
 
+function updateCustomer(id, field, value){
+  const cust = customers.find(c=>c.id===id);
+  if(!cust) return;
+  if(field === 'phone'){
+    cust.phone = normalizeDigits(value);
+  }else{
+    cust.name = value;
+  }
+  persist();
+}
+
 function deleteCustomer(id){
+  if(!isAdmin) return;
   if(!confirm('این مشتری حذف بشه؟')) return;
   customers = customers.filter(c => c.id !== id);
   persist();
@@ -1765,13 +1791,14 @@ function renderCustomersTab(){
     return `
     <div class="sale-item">
       <div class="sale-item-top">
-        <span class="sale-item-name">${escapeHtml(c.name || 'بدون نام')}</span>
+        <input type="text" class="cust-name-input" value="${escapeHtml(c.name || '')}" placeholder="نام مشتری" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','name',this.value)">
+        ${isAdmin ? `
         <button class="sale-del" onclick="deleteCustomer('${c.id}')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
-        </button>
+        </button>` : ''}
       </div>
       <div class="sale-item-meta">
-        ${c.phone ? `<span class="mono">${escapeHtml(c.phone)}</span>` : `<span>بدون شماره</span>`}
+        <input type="text" class="cust-phone-input mono" inputmode="tel" value="${escapeHtml(c.phone || '')}" placeholder="بدون شماره" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','phone',this.value)">
         <span class="tag">${fa.format(stats.count)} خرید</span>
       </div>
       ${stats.count ? `<div class="sale-item-bottom"><span>جمع خرید: <b>${fmt(stats.totalSpent)}</b></span></div>` : ''}
