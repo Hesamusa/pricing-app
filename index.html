@@ -72,12 +72,12 @@
   /* Company logo / brand uploader */
   .brand-custom{display:flex; align-items:center; gap:10px; flex-shrink:0;}
   .company-logo{
-    width:48px; height:48px; border-radius:14px; overflow:hidden; flex-shrink:0;
+    width:48px; height:48px; border-radius:50%; overflow:hidden; flex-shrink:0;
     background:var(--card); display:flex; align-items:center; justify-content:center;
-    color:var(--ink-soft); cursor:pointer; border:1.5px dashed var(--line);
+    color:var(--ink-soft); cursor:pointer; border:2px dashed var(--line); padding:2px;
   }
-  .company-logo.has-logo{border-style:solid; border-color:var(--line);}
-  .company-logo img{width:100%; height:100%; object-fit:cover; display:block;}
+  .company-logo.has-logo{border-style:solid; border-color:var(--orange); box-shadow:0 0 0 2px var(--card);}
+  .company-logo img{width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;}
   .company-logo:active{opacity:0.7;}
   .company-name-input{
     width:104px; border:none; background:transparent; color:var(--ink);
@@ -149,11 +149,28 @@
   .chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
   .product.open .chev{transform:rotate(180deg);}
   .head-thumb{
-    width:184px; height:184px; border-radius:28px; overflow:hidden; flex-shrink:0;
+    width:100%; max-width:184px; aspect-ratio:1/1; height:auto; border-radius:28px; overflow:hidden; flex-shrink:0;
     align-self:center;
     background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
   }
   .head-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+
+  .view-toggle{display:flex; gap:8px; margin:6px 6px 14px;}
+  .view-chip{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:11px 10px; border-radius:14px; background:var(--card);
+    color:var(--ink-soft); font-size:13px; font-weight:700; border:none;
+    font-family:'Vazirmatn',sans-serif; cursor:pointer;
+  }
+  .view-chip.active{background:var(--orange-soft); color:var(--orange);}
+
+  #products-list.view-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start;
+  }
+  #products-list.view-grid .product{margin-bottom:0;}
+  #products-list.view-grid .product-head-top input[type=text]{font-size:16px;}
+  #products-list.view-grid .product-price-preview{flex-direction:column; gap:4px; padding:0 14px 14px;}
+  #products-list.view-grid .empty{grid-column:1/-1;}
   .product-price-preview{
     display:flex; gap:20px; padding:0 18px 18px; font-size:14px; color:var(--ink-soft); font-weight:600;
   }
@@ -342,7 +359,6 @@
       </svg>
       <div class="brand-text">
         <h1>دفترچه قیمت‌گذاری</h1>
-        <p>محاسبه قیمت تمام‌شده و فروش مدل‌های پرینت سه‌بعدی</p>
       </div>
     </div>
     <div class="brand-custom">
@@ -504,6 +520,16 @@
 
   <!-- PRODUCTS TAB -->
   <div id="tab-products" class="tab-panel">
+    <div class="view-toggle" id="view-toggle">
+      <button type="button" class="view-chip" id="view-chip-list" onclick="setProductsView('list')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        یک ستونه
+      </button>
+      <button type="button" class="view-chip" id="view-chip-grid" onclick="setProductsView('grid')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+        دو ستونه
+      </button>
+    </div>
     <div id="products-list"></div>
     <button class="add-btn" onclick="addProduct()">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -605,7 +631,8 @@ const DEFAULT_SETTINGS = {
   filPrice: 1200000, power: 250, elec: 3000, depr: 15000,
   labor: 200000, paint: 300000, marginW: 50, marginR: 120,
   githubOwner: '', githubRepo: '', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
-  companyName: '', logoUrl: null, logoPath: null, logoSha: null
+  companyName: '', logoUrl: null, logoPath: null, logoSha: null,
+  productsView: 'list'
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -868,6 +895,11 @@ function calc(prod){
 
 function renderProducts(){
   const list = document.getElementById('products-list');
+  list.classList.toggle('view-grid', settings.productsView === 'grid');
+  const chipList = document.getElementById('view-chip-list');
+  const chipGrid = document.getElementById('view-chip-grid');
+  if(chipList) chipList.classList.toggle('active', settings.productsView !== 'grid');
+  if(chipGrid) chipGrid.classList.toggle('active', settings.productsView === 'grid');
   if(products.length === 0){
     list.innerHTML = `<div class="empty">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -1323,6 +1355,12 @@ function removeProductImage(id){
     cleanupLocal();
     setPhotoStatus(id, 'عکس از این محصول حذف شد ولی حذف کامل از گیت‌هاب با خطا مواجه شد', 'error');
   });
+}
+
+function setProductsView(mode){
+  settings.productsView = mode;
+  persist();
+  renderProducts();
 }
 
 function toggleProduct(id){
