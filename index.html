@@ -127,7 +127,8 @@
   }
   input:focus{outline:2px solid var(--orange); outline-offset:0;}
   .input-row{display:flex; align-items:center; gap:10px;}
-  .input-row .unit{font-size:14px; color:var(--ink-soft); white-space:nowrap; font-weight:600; min-width:70px;}
+  .input-row input.num-input{flex:1; min-width:0;}
+  .input-row .unit{font-size:14px; color:var(--ink-soft); white-space:nowrap; font-weight:600; min-width:70px; flex-shrink:0;}
 
   .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   .grid-2 .field{border-bottom:none; padding:8px 0;}
@@ -793,8 +794,16 @@ function parseNum(val){
   let s = String(val);
   s = s.replace(/[۰-۹]/g, d => String(d.charCodeAt(0)-1776));
   s = s.replace(/[٠-٩]/g, d => String(d.charCodeAt(0)-1632));
-  s = s.replace(/٫/g, '.');
+  // بعضی کیبوردهای موبایل (به‌خصوص فارسی) موقع اعشار به‌جای نقطه یا
+  // «٫» یک ویرگول معمولی می‌فرستن؛ اون رو هم به‌عنوان جداکننده اعشار
+  // می‌پذیریم تا کاربر بتونه با کیبورد موبایل عدد اعشاری وارد کنه.
+  s = s.replace(/[٫,]/g, '.');
   s = s.replace(/[^0-9.\-]/g, '');
+  // اگه بیش از یک نقطه اعشار وارد شده بود (تایپ اشتباه)، فقط اولی رو نگه دار.
+  const firstDot = s.indexOf('.');
+  if(firstDot !== -1){
+    s = s.slice(0, firstDot+1) + s.slice(firstDot+1).replace(/\./g, '');
+  }
   const n = parseFloat(s);
   return isNaN(n) ? 0 : n;
 }
@@ -803,6 +812,22 @@ function toFaNum(n, maxFrac){
 }
 function toFaDigitsOnly(str){
   return String(str).replace(/[0-9]/g, d => FA_DIGITS[+d]);
+}
+
+// اگه عدد وارد شده طولانی باشه (مثل قیمت‌های چند‌رقمی)، سایز فونت رو
+// کوچیک‌تر می‌کنه تا کل عدد داخل کادر دیده بشه و از زیر کادر بیرون
+// نزنه، مخصوصاً روی صفحه‌های کوچیک موبایل.
+function autosizeNumInput(el){
+  const len = (el.value || '').length;
+  let size = 19;
+  if(len > 8) size = 17;
+  if(len > 10) size = 15;
+  if(len > 13) size = 13;
+  if(len > 16) size = 11;
+  el.style.fontSize = size + 'px';
+}
+function autosizeAllNumInputs(){
+  document.querySelectorAll('input.num-input').forEach(autosizeNumInput);
 }
 function handleGroupedIntInput(el, onValue){
   // با هر ضربه تایپ، عدد رو زنده به‌صورت سه‌رقم‌سه‌رقم جدا می‌کنه تا
@@ -828,15 +853,18 @@ function handleGroupedIntInput(el, onValue){
     }
   }
   try{ el.setSelectionRange(pos, pos); }catch(_){}
+  autosizeNumInput(el);
 }
 function handleDecimalInput(el, onValue){
   onValue(parseNum(el.value));
+  autosizeNumInput(el);
 }
 function formatNumField(el, maxFrac){
   // Called on blur only: now it's safe to pretty-print (Persian digits,
   // thousands grouping) since the field no longer has focus.
-  if(el.value.trim()===''){ el.value=''; return; }
+  if(el.value.trim()===''){ el.value=''; autosizeNumInput(el); return; }
   el.value = toFaNum(parseNum(el.value), maxFrac);
+  autosizeNumInput(el);
 }
 
 // با فوکوس گرفتن روی هر ورودی عددی (تعداد، قیمت و...) کل مقدار قبلی
@@ -1026,6 +1054,7 @@ function renderSettings(){
   if(pinEl) pinEl.value = settings.adminPin || '';
   renderBrand();
   applySettingsLock();
+  autosizeAllNumInputs();
 }
 
 function renderBrand(){
@@ -1201,7 +1230,7 @@ function renderProducts(){
           <div class="grid-2">
             <div class="field">
               <label>وزن با ساپورت و دورریز (گرم)</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="numeric" value="${toFaNum(prod.weight,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,0)">
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
               <label>زمان پرینت (ساعت)</label>
@@ -1255,6 +1284,7 @@ function renderProducts(){
       </div>
     </div>`;
   }).join('');
+  autosizeAllNumInputs();
 }
 
 function escapeHtml(str){
@@ -1965,6 +1995,7 @@ function fillSalePriceFromType(type){
   const base = Math.round(price);
   priceEl.dataset.base = base;
   priceEl.value = toFaNum(base, 0);
+  autosizeNumInput(priceEl);
   if(hintEl) hintEl.textContent = '';
 }
 
@@ -1993,6 +2024,7 @@ function clampSalePrice(){
     priceEl.value = toFaNum(val, 0);
     if(hintEl) hintEl.textContent = '';
   }
+  autosizeNumInput(priceEl);
 }
 
 function setSalesFilter(f){
