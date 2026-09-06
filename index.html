@@ -268,6 +268,41 @@
   .legend-row{display:none;}
   .dot{display:none;}
   .bar{display:none;}
+
+  /* Sales tab */
+  select.sale-select{
+    width:100%; border:none; background:var(--bg); appearance:none; -webkit-appearance:none;
+    border-radius:14px; padding:14px; font-size:16px; color:var(--ink);
+    font-family:'Vazirmatn',sans-serif; direction:rtl; height:var(--tap);
+  }
+  select.sale-select:focus{outline:2px solid var(--orange); outline-offset:0;}
+  .sale-type-row{display:flex; gap:8px;}
+  .sale-type-chip{
+    flex:1; padding:12px 6px; border-radius:12px; background:var(--bg);
+    border:1.5px solid var(--line); color:var(--ink-soft); font-size:13px; font-weight:700;
+    font-family:'Vazirmatn',sans-serif; cursor:pointer;
+  }
+  .sale-type-chip.active{background:var(--orange-soft); border-color:var(--orange); color:var(--orange);}
+  .filter-row{display:flex; gap:8px; margin:0 6px 14px; overflow-x:auto; padding-bottom:2px;}
+  .filter-chip{
+    flex-shrink:0; padding:9px 18px; border-radius:999px; background:var(--card);
+    color:var(--ink-soft); font-size:13px; font-weight:600; border:none;
+    font-family:'Vazirmatn',sans-serif; cursor:pointer;
+  }
+  .filter-chip.active{background:var(--orange); color:#fff;}
+  .sale-item{background:var(--card); border-radius:18px; padding:16px 18px; margin-bottom:10px;}
+  .sale-item-top{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px;}
+  .sale-item-name{font-size:16px; font-weight:700;}
+  .sale-del{background:none; border:none; color:var(--ink-soft); padding:6px; flex-shrink:0; display:flex;}
+  .sale-del:active{color:var(--red);}
+  .sale-item-meta{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:var(--ink-soft); font-weight:600; margin-bottom:10px;}
+  .sale-item-meta .mono{font-size:13px;}
+  .sale-item-meta .tag{background:var(--bg); padding:3px 10px; border-radius:8px;}
+  .sale-item-bottom{display:flex; justify-content:space-between; font-size:14px; color:var(--ink-soft); font-weight:600; padding-top:10px; border-top:1px solid var(--line);}
+  .sale-item-bottom b{font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr; display:inline-block; font-size:15px;}
+  .sale-item-bottom .profit-pos b{color:var(--green);}
+  .sale-item-bottom .profit-neg b{color:var(--red);}
+  .sale-item-note{margin-top:10px; font-size:13px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px; line-height:1.6;}
 </style>
 </head>
 <body>
@@ -433,6 +468,65 @@
     </button>
   </div>
 
+  <!-- SALES TAB -->
+  <div id="tab-sales" class="tab-panel">
+    <div class="section-title">ثبت فروش جدید</div>
+    <div class="card" id="sale-form-wrap">
+      <div class="field">
+        <label>محصول</label>
+        <select class="sale-select" id="sale_product" onchange="onSaleProductChange()"></select>
+      </div>
+      <div class="field">
+        <label>نوع فروش</label>
+        <div class="sale-type-row">
+          <button type="button" class="sale-type-chip active" data-type="wholesale" onclick="fillSalePriceFromType('wholesale')">عمده</button>
+          <button type="button" class="sale-type-chip" data-type="retail" onclick="fillSalePriceFromType('retail')">خرده</button>
+          <button type="button" class="sale-type-chip" data-type="custom" onclick="fillSalePriceFromType('custom')">دلخواه</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>تعداد</label>
+          <input type="text" class="num-input" id="sale_qty" inputmode="numeric" value="۱" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+        </div>
+        <div class="field">
+          <label>قیمت واحد فروش</label>
+          <div class="input-row">
+            <input type="text" class="num-input" id="sale_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+            <span class="unit">تومان</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>تاریخ</label>
+          <input type="date" class="gh-field" id="sale_date" style="direction:ltr; text-align:center; font-family:'Vazirmatn',sans-serif;">
+        </div>
+        <div class="field">
+          <label>یادداشت (اختیاری)</label>
+          <input type="text" class="gh-field" id="sale_note" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً نام خریدار">
+        </div>
+      </div>
+      <button class="add-btn" onclick="submitSale()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        ثبت فروش
+      </button>
+    </div>
+    <div class="empty" id="sale-empty-hint" style="display:none;">
+      <p>اول از تب «محصولات» یک محصول اضافه کن، بعد فروشش رو اینجا ثبت کن.</p>
+    </div>
+
+    <div class="section-title"><span class="bar"></span>گزارش فروش</div>
+    <div class="filter-row">
+      <button type="button" class="filter-chip active" data-filter="all" onclick="setSalesFilter('all')">همه</button>
+      <button type="button" class="filter-chip" data-filter="today" onclick="setSalesFilter('today')">امروز</button>
+      <button type="button" class="filter-chip" data-filter="week" onclick="setSalesFilter('week')">۷ روز اخیر</button>
+      <button type="button" class="filter-chip" data-filter="month" onclick="setSalesFilter('month')">این ماه</button>
+    </div>
+    <div id="sales-stats"></div>
+    <div id="sales-list" style="margin-top:14px;"></div>
+  </div>
+
   <!-- SUMMARY TAB -->
   <div id="tab-summary" class="tab-panel">
     <div class="section-title"><span class="bar"></span>خلاصه کل محصولات</div>
@@ -450,6 +544,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     محصولات
   </button>
+  <button id="nav-sales" onclick="switchTab('sales')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    فروش
+  </button>
   <button id="nav-summary" onclick="switchTab('summary')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14.1"/></svg>
     خلاصه
@@ -464,7 +562,9 @@ const DEFAULT_SETTINGS = {
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
+let sales = [];
 let openProductId = null;
+let salesFilter = 'all';
 let ready = false;
 
 function setTheme(mode){
@@ -530,6 +630,10 @@ function loadState(){
     const p = localStorage.getItem('pricing_app_products');
     if(p) products = JSON.parse(p);
   }catch(e){ /* no saved products yet */ }
+  try{
+    const s2 = localStorage.getItem('pricing_app_sales');
+    if(s2) sales = JSON.parse(s2);
+  }catch(e){ /* no saved sales yet */ }
   if(products.length === 0){
     products = [makeProduct('مجسمه اژدها ۱۵ سانتی', 85, 6, 0.5, 1)];
   }
@@ -556,6 +660,7 @@ function persist(){
     try{
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
+      localStorage.setItem('pricing_app_sales', JSON.stringify(sales));
       flashSaved();
     }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
   }, 250);
@@ -572,6 +677,7 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='summary') renderSummary();
+  if(name==='sales') renderSalesTab();
 }
 
 function renderSettings(){
@@ -983,11 +1089,158 @@ function renderSummary(){
   `;
 }
 
+function makeSale(productId, productName, qty, unitPrice, costPerUnit, saleType, note, date){
+  return {
+    id: 'sl_' + Date.now() + Math.random().toString(36).slice(2,7),
+    productId, productName, qty, unitPrice, costPerUnit, saleType,
+    note: note || '', date: date || new Date().toISOString().slice(0,10)
+  };
+}
+
+function productOptionsHtml(selectedId){
+  return products.map(p => `<option value="${p.id}" ${p.id===selectedId?'selected':''}>${escapeHtml(p.name)}</option>`).join('');
+}
+
+function currentSaleProductId(){
+  const sel = document.getElementById('sale_product');
+  return sel && sel.value ? sel.value : (products[0] && products[0].id);
+}
+
+function onSaleProductChange(){
+  const priceEl = document.getElementById('sale_price');
+  fillSalePriceFromType(priceEl.dataset.type || 'wholesale');
+}
+
+function fillSalePriceFromType(type){
+  const priceEl = document.getElementById('sale_price');
+  if(!priceEl) return;
+  priceEl.dataset.type = type;
+  document.querySelectorAll('.sale-type-chip').forEach(b => b.classList.toggle('active', b.dataset.type===type));
+  if(type==='custom') return; // keep whatever the user already typed
+  const prod = products.find(p => p.id === currentSaleProductId());
+  if(!prod) return;
+  const c = calc(prod);
+  const price = type==='wholesale' ? c.priceW : c.priceR;
+  priceEl.value = toFaNum(Math.round(price), 0);
+}
+
+function setSalesFilter(f){
+  salesFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.toggle('active', b.dataset.filter===f));
+  renderSalesTab();
+}
+
+function filteredSales(){
+  if(salesFilter === 'all') return sales;
+  const now = new Date();
+  return sales.filter(s => {
+    const d = new Date(s.date + 'T00:00:00');
+    if(salesFilter === 'today') return d.toDateString() === now.toDateString();
+    if(salesFilter === 'week'){ const diff = (now - d) / (1000*60*60*24); return diff >= 0 && diff < 7; }
+    if(salesFilter === 'month') return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+    return true;
+  });
+}
+
+function formatDateFa(dateStr){
+  try{
+    const d = new Date(dateStr + 'T00:00:00');
+    return new Intl.DateTimeFormat('fa-IR', {year:'numeric', month:'2-digit', day:'2-digit'}).format(d);
+  }catch(e){ return dateStr; }
+}
+
+function resetSaleForm(){
+  document.getElementById('sale_qty').value = '۱';
+  document.getElementById('sale_note').value = '';
+  document.getElementById('sale_date').value = new Date().toISOString().slice(0,10);
+  fillSalePriceFromType('wholesale');
+}
+
+function submitSale(){
+  const prodId = currentSaleProductId();
+  const prod = products.find(p => p.id === prodId);
+  if(!prod){ alert('اول یک محصول اضافه کن'); return; }
+  const qty = Math.max(1, Math.round(parseNum(document.getElementById('sale_qty').value)) || 1);
+  const price = parseNum(document.getElementById('sale_price').value);
+  const dateVal = document.getElementById('sale_date').value || new Date().toISOString().slice(0,10);
+  const note = document.getElementById('sale_note').value;
+  const type = document.getElementById('sale_price').dataset.type || 'custom';
+  const c = calc(prod);
+  sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal));
+  persist();
+  resetSaleForm();
+  renderSalesTab();
+}
+
+function deleteSale(id){
+  if(!confirm('این فروش حذف بشه؟')) return;
+  sales = sales.filter(s => s.id !== id);
+  persist();
+  renderSalesTab();
+}
+
+function renderSalesTab(){
+  const sel = document.getElementById('sale_product');
+  const dateEl = document.getElementById('sale_date');
+  if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
+
+  if(sel){
+    const prevVal = sel.value;
+    sel.innerHTML = products.length ? productOptionsHtml(prevVal) : '';
+  }
+  document.getElementById('sale-form-wrap').style.display = products.length ? 'block' : 'none';
+  document.getElementById('sale-empty-hint').style.display = products.length ? 'none' : 'block';
+  if(products.length){
+    fillSalePriceFromType(document.getElementById('sale_price').dataset.type || 'wholesale');
+  }
+
+  const list = filteredSales();
+  let revenue = 0, profit = 0;
+  list.forEach(s => { revenue += s.unitPrice*s.qty; profit += (s.unitPrice - s.costPerUnit)*s.qty; });
+
+  document.getElementById('sales-stats').innerHTML = `
+    <div class="stat-card"><span class="stat-label">تعداد فروش</span><span class="stat-value">${fa.format(list.length)}</span></div>
+    <div class="stat-card"><span class="stat-label">جمع درآمد</span><span class="stat-value">${fmt(revenue)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">جمع سود</span><span class="stat-value">${fmt(profit)}</span></div>
+  `;
+
+  const listEl = document.getElementById('sales-list');
+  if(list.length === 0){
+    listEl.innerHTML = `<div class="empty"><p>فروشی در این بازه ثبت نشده.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = list.map(s => {
+    const total = s.unitPrice * s.qty;
+    const prof = (s.unitPrice - s.costPerUnit) * s.qty;
+    const typeLabel = s.saleType==='wholesale' ? 'عمده' : s.saleType==='retail' ? 'خرده' : 'دلخواه';
+    return `
+    <div class="sale-item">
+      <div class="sale-item-top">
+        <span class="sale-item-name">${escapeHtml(s.productName)}</span>
+        <button class="sale-del" onclick="deleteSale('${s.id}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+        </button>
+      </div>
+      <div class="sale-item-meta">
+        <span class="mono">${fa.format(s.qty)} × ${fmt(s.unitPrice)}</span>
+        <span class="tag">${typeLabel}</span>
+        <span>${formatDateFa(s.date)}</span>
+      </div>
+      <div class="sale-item-bottom">
+        <span>جمع فروش: <b>${fmt(total)}</b></span>
+        <span class="${prof>=0?'profit-pos':'profit-neg'}">سود: <b>${fmt(prof)}</b></span>
+      </div>
+      ${s.note ? `<div class="sale-item-note">${escapeHtml(s.note)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
 function exportData(){
   const payload = {
     exportedAt: new Date().toISOString(),
     settings: settings,
-    products: products
+    products: products,
+    sales: sales
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -1012,10 +1265,12 @@ function importData(event){
       if(!data.settings || !Array.isArray(data.products)) throw new Error('فرمت نامعتبر');
       settings = {...DEFAULT_SETTINGS, ...data.settings};
       products = data.products;
+      sales = Array.isArray(data.sales) ? data.sales : [];
       openProductId = null;
       renderSettings();
       renderProducts();
       renderSummary();
+      renderSalesTab();
       persist();
       statusEl.style.color = 'var(--green)';
       statusEl.textContent = 'بازگردانی با موفقیت انجام شد ✓';
