@@ -6,7 +6,7 @@
 <title>دفترچه قیمت‌گذاری پرینت سه‌بعدی</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#EFE7D8">
+<meta name="theme-color" content="#F2F2F5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -27,6 +27,22 @@
     --radius-lg:24px;
     --tap:56px;
   }
+  html[data-theme="dark"]{
+    --bg:#000000;
+    --card:#1C1C1E;
+    --ink:#F2F2F7;
+    --ink-soft:#8E8E93;
+    --line:#3A3A3C;
+    --orange:#E0824C;
+    --orange-soft:#3A2A1E;
+    --blue:#409CFF;
+    --blue-soft:#122A40;
+    --green:#32D74B;
+    --green-soft:#122A17;
+    --red:#FF453A;
+  }
+  html{ background:var(--bg); }
+  html, body{ transition: background-color .2s ease, color .2s ease; }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
   html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);}
   body{
@@ -191,6 +207,25 @@
   }
   .save-note.show{opacity:1;}
 
+  .switch-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 0; min-height:var(--tap);
+  }
+  .switch-row .switch-label{font-size:17px; font-weight:600; color:var(--ink);}
+  .switch{position:relative; display:inline-block; width:51px; height:31px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .switch .slider{
+    position:absolute; inset:0; background-color:var(--line);
+    border-radius:31px; transition:.2s; cursor:pointer;
+  }
+  .switch .slider::before{
+    content:""; position:absolute; height:27px; width:27px; left:2px; top:2px;
+    background-color:#fff; border-radius:50%; transition:.2s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.25);
+  }
+  .switch input:checked + .slider{background-color:var(--orange);}
+  html[dir="rtl"] .switch input:checked + .slider::before{transform:translateX(-20px);}
+
   .legend-row{display:none;}
   .dot{display:none;}
   .bar{display:none;}
@@ -218,6 +253,17 @@
   <!-- SETTINGS TAB -->
   <div id="tab-settings" class="tab-panel active">
     <div class="save-note" id="save-note-settings">ذخیره شد ✓</div>
+
+    <div class="section-title">ظاهر</div>
+    <div class="card">
+      <div class="switch-row">
+        <span class="switch-label">حالت تاریک</span>
+        <label class="switch">
+          <input type="checkbox" id="themeToggle" onchange="setTheme(this.checked ? 'dark' : 'light')">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
 
     <div class="section-title"><span class="bar"></span>هزینه‌های مواد و دستگاه</div>
     <div class="card">
@@ -350,6 +396,24 @@ let settings = {...DEFAULT_SETTINGS};
 let products = [];
 let openProductId = null;
 let ready = false;
+
+function setTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  document.getElementById('themeToggle').checked = (mode === 'dark');
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if(metaTheme) metaTheme.setAttribute('content', mode === 'dark' ? '#000000' : '#F2F2F5');
+  try{ localStorage.setItem('pricing_app_theme', mode); }catch(e){}
+}
+
+function loadTheme(){
+  let mode = 'light';
+  try{
+    const saved = localStorage.getItem('pricing_app_theme');
+    if(saved){ mode = saved; }
+    else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){ mode = 'dark'; }
+  }catch(e){}
+  setTheme(mode);
+}
 
 const fa = new Intl.NumberFormat('fa-IR', {maximumFractionDigits:0});
 function fmt(n){ if(n===null||n===undefined||isNaN(n)) return '۰'; return fa.format(Math.round(n)); }
@@ -640,6 +704,7 @@ function importData(event){
 }
 
 bindSettingsInputs();
+loadTheme();
 loadState();
 </script>
 </body>
