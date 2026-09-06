@@ -365,6 +365,10 @@
   }
   .cust-phone-input:focus{outline:none; color:var(--ink);}
   .cust-phone-input::placeholder{color:var(--ink-soft); font-weight:600;}
+  .cust-name-display{font-size:16px; font-weight:700; color:var(--ink); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .cust-phone-display{color:var(--ink-soft); font-weight:600; font-size:13px;}
+  .cust-actions{display:flex; align-items:center; gap:2px; flex-shrink:0;}
+  .cust-edit-btn.is-active{color:var(--green);}
 
   /* Admin / user mode */
   .mode-badge{
@@ -619,7 +623,6 @@
         <div class="sale-type-row">
           <button type="button" class="sale-type-chip active" data-type="wholesale" onclick="fillSalePriceFromType('wholesale')">عمده</button>
           <button type="button" class="sale-type-chip" data-type="retail" onclick="fillSalePriceFromType('retail')">خرده</button>
-          <button type="button" class="sale-type-chip" data-type="custom" onclick="fillSalePriceFromType('custom')">دلخواه</button>
         </div>
       </div>
       <div class="grid-2">
@@ -630,9 +633,10 @@
         <div class="field">
           <label>قیمت واحد فروش</label>
           <div class="input-row">
-            <input type="text" class="num-input" id="sale_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+            <input type="text" class="num-input" id="sale_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="clampSalePrice()">
             <span class="unit">تومان</span>
           </div>
+          <div class="hint" id="sale_price_hint"></div>
         </div>
       </div>
       <div class="grid-2">
@@ -810,6 +814,18 @@ function formatNumField(el, maxFrac){
   if(el.value.trim()===''){ el.value=''; return; }
   el.value = toFaNum(parseNum(el.value), maxFrac);
 }
+
+// با فوکوس گرفتن روی هر ورودی عددی (تعداد، قیمت و...) کل مقدار قبلی
+// انتخاب می‌شه تا با اولین رقمی که کاربر تایپ می‌کنه، مقدار قبلی
+// یکجا جایگزین بشه؛ دیگه لازم نیست دستی پاک بشه.
+document.addEventListener('focusin', function(e){
+  const t = e.target;
+  if(!t || t.tagName !== 'INPUT') return;
+  if(t.disabled || t.readOnly) return;
+  if(t.classList.contains('num-input') || t.type === 'number'){
+    setTimeout(() => { try{ t.select(); }catch(_){} }, 0);
+  }
+});
 
 function loadState(){
   try{
@@ -1778,6 +1794,19 @@ function deleteCustomer(id){
   renderCustomersTab();
 }
 
+// شناسه مشتری‌ای که الان در حالت ویرایش (اسم/شماره تماس) هست؛
+// همزمان فقط یک کارت در حالت ویرایش باز می‌مونه.
+let editingCustomerId = null;
+
+function toggleCustomerEdit(id){
+  editingCustomerId = (editingCustomerId === id) ? null : id;
+  renderCustomersTab();
+  if(editingCustomerId === id){
+    const el = document.getElementById('cust_name_' + id);
+    if(el){ el.focus(); }
+  }
+}
+
 function renderCustomersTab(){
   const listEl = document.getElementById('customers-list');
   if(!listEl) return;
@@ -1788,20 +1817,34 @@ function renderCustomersTab(){
   const sorted = [...customers].sort((a,b)=> (a.name||'').localeCompare(b.name||'', 'fa'));
   listEl.innerHTML = sorted.map(c => {
     const stats = customerStats(c.phone);
+    const editing = editingCustomerId === c.id;
+    const nameField = editing
+      ? `<input type="text" class="cust-name-input" id="cust_name_${c.id}" value="${escapeHtml(c.name || '')}" placeholder="نام مشتری" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','name',this.value)">`
+      : `<span class="cust-name-display">${escapeHtml(c.name || 'بدون نام')}</span>`;
+    const phoneField = editing
+      ? `<input type="text" class="cust-phone-input mono" inputmode="tel" value="${escapeHtml(c.phone || '')}" placeholder="بدون شماره" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','phone',this.value)">`
+      : `<span class="cust-phone-display mono">${escapeHtml(c.phone || 'بدون شماره')}</span>`;
     return `
     <div class="sale-item">
       <div class="sale-item-top">
-        <input type="text" class="cust-name-input" value="${escapeHtml(c.name || '')}" placeholder="نام مشتری" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','name',this.value)">
-        ${isAdmin ? `
-        <button class="sale-del" onclick="deleteCustomer('${c.id}')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
-        </button>` : ''}
+        ${nameField}
+        <div class="cust-actions">
+          <button class="sale-del cust-edit-btn ${editing?'is-active':''}" onclick="toggleCustomerEdit('${c.id}')" title="${editing?'پایان ویرایش':'ویرایش نام و شماره'}">
+            ${editing
+              ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+              : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`}
+          </button>
+          ${isAdmin ? `
+          <button class="sale-del" onclick="deleteCustomer('${c.id}')" title="حذف مشتری">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+          </button>` : ''}
+        </div>
       </div>
       <div class="sale-item-meta">
-        <input type="text" class="cust-phone-input mono" inputmode="tel" value="${escapeHtml(c.phone || '')}" placeholder="بدون شماره" onclick="event.stopPropagation()" oninput="updateCustomer('${c.id}','phone',this.value)">
+        ${phoneField}
         <span class="tag">${fa.format(stats.count)} خرید</span>
       </div>
-      ${stats.count ? `<div class="sale-item-bottom"><span>جمع خرید: <b>${fmt(stats.totalSpent)}</b></span></div>` : ''}
+      <div class="sale-item-bottom"><span>جمع خرید کلی: <b>${fmt(stats.totalSpent)}</b></span></div>
     </div>`;
   }).join('');
 }
@@ -1831,17 +1874,52 @@ function updateSaleStockHint(){
   hintEl.style.color = stock <= 0 ? 'var(--red)' : '';
 }
 
+// حداقل و حداکثر مجاز برای قیمت فروش نسبت به قیمتی که مدیر در بخش
+// محصولات تعیین کرده: حداکثر ۷٪ کمتر، حداکثر ۱۵٪ بیشتر.
+const SALE_PRICE_MIN_RATIO = 0.93; // ۷٪ کمتر
+const SALE_PRICE_MAX_RATIO = 1.15; // ۱۵٪ بیشتر
+
 function fillSalePriceFromType(type){
   const priceEl = document.getElementById('sale_price');
+  const hintEl = document.getElementById('sale_price_hint');
   if(!priceEl) return;
   priceEl.dataset.type = type;
   document.querySelectorAll('.sale-type-chip').forEach(b => b.classList.toggle('active', b.dataset.type===type));
-  if(type==='custom') return; // keep whatever the user already typed
   const prod = products.find(p => p.id === currentSaleProductId());
   if(!prod) return;
   const c = calc(prod);
   const price = type==='wholesale' ? c.priceW : c.priceR;
-  priceEl.value = toFaNum(Math.round(price), 0);
+  const base = Math.round(price);
+  priceEl.dataset.base = base;
+  priceEl.value = toFaNum(base, 0);
+  if(hintEl) hintEl.textContent = '';
+}
+
+// روی خروج از فیلد قیمت فراخوانی می‌شه: قیمت واردشده رو در بازه مجاز
+// (۷٪ کمتر تا ۱۵٪ بیشتر از قیمت تعیین‌شده توسط مدیر برای همین نوع فروش)
+// نگه می‌داره. اگه کاربر عددی خارج از بازه بزنه، به نزدیک‌ترین حد مجاز
+// اصلاح می‌شه و پیام راهنما نشون داده می‌شه.
+function clampSalePrice(){
+  const priceEl = document.getElementById('sale_price');
+  const hintEl = document.getElementById('sale_price_hint');
+  if(!priceEl) return;
+  const base = parseNum(priceEl.dataset.base || 0);
+  if(!base){ formatNumField(priceEl, 0); return; }
+  const min = Math.round(base * SALE_PRICE_MIN_RATIO);
+  const max = Math.round(base * SALE_PRICE_MAX_RATIO);
+  let val = Math.round(parseNum(priceEl.value));
+  if(!val){ val = base; }
+  if(val < min || val > max){
+    val = Math.min(Math.max(val, min), max);
+    priceEl.value = toFaNum(val, 0);
+    if(hintEl){
+      hintEl.style.color = 'var(--red)';
+      hintEl.textContent = 'قیمت باید بین ' + fa.format(min) + ' تا ' + fa.format(max) + ' تومان باشد؛ به نزدیک‌ترین حد مجاز تنظیم شد.';
+    }
+  }else{
+    priceEl.value = toFaNum(val, 0);
+    if(hintEl) hintEl.textContent = '';
+  }
 }
 
 function setSalesFilter(f){
@@ -1889,12 +1967,13 @@ function submitSale(){
     const ok = confirm('موجودی انبار این محصول ' + fa.format(currentStock) + ' عدد است، کمتر از تعداد فروش (' + fa.format(qty) + ' عدد).\nموجودی بعد از ثبت این فروش منفی می‌شه. ادامه بدم؟');
     if(!ok) return;
   }
+  clampSalePrice();
   const price = parseNum(document.getElementById('sale_price').value);
   const dateVal = document.getElementById('sale_date').value || new Date().toISOString().slice(0,10);
   const note = document.getElementById('sale_note').value;
   const buyerName = document.getElementById('sale_buyer_name').value.trim();
   const buyerPhone = normalizeDigits(document.getElementById('sale_buyer_phone').value);
-  const type = document.getElementById('sale_price').dataset.type || 'custom';
+  const type = document.getElementById('sale_price').dataset.type || 'wholesale';
   const c = calc(prod);
   sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone));
   prod.stock = currentStock - qty;
