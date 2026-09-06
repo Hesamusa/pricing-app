@@ -241,18 +241,6 @@
   .margin-input input{width:76px; height:40px; padding:6px 8px; font-size:15px; text-align:center; border-radius:10px;}
   .margin-input span{font-size:13px; color:var(--ink-soft); font-weight:600;}
 
-  /* دکمه کمکی برای وارد کردن مطمئن ممیز اعشار، چون بعضی کیبوردهای
-     فارسی موبایل با inputmode="decimal" کلید اعشار نشون نمی‌دن. */
-  .decimal-field{display:flex; align-items:center; gap:8px;}
-  .decimal-field input{flex:1; min-width:0;}
-  .decimal-btn{
-    width:44px; height:44px; flex-shrink:0; border-radius:12px; border:1.5px solid var(--line);
-    background:var(--bg); color:var(--orange); font-size:19px; font-weight:800; line-height:1;
-    display:flex; align-items:center; justify-content:center; font-family:'Vazirmatn',sans-serif; cursor:pointer;
-  }
-  .decimal-btn:active{opacity:0.6;}
-  .margin-input .decimal-btn{width:36px; height:36px; font-size:16px; border-radius:10px;}
-
   .delete-btn{
     display:flex; align-items:center; justify-content:center; gap:8px;
     width:100%; margin-top:20px; padding:16px; border-radius:16px;
@@ -509,22 +497,18 @@
 
     <div class="section-title orange"><span class="bar"></span>درصد سود پیش‌فرض</div>
     <div class="card">
-      <div class="grid-2">
-        <div class="field">
-          <label>سود فروش عمده (مغازه‌دار)</label>
-          <div class="input-row">
-            <input type="text" class="num-input" id="s_marginW" inputmode="decimal">
-            <button type="button" class="decimal-btn" tabindex="-1" onclick="insertDecimalSep(document.getElementById('s_marginW'))">٫</button>
-            <span class="unit">%</span>
-          </div>
+      <div class="field">
+        <label>سود فروش عمده (مغازه‌دار)</label>
+        <div class="input-row">
+          <input type="text" class="num-input" id="s_marginW" inputmode="decimal">
+          <span class="unit">%</span>
         </div>
-        <div class="field">
-          <label>سود فروش مستقیم (خرده)</label>
-          <div class="input-row">
-            <input type="text" class="num-input" id="s_marginR" inputmode="decimal">
-            <button type="button" class="decimal-btn" tabindex="-1" onclick="insertDecimalSep(document.getElementById('s_marginR'))">٫</button>
-            <span class="unit">%</span>
-          </div>
+      </div>
+      <div class="field">
+        <label>سود فروش مستقیم (خرده)</label>
+        <div class="input-row">
+          <input type="text" class="num-input" id="s_marginR" inputmode="decimal">
+          <span class="unit">%</span>
         </div>
       </div>
       <div class="hint">این درصدها پیش‌فرض هستند؛ برای هر محصول در تب «محصولات» قابل تغییرند.</div>
@@ -648,9 +632,10 @@
       </div>
       <div class="field">
         <label>نوع فروش</label>
-        <div class="sale-type-row">
+        <div class="sale-type-row" id="sale-type-row">
           <button type="button" class="sale-type-chip active" data-type="wholesale" onclick="fillSalePriceFromType('wholesale')">عمده</button>
           <button type="button" class="sale-type-chip" data-type="retail" onclick="fillSalePriceFromType('retail')">خرده</button>
+          <button type="button" class="sale-type-chip" data-type="online" onclick="fillSalePriceFromType('online')">آنلاین</button>
         </div>
       </div>
       <div class="field">
@@ -884,20 +869,6 @@ function handleGroupedIntInput(el, onValue){
 function handleDecimalInput(el, onValue){
   onValue(parseNum(el.value));
   autosizeNumInput(el);
-}
-// روی بعضی کیبوردهای فارسی موبایل، حتی با inputmode="decimal"، کلید
-// نقطه/ممیز نشون داده نمی‌شه و کاربر راهی برای وارد کردن عدد اعشاری
-// نداره. این تابع با تپ روی دکمه کنار فیلد، یک نقطه در محل مکان‌نما
-// اضافه می‌کنه (یا اگه قبلاً نقطه‌ای وجود داشته باشه کاری نمی‌کنه) و
-// همون رویداد input فیلد رو صدا می‌زنه تا محاسبات به‌روز بشن.
-function insertDecimalSep(el){
-  if(!el || el.disabled) return;
-  el.focus();
-  if(String(el.value).indexOf('.') !== -1) return;
-  const pos = el.selectionStart == null ? el.value.length : el.selectionStart;
-  el.value = el.value.slice(0, pos) + '.' + el.value.slice(pos);
-  try{ el.setSelectionRange(pos+1, pos+1); }catch(_){}
-  el.dispatchEvent(new Event('input', {bubbles:true}));
 }
 function formatNumField(el, maxFrac){
   // Called on blur only: now it's safe to pretty-print (Persian digits,
@@ -1290,31 +1261,19 @@ function renderProducts(){
           <div class="grid-2">
             <div class="field">
               <label>وزن با ساپورت و دورریز (گرم)</label>
-              <div class="decimal-field">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
-                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
-              </div>
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
               <label>زمان پرینت (ساعت)</label>
-              <div class="decimal-field">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))" onblur="formatNumField(this,2)">
-                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
-              </div>
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
               <label>ساعت کار دستی</label>
-              <div class="decimal-field">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))" onblur="formatNumField(this,2)">
-                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
-              </div>
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
               <label>ساعت نقاشی</label>
-              <div class="decimal-field">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
-                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
-              </div>
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
             </div>
           </div>
 
@@ -1334,7 +1293,6 @@ function renderProducts(){
               <div class="value" id="res_w_${prod.id}">${fmt(c.priceW)}</div>
               <div class="margin-input">
                 <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.marginW ?? settings.marginW,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginW',n))" onblur="formatNumField(this,2)">
-                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
                 <span>% سود</span>
               </div>
             </div>
@@ -1343,7 +1301,6 @@ function renderProducts(){
               <div class="value" id="res_r_${prod.id}">${fmt(c.priceR)}</div>
               <div class="margin-input">
                 <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.marginR ?? settings.marginR,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginR',n))" onblur="formatNumField(this,2)">
-                ${lk ? '' : `<button type="button" class="decimal-btn" tabindex="-1" onclick="event.stopPropagation(); insertDecimalSep(this.previousElementSibling)">٫</button>`}
                 <span>% سود</span>
               </div>
             </div>
@@ -2061,7 +2018,7 @@ function fillSalePriceFromType(type){
   const hintEl = document.getElementById('sale_price_hint');
   if(!priceEl) return;
   priceEl.dataset.type = type;
-  document.querySelectorAll('.sale-type-chip').forEach(b => b.classList.toggle('active', b.dataset.type===type));
+  document.querySelectorAll('#sale-type-row .sale-type-chip').forEach(b => b.classList.toggle('active', b.dataset.type===type));
   const prod = products.find(p => p.id === currentSaleProductId());
   if(!prod) return;
   const c = calc(prod);
@@ -2219,7 +2176,7 @@ function renderSalesTab(){
   listEl.innerHTML = list.map(s => {
     const total = s.unitPrice * s.qty;
     const prof = (s.unitPrice - s.costPerUnit) * s.qty;
-    const typeLabel = s.saleType==='wholesale' ? 'عمده' : s.saleType==='retail' ? 'خرده' : 'دلخواه';
+    const typeLabel = s.saleType==='wholesale' ? 'عمده' : s.saleType==='retail' ? 'خرده' : s.saleType==='online' ? 'آنلاین' : 'دلخواه';
     return `
     <div class="sale-item">
       <div class="sale-item-top">
