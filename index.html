@@ -13,6 +13,7 @@
   :root{
     --bg:#F2F2F5;
     --card:#FFFFFF;
+    --card-rgb:255,255,255;
     --ink:#1C1C1E;
     --ink-soft:#8A8A8E;
     --line:#E3E3E7;
@@ -40,6 +41,7 @@
     --green:#32D74B;
     --green-soft:#122A17;
     --red:#FF453A;
+    --card-rgb:28,28,30;
   }
   html{ background:var(--bg); }
   html, body{ transition: background-color .2s ease, color .2s ease; }
@@ -97,6 +99,10 @@
     height:var(--tap);
   }
   input[type="text"]{font-family:'Vazirmatn',sans-serif; direction:rtl; font-weight:600;}
+  input.num-input{
+    font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr; text-align:right;
+    font-weight:600; font-variant-numeric:tabular-nums;
+  }
   input:focus{outline:2px solid var(--orange); outline-offset:0;}
   .input-row{display:flex; align-items:center; gap:10px;}
   .input-row .unit{font-size:14px; color:var(--ink-soft); white-space:nowrap; font-weight:600; min-width:70px;}
@@ -187,7 +193,7 @@
   /* Bottom nav */
   nav{
     position:fixed; bottom:0; left:0; right:0; z-index:10;
-    background:rgba(255,255,255,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    background:rgba(var(--card-rgb),0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
     border-top:1px solid var(--line);
     display:flex; padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
     gap:4px;
@@ -224,7 +230,7 @@
     box-shadow:0 1px 3px rgba(0,0,0,0.25);
   }
   .switch input:checked + .slider{background-color:var(--orange);}
-  html[dir="rtl"] .switch input:checked + .slider::before{transform:translateX(-20px);}
+  .switch input:checked + .slider::before{transform:translateX(20px);}
 
   .legend-row{display:none;}
   .dot{display:none;}
@@ -270,28 +276,28 @@
       <div class="field">
         <label>قیمت هر کیلوگرم فیلامنت</label>
         <div class="input-row">
-          <input type="number" id="s_filPrice" inputmode="decimal">
+          <input type="text" class="num-input" id="s_filPrice" inputmode="numeric">
           <span class="unit">تومان</span>
         </div>
       </div>
       <div class="field">
         <label>توان مصرفی دستگاه پرینتر</label>
         <div class="input-row">
-          <input type="number" id="s_power" inputmode="decimal">
+          <input type="text" class="num-input" id="s_power" inputmode="numeric">
           <span class="unit">وات</span>
         </div>
       </div>
       <div class="field">
         <label>قیمت برق</label>
         <div class="input-row">
-          <input type="number" id="s_elec" inputmode="decimal">
+          <input type="text" class="num-input" id="s_elec" inputmode="numeric">
           <span class="unit">تومان/kWh</span>
         </div>
       </div>
       <div class="field">
         <label>نرخ استهلاک دستگاه</label>
         <div class="input-row">
-          <input type="number" id="s_depr" inputmode="decimal">
+          <input type="text" class="num-input" id="s_depr" inputmode="numeric">
           <span class="unit">تومان/ساعت</span>
         </div>
         <div class="hint">قیمت خرید دستگاه و قطعات یدکی تقسیم بر عمر مفید تخمینی به ساعت</div>
@@ -303,14 +309,14 @@
       <div class="field">
         <label>نرخ دستمزد کار دستی (تمیزکاری/فینیش)</label>
         <div class="input-row">
-          <input type="number" id="s_labor" inputmode="decimal">
+          <input type="text" class="num-input" id="s_labor" inputmode="numeric">
           <span class="unit">تومان/ساعت</span>
         </div>
       </div>
       <div class="field">
         <label>نرخ دستمزد نقاشی</label>
         <div class="input-row">
-          <input type="number" id="s_paint" inputmode="decimal">
+          <input type="text" class="num-input" id="s_paint" inputmode="numeric">
           <span class="unit">تومان/ساعت</span>
         </div>
       </div>
@@ -322,14 +328,14 @@
         <div class="field">
           <label>سود فروش عمده (مغازه‌دار)</label>
           <div class="input-row">
-            <input type="number" id="s_marginW" inputmode="decimal">
+            <input type="text" class="num-input" id="s_marginW" inputmode="decimal">
             <span class="unit">%</span>
           </div>
         </div>
         <div class="field">
           <label>سود فروش مستقیم (خرده)</label>
           <div class="input-row">
-            <input type="number" id="s_marginR" inputmode="decimal">
+            <input type="text" class="num-input" id="s_marginR" inputmode="decimal">
             <span class="unit">%</span>
           </div>
         </div>
@@ -418,6 +424,34 @@ function loadTheme(){
 const fa = new Intl.NumberFormat('fa-IR', {maximumFractionDigits:0});
 function fmt(n){ if(n===null||n===undefined||isNaN(n)) return '۰'; return fa.format(Math.round(n)); }
 
+const FA_DIGITS = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+function parseNum(val){
+  if(val===null||val===undefined) return 0;
+  let s = String(val);
+  s = s.replace(/[۰-۹]/g, d => String(d.charCodeAt(0)-1776));
+  s = s.replace(/[٠-٩]/g, d => String(d.charCodeAt(0)-1632));
+  s = s.replace(/٫/g, '.');
+  s = s.replace(/[^0-9.\-]/g, '');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+function toFaNum(n, maxFrac){
+  return new Intl.NumberFormat('fa-IR', {maximumFractionDigits: maxFrac===undefined?0:maxFrac}).format(Number(n)||0);
+}
+function toFaDigitsOnly(str){
+  return String(str).replace(/[0-9]/g, d => FA_DIGITS[+d]);
+}
+function handleGroupedIntInput(el, onValue){
+  const raw = el.value;
+  const num = Math.round(parseNum(raw));
+  el.value = (raw.trim()==='' ) ? '' : toFaNum(num, 0);
+  onValue(num);
+}
+function handleDecimalInput(el, onValue){
+  el.value = toFaDigitsOnly(el.value);
+  onValue(parseNum(el.value));
+}
+
 function loadState(){
   try{
     const s = localStorage.getItem('pricing_app_settings');
@@ -471,26 +505,42 @@ function switchTab(name){
 }
 
 function renderSettings(){
-  document.getElementById('s_filPrice').value = settings.filPrice;
-  document.getElementById('s_power').value = settings.power;
-  document.getElementById('s_elec').value = settings.elec;
-  document.getElementById('s_depr').value = settings.depr;
-  document.getElementById('s_labor').value = settings.labor;
-  document.getElementById('s_paint').value = settings.paint;
-  document.getElementById('s_marginW').value = settings.marginW;
-  document.getElementById('s_marginR').value = settings.marginR;
+  document.getElementById('s_filPrice').value = groupDigits(settings.filPrice);
+  document.getElementById('s_power').value = groupDigits(settings.power);
+  document.getElementById('s_elec').value = groupDigits(settings.elec);
+  document.getElementById('s_depr').value = groupDigits(settings.depr);
+  document.getElementById('s_labor').value = groupDigits(settings.labor);
+  document.getElementById('s_paint').value = groupDigits(settings.paint);
+  document.getElementById('s_marginW').value = toFaNum(settings.marginW, 2);
+  document.getElementById('s_marginR').value = toFaNum(settings.marginR, 2);
 }
-['s_filPrice','s_power','s_elec','s_depr','s_labor','s_paint','s_marginW','s_marginR'].forEach(id=>{
-  document.addEventListener('DOMContentLoaded', ()=>{});
-});
+
+function groupDigits(n){
+  return toFaNum(n, 0);
+}
+
+const COMMA_FIELDS = {s_filPrice:'filPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
+const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
+
 function bindSettingsInputs(){
-  const map = {s_filPrice:'filPrice', s_power:'power', s_elec:'elec', s_depr:'depr',
-               s_labor:'labor', s_paint:'paint', s_marginW:'marginW', s_marginR:'marginR'};
-  Object.keys(map).forEach(id=>{
-    document.getElementById(id).addEventListener('input', (e)=>{
-      settings[map[id]] = parseFloat(e.target.value) || 0;
-      renderProducts();
-      persist();
+  Object.keys(COMMA_FIELDS).forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', (e)=>{
+      handleGroupedIntInput(e.target, (num)=>{
+        settings[COMMA_FIELDS[id]] = num;
+        renderProducts();
+        persist();
+      });
+    });
+  });
+  Object.keys(DECIMAL_FIELDS).forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener('input', (e)=>{
+      handleDecimalInput(e.target, (num)=>{
+        settings[DECIMAL_FIELDS[id]] = num;
+        renderProducts();
+        persist();
+      });
     });
   });
 }
@@ -540,19 +590,19 @@ function renderProducts(){
           <div class="grid-2">
             <div class="field">
               <label>وزن با ساپورت و دورریز (گرم)</label>
-              <input type="number" inputmode="decimal" value="${prod.weight}" onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','weight',parseFloat(this.value)||0)">
+              <input type="text" class="num-input" inputmode="numeric" value="${toFaNum(prod.weight,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','weight',n))">
             </div>
             <div class="field">
               <label>زمان پرینت (ساعت)</label>
-              <input type="number" inputmode="decimal" value="${prod.printHours}" onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','printHours',parseFloat(this.value)||0)">
+              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))">
             </div>
             <div class="field">
               <label>ساعت کار دستی</label>
-              <input type="number" inputmode="decimal" value="${prod.manualHours}" onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','manualHours',parseFloat(this.value)||0)">
+              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))">
             </div>
             <div class="field">
               <label>ساعت نقاشی</label>
-              <input type="number" inputmode="decimal" value="${prod.paintHours}" onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','paintHours',parseFloat(this.value)||0)">
+              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))">
             </div>
           </div>
 
@@ -571,7 +621,7 @@ function renderProducts(){
               <div class="label">فروش به مغازه‌دار</div>
               <div class="value">${fmt(c.priceW)}</div>
               <div class="margin-input">
-                <input type="number" inputmode="decimal" value="${prod.marginW ?? settings.marginW}" onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','marginW',parseFloat(this.value))">
+                <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.marginW ?? settings.marginW,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginW',n))">
                 <span>% سود</span>
               </div>
             </div>
@@ -579,7 +629,7 @@ function renderProducts(){
               <div class="label">فروش مستقیم</div>
               <div class="value">${fmt(c.priceR)}</div>
               <div class="margin-input">
-                <input type="number" inputmode="decimal" value="${prod.marginR ?? settings.marginR}" onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','marginR',parseFloat(this.value))">
+                <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.marginR ?? settings.marginR,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginR',n))">
                 <span>% سود</span>
               </div>
             </div>
