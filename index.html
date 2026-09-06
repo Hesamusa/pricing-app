@@ -442,14 +442,19 @@ function toFaDigitsOnly(str){
   return String(str).replace(/[0-9]/g, d => FA_DIGITS[+d]);
 }
 function handleGroupedIntInput(el, onValue){
-  const raw = el.value;
-  const num = Math.round(parseNum(raw));
-  el.value = (raw.trim()==='' ) ? '' : toFaNum(num, 0);
-  onValue(num);
+  // Never mutate el.value while the user is actively typing —
+  // rewriting the value mid-keystroke is what makes mobile numeric
+  // keyboards close. Just read + report the number.
+  onValue(Math.round(parseNum(el.value)));
 }
 function handleDecimalInput(el, onValue){
-  el.value = toFaDigitsOnly(el.value);
   onValue(parseNum(el.value));
+}
+function formatNumField(el, maxFrac){
+  // Called on blur only: now it's safe to pretty-print (Persian digits,
+  // thousands grouping) since the field no longer has focus.
+  if(el.value.trim()===''){ el.value=''; return; }
+  el.value = toFaNum(parseNum(el.value), maxFrac);
 }
 
 function loadState(){
@@ -532,6 +537,7 @@ function bindSettingsInputs(){
         persist();
       });
     });
+    el.addEventListener('blur', ()=> formatNumField(el, 0));
   });
   Object.keys(DECIMAL_FIELDS).forEach(id=>{
     const el = document.getElementById(id);
@@ -542,6 +548,7 @@ function bindSettingsInputs(){
         persist();
       });
     });
+    el.addEventListener('blur', ()=> formatNumField(el, 2));
   });
 }
 
@@ -590,19 +597,19 @@ function renderProducts(){
           <div class="grid-2">
             <div class="field">
               <label>وزن با ساپورت و دورریز (گرم)</label>
-              <input type="text" class="num-input" inputmode="numeric" value="${toFaNum(prod.weight,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','weight',n))">
+              <input type="text" class="num-input" inputmode="numeric" value="${toFaNum(prod.weight,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,0)">
             </div>
             <div class="field">
               <label>زمان پرینت (ساعت)</label>
-              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))">
+              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
               <label>ساعت کار دستی</label>
-              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))">
+              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
               <label>ساعت نقاشی</label>
-              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))">
+              <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
             </div>
           </div>
 
@@ -621,7 +628,7 @@ function renderProducts(){
               <div class="label">فروش به مغازه‌دار</div>
               <div class="value" id="res_w_${prod.id}">${fmt(c.priceW)}</div>
               <div class="margin-input">
-                <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.marginW ?? settings.marginW,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginW',n))">
+                <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.marginW ?? settings.marginW,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginW',n))" onblur="formatNumField(this,2)">
                 <span>% سود</span>
               </div>
             </div>
@@ -629,7 +636,7 @@ function renderProducts(){
               <div class="label">فروش مستقیم</div>
               <div class="value" id="res_r_${prod.id}">${fmt(c.priceR)}</div>
               <div class="margin-input">
-                <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.marginR ?? settings.marginR,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginR',n))">
+                <input type="text" class="num-input" inputmode="decimal" value="${toFaNum(prod.marginR ?? settings.marginR,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','marginR',n))" onblur="formatNumField(this,2)">
                 <span>% سود</span>
               </div>
             </div>
