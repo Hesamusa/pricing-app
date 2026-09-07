@@ -162,6 +162,10 @@
     align-self:flex-start; font-size:11.5px; font-weight:700; color:var(--orange);
     background:var(--orange-soft); border-radius:8px; padding:2px 8px;
   }
+  .stock-warn-tag{
+    align-self:flex-start; font-size:11.5px; font-weight:700; color:#fff;
+    background:var(--red); border-radius:8px; padding:2px 8px; display:inline-flex; align-items:center; gap:4px;
+  }
   .head-thumb{
     width:96px; height:96px; flex-shrink:0; align-self:center; margin:4px;
     border-radius:14px; overflow:hidden;
@@ -214,6 +218,14 @@
     font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr; text-align:left;
   }
   .gh-field:focus{outline:2px solid var(--orange); outline-offset:0;}
+
+  .jalali-date-row{display:flex; gap:6px;}
+  .jalali-date-select{
+    flex:1; min-width:0; border:none; background:var(--bg); border-radius:14px; padding:14px 6px;
+    font-size:14px; color:var(--ink); height:var(--tap);
+    font-family:'Vazirmatn',sans-serif; text-align:center; text-align-last:center;
+  }
+  .jalali-date-select:focus{outline:2px solid var(--orange); outline-offset:0;}
 
   .search-box{position:relative; margin:0 6px 14px;}
   .search-box input{
@@ -385,6 +397,8 @@
     font-family:'Vazirmatn',sans-serif; cursor:pointer;
   }
   .filter-chip.active{background:var(--orange); color:#fff;}
+  .filter-chip.stock-chip{color:var(--red);}
+  .filter-chip.stock-chip.active{background:var(--red); color:#fff;}
   .sale-item{background:var(--card); border-radius:18px; padding:16px 18px; margin-bottom:10px;}
   .sale-item-top{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px;}
   .sale-item-name{font-size:16px; font-weight:700;}
@@ -685,9 +699,9 @@
       <div class="field">
         <label>نوع فروش</label>
         <div class="sale-type-row" id="sale-type-row">
-          <button type="button" class="sale-type-chip active" data-type="wholesale" onclick="fillSalePriceFromType('wholesale')">عمده</button>
-          <button type="button" class="sale-type-chip" data-type="retail" onclick="fillSalePriceFromType('retail')">خرده</button>
+          <button type="button" class="sale-type-chip active" data-type="retail" onclick="fillSalePriceFromType('retail')">خرده</button>
           <button type="button" class="sale-type-chip" data-type="online" onclick="fillSalePriceFromType('online')">آنلاین</button>
+          <button type="button" class="sale-type-chip" data-type="wholesale" onclick="fillSalePriceFromType('wholesale')">عمده</button>
         </div>
       </div>
       <div class="field">
@@ -716,7 +730,12 @@
       <div class="grid-2">
         <div class="field">
           <label>تاریخ</label>
-          <input type="date" class="gh-field" id="sale_date" style="direction:ltr; text-align:center; font-family:'Vazirmatn',sans-serif;">
+          <div class="jalali-date-row">
+            <select class="jalali-date-select" id="sale_date_day" onchange="onJalaliDateSelectChange()"></select>
+            <select class="jalali-date-select" id="sale_date_month" onchange="onJalaliDateSelectChange()"></select>
+            <select class="jalali-date-select" id="sale_date_year" onchange="onJalaliDateSelectChange()"></select>
+          </div>
+          <input type="hidden" id="sale_date">
         </div>
         <div class="field">
           <label>یادداشت (اختیاری)</label>
@@ -831,6 +850,7 @@ let openProductId = null;
 let salesFilter = 'all';
 let productSearchQuery = '';
 let productGroupFilter = 'all';
+let productStockFilter = false;
 let customerSearchQuery = '';
 let salesSearchQuery = '';
 let saleProductId = null;
@@ -982,7 +1002,12 @@ function loadState(){
   try{
     const c = localStorage.getItem('pricing_app_customers');
     if(c) customers = JSON.parse(c);
-  }catch(e){ /* no saved customers yet */ }
+  }catch(e){ /* no saved customers یا هنوز ذخیره‌ای نداره */ }
+  // پاک‌سازی یک‌باره‌ی محصول نمونه‌ای که قبلاً به‌صورت خودکار ساخته می‌شد
+  // (اگه هنوز دست‌نخورده مونده و کاربر خودش عمداً همچین محصولی نساخته باشه)
+  if(products.length){
+    products = products.filter(p => !(p.name==='مجسمه اژدها ۱۵ سانتی' && p.weight===85 && p.printHours===6 && p.manualHours===0.5 && p.paintHours===1 && !p.imageUrl && (p.stock||0)===0));
+  }
   ready = true;
   updateModeUI();
   renderSettings();
@@ -1018,6 +1043,7 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
   return {
     id: 'p_' + Date.now() + Math.random().toString(36).slice(2,7),
     name, weight, printHours, manualHours, paintHours,
+    accessoryCost: 0,
     marginW: null, marginR: null, // null = use global default
     imageUrl: null, imagePath: null, imageSha: null,
     stock: 0
@@ -1215,7 +1241,7 @@ function setRoundStep(step){
   renderSettings();
   renderProducts();
   if(document.getElementById('sale_price')){
-    fillSalePriceFromType(document.getElementById('sale_price').dataset.type || 'wholesale');
+    fillSalePriceFromType(document.getElementById('sale_price').dataset.type || 'retail');
   }
   persist();
 }
@@ -1258,12 +1284,13 @@ function calc(prod){
   const deprCost = prod.printHours * settings.depr;
   const laborCost = (prod.manualHours||0) * settings.labor;
   const paintCost = (prod.paintHours||0) * settings.paint;
-  const total = filamentCost + elecCost + deprCost + laborCost + paintCost;
+  const accessoryCost = prod.accessoryCost||0;
+  const total = filamentCost + elecCost + deprCost + laborCost + paintCost + accessoryCost;
   const mW = (prod.marginW ?? settings.marginW) / 100;
   const mR = (prod.marginR ?? settings.marginR) / 100;
   const priceW = roundToStep(total * (1 + mW));
   const priceR = roundToStep(total * (1 + mR));
-  return {filamentCost, elecCost, deprCost, laborCost, paintCost, total, priceW, priceR};
+  return {filamentCost, elecCost, deprCost, laborCost, paintCost, accessoryCost, total, priceW, priceR};
 }
 
 function renderProducts(){
@@ -1281,15 +1308,15 @@ function renderProducts(){
   const groups = settings.productGroups || [];
   const groupRow = document.getElementById('group-filter-row');
   if(groupRow){
-    if(groups.length === 0){
-      groupRow.style.display = 'none';
-    }else{
-      groupRow.style.display = '';
-      const chips = [`<button type="button" class="filter-chip${productGroupFilter==='all'?' active':''}" onclick="setProductGroupFilter('all')">همه</button>`]
-        .concat(groups.map(g => `<button type="button" class="filter-chip${productGroupFilter===g.id?' active':''}" onclick="setProductGroupFilter('${g.id}')">${escapeHtml(g.name)}</button>`))
-        .concat([`<button type="button" class="filter-chip${productGroupFilter==='__none__'?' active':''}" onclick="setProductGroupFilter('__none__')">بدون دسته</button>`]);
-      groupRow.innerHTML = chips.join('');
+    groupRow.style.display = '';
+    let chips = [];
+    if(groups.length){
+      chips.push(`<button type="button" class="filter-chip${productGroupFilter==='all'?' active':''}" onclick="setProductGroupFilter('all')">همه</button>`);
+      chips = chips.concat(groups.map(g => `<button type="button" class="filter-chip${productGroupFilter===g.id?' active':''}" onclick="setProductGroupFilter('${g.id}')">${escapeHtml(g.name)}</button>`));
+      chips.push(`<button type="button" class="filter-chip${productGroupFilter==='__none__'?' active':''}" onclick="setProductGroupFilter('__none__')">بدون دسته</button>`);
     }
+    chips.push(`<button type="button" class="filter-chip stock-chip${productStockFilter?' active':''}" onclick="toggleStockFilter()">⚠ ناموجود</button>`);
+    groupRow.innerHTML = chips.join('');
   }
 
   const q = normalizeFaText(productSearchQuery);
@@ -1299,8 +1326,11 @@ function renderProducts(){
   }else if(productGroupFilter !== 'all'){
     filteredProducts = filteredProducts.filter(p => p.category === productGroupFilter);
   }
+  if(productStockFilter){
+    filteredProducts = filteredProducts.filter(p => (p.stock||0) <= 0);
+  }
   if(filteredProducts.length === 0){
-    const msg = productSearchQuery ? `نتیجه‌ای برای «${escapeHtml(productSearchQuery)}» پیدا نشد.` : 'محصولی در این دسته نیست.';
+    const msg = productSearchQuery ? `نتیجه‌ای برای «${escapeHtml(productSearchQuery)}» پیدا نشد.` : (productStockFilter ? 'محصول ناموجودی پیدا نشد.' : 'محصولی در این دسته نیست.');
     list.innerHTML = `<div class="empty"><p>${msg}</p></div>`;
     return;
   }
@@ -1324,6 +1354,7 @@ function renderProducts(){
             <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </div>
           ${group ? `<span class="group-tag">${escapeHtml(group.name)}</span>` : ''}
+          ${(prod.stock||0)<=0 ? `<span class="stock-warn-tag">⚠ ناموجود</span>` : ''}
           <div class="product-price-preview">
             <span>عمده: <b id="pv_w_${prod.id}">${fmt(c.priceW)}</b></span>
             <span>خرده: <b id="pv_r_${prod.id}">${fmt(c.priceR)}</b></span>
@@ -1386,6 +1417,10 @@ function renderProducts(){
               <label>ساعت نقاشی</label>
               <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
             </div>
+            <div class="field">
+              <label>هزینه متعلقات (زنجیر، قلاب و...)</label>
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="numeric" value="${groupDigits(prod.accessoryCost||0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','accessoryCost',n))" onblur="formatNumField(this,0)">
+            </div>
           </div>
 
           <div class="breakdown">
@@ -1395,6 +1430,7 @@ function renderProducts(){
             <div class="breakdown-row"><span>استهلاک دستگاه</span><b id="bd_depr_${prod.id}">${fmt(c.deprCost)}</b></div>
             <div class="breakdown-row"><span>دستمزد کار دستی</span><b id="bd_labor_${prod.id}">${fmt(c.laborCost)}</b></div>
             <div class="breakdown-row"><span>نقاشی</span><b id="bd_paint_${prod.id}">${fmt(c.paintCost)}</b></div>
+            <div class="breakdown-row"><span>متعلقات</span><b id="bd_accessory_${prod.id}">${fmt(c.accessoryCost)}</b></div>
             <div class="breakdown-row total"><span>جمع قیمت تمام‌شده</span><b id="bd_total_${prod.id}">${fmt(c.total)} تومان</b></div>
           </div>
 
@@ -1807,6 +1843,7 @@ function updateProductDisplay(id){
   setText('bd_depr_'+id, fmt(c.deprCost));
   setText('bd_labor_'+id, fmt(c.laborCost));
   setText('bd_paint_'+id, fmt(c.paintCost));
+  setText('bd_accessory_'+id, fmt(c.accessoryCost));
   setText('bd_total_'+id, fmt(c.total)+' تومان');
   setText('res_w_'+id, fmt(c.priceW));
   setText('res_r_'+id, fmt(c.priceR));
@@ -1841,6 +1878,11 @@ function updateProduct(id, field, value){
 
 function setProductGroupFilter(gid){
   productGroupFilter = gid;
+  renderProducts();
+}
+
+function toggleStockFilter(){
+  productStockFilter = !productStockFilter;
   renderProducts();
 }
 
@@ -2202,7 +2244,7 @@ function selectSaleProduct(id){
 
 function onSaleProductChange(){
   const priceEl = document.getElementById('sale_price');
-  fillSalePriceFromType(priceEl.dataset.type || 'wholesale');
+  fillSalePriceFromType(priceEl.dataset.type || 'retail');
   updateSaleStockHint();
 }
 
@@ -2343,13 +2385,121 @@ function formatDateFa(dateStr){
   }catch(e){ return dateStr; }
 }
 
+// ————— تقویم شمسی (جلالی) —————
+// تبدیل میلادی↔شمسی با الگوریتم استاندارد، بدون نیاز به کتابخانه‌ی جانبی.
+const JALALI_MONTH_NAMES = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+
+function isJalaliLeapYear(jy){
+  const breaks = [1,5,9,13,17,22,26,30];
+  const r = jy % 33;
+  return breaks.includes(r);
+}
+function jalaliMonthLength(jy, jm){
+  if(jm <= 6) return 31;
+  if(jm <= 11) return 30;
+  return isJalaliLeapYear(jy) ? 30 : 29;
+}
+function div(a,b){ return ~~(a/b); }
+function gregorianToJalali(gy, gm, gd){
+  const g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+  let gy2 = (gm > 2) ? (gy + 1) : gy;
+  let days = 355666 + (365*gy) + div(gy2+3,4) - div(gy2+99,100) + div(gy2+399,400) + gd + g_d_m[gm-1];
+  let jy = -1595 + (33 * div(days,12053));
+  days %= 12053;
+  jy += 4 * div(days,1461);
+  days %= 1461;
+  if(days > 365){ jy += div(days-1,365); days = (days-1)%365; }
+  let jm, jd;
+  if(days < 186){ jm = 1 + div(days,31); jd = 1 + (days % 31); }
+  else{ jm = 7 + div(days-186,30); jd = 1 + ((days-186) % 30); }
+  return [jy, jm, jd];
+}
+function jalaliToGregorian(jy, jm, jd){
+  let gy = (jy <= 979) ? 621 : 1600;
+  jy = (jy <= 979) ? jy : (jy - 979);
+  let days = (365*jy) + (div(jy,33)*8) + div(((jy%33)+3),4) + 78 + jd + ((jm < 7) ? (jm-1)*31 : ((jm-7)*30)+186);
+  gy += 400 * div(days,146097);
+  days %= 146097;
+  if(days > 36524){
+    gy += 100 * div(--days,36524);
+    days %= 36524;
+    if(days >= 365) days++;
+  }
+  gy += 4 * div(days,1461);
+  days %= 1461;
+  if(days > 365){ gy += div(days-1,365); days = (days-1)%365; }
+  let gd = days + 1;
+  const sal_a = [0,31,((gy%4===0 && gy%100!==0)||(gy%400===0))?29:28,31,30,31,30,31,31,30,31,30,31];
+  let gm;
+  for(gm=1; gm<=12 && gd>sal_a[gm]; gm++){ gd -= sal_a[gm]; }
+  return [gy, gm, gd];
+}
+function todayJalali(){
+  const now = new Date();
+  return gregorianToJalali(now.getFullYear(), now.getMonth()+1, now.getDate());
+}
+function isoToJalali(iso){
+  const [gy,gm,gd] = iso.split('-').map(n=>parseInt(n,10));
+  return gregorianToJalali(gy,gm,gd);
+}
+function jalaliToIso(jy,jm,jd){
+  const [gy,gm,gd] = jalaliToGregorian(jy,jm,jd);
+  return gy + '-' + String(gm).padStart(2,'0') + '-' + String(gd).padStart(2,'0');
+}
+
+// انتخابگر تاریخ شمسی سه‌بخشی (روز/ماه/سال) فرم ثبت فروش. مقدار نهایی
+// همیشه به‌صورت رشته‌ی میلادی YYYY-MM-DD در input مخفی #sale_date ذخیره
+// می‌شه تا بقیه‌ی کد (فیلتر، مرتب‌سازی و...) بدون تغییر کار کنه.
+function populateJalaliDateSelects(jy, jm, jd){
+  const dayEl = document.getElementById('sale_date_day');
+  const monthEl = document.getElementById('sale_date_month');
+  const yearEl = document.getElementById('sale_date_year');
+  if(!dayEl || !monthEl || !yearEl) return;
+  if(!monthEl.options.length){
+    monthEl.innerHTML = JALALI_MONTH_NAMES.map((name,i)=>`<option value="${i+1}">${name}</option>`).join('');
+  }
+  if(!yearEl.options.length){
+    const [thisJy] = todayJalali();
+    const years = [];
+    for(let y = thisJy+1; y >= thisJy-5; y--) years.push(y);
+    yearEl.innerHTML = years.map(y=>`<option value="${y}">${toFaNum(y,0)}</option>`).join('');
+  }
+  const dayCount = jalaliMonthLength(jy, jm);
+  const prevDay = dayEl.value ? parseInt(dayEl.value,10) : jd;
+  dayEl.innerHTML = Array.from({length:dayCount}, (_,i)=>i+1).map(d=>`<option value="${d}">${toFaNum(d,0)}</option>`).join('');
+  dayEl.value = Math.min(prevDay || jd, dayCount);
+  monthEl.value = jm;
+  yearEl.value = jy;
+}
+function setSaleDateFromIso(iso){
+  const [jy,jm,jd] = isoToJalali(iso);
+  populateJalaliDateSelects(jy,jm,jd);
+  document.getElementById('sale_date').value = iso;
+}
+function setSaleDateToday(){
+  const [jy,jm,jd] = todayJalali();
+  populateJalaliDateSelects(jy,jm,jd);
+  document.getElementById('sale_date').value = jalaliToIso(jy,jm,jd);
+}
+function onJalaliDateSelectChange(){
+  const jy = parseInt(document.getElementById('sale_date_year').value,10);
+  const jm = parseInt(document.getElementById('sale_date_month').value,10);
+  let jd = parseInt(document.getElementById('sale_date_day').value,10);
+  const dayCount = jalaliMonthLength(jy, jm);
+  if(jd > dayCount){
+    jd = dayCount;
+    populateJalaliDateSelects(jy, jm, jd);
+  }
+  document.getElementById('sale_date').value = jalaliToIso(jy, jm, jd);
+}
+
 function resetSaleForm(){
   document.getElementById('sale_qty').value = '۱';
   document.getElementById('sale_note').value = '';
   document.getElementById('sale_buyer_name').value = '';
   document.getElementById('sale_buyer_phone').value = '';
-  document.getElementById('sale_date').value = new Date().toISOString().slice(0,10);
-  fillSalePriceFromType('wholesale');
+  setSaleDateToday();
+  fillSalePriceFromType('retail');
   updateSaleStockHint();
 }
 
@@ -2371,11 +2521,11 @@ function submitSale(){
   }
   clampSalePrice();
   const price = parseNum(document.getElementById('sale_price').value);
-  const dateVal = document.getElementById('sale_date').value || new Date().toISOString().slice(0,10);
+  const dateVal = document.getElementById('sale_date').value || jalaliToIso(...todayJalali());
   const note = document.getElementById('sale_note').value;
   const buyerName = document.getElementById('sale_buyer_name').value.trim();
   const buyerPhone = normalizeDigits(phoneEl.value);
-  const type = document.getElementById('sale_price').dataset.type || 'wholesale';
+  const type = document.getElementById('sale_price').dataset.type || 'retail';
   const c = calc(prod);
   sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone));
   prod.stock = currentStock - qty;
@@ -2404,7 +2554,7 @@ function deleteSale(id){
 
 function renderSalesTab(){
   const dateEl = document.getElementById('sale_date');
-  if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
+  if(dateEl && !dateEl.value) setSaleDateToday();
 
   if(products.length){
     if(!saleProductId || !products.some(p => p.id === saleProductId)) saleProductId = products[0].id;
@@ -2417,7 +2567,7 @@ function renderSalesTab(){
   document.getElementById('sale-form-wrap').style.display = products.length ? 'block' : 'none';
   document.getElementById('sale-empty-hint').style.display = products.length ? 'none' : 'block';
   if(products.length){
-    fillSalePriceFromType(document.getElementById('sale_price').dataset.type || 'wholesale');
+    fillSalePriceFromType(document.getElementById('sale_price').dataset.type || 'retail');
     updateSaleStockHint();
   }
 
