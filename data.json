@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:56:58.972Z",
+  "updatedAt": "2026-09-07T15:59:05.719Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -37,10 +37,10 @@
     {
       "id": "p_17887965710100v1nz",
       "name": "تیرکس رباتی",
-      "weight": 85,
-      "printHours": 3,
+      "weight": 90,
+      "printHours": 8,
       "manualHours": 0,
-      "paintHours": 0,
+      "paintHours": 1,
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
