@@ -910,6 +910,20 @@
         <label>توضیحات سفارش (اختیاری)</label>
         <input type="text" class="gh-field" id="order_notes" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً رنگ دلخواه، اندازه، توضیح خاص">
       </div>
+      <div class="section-title" style="margin:18px 6px 6px; font-size:14px;">حسابداری سفارش</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>قیمت کل سفارش — تومان (اختیاری)</label>
+          <input type="text" class="num-input" id="order_total_price" inputmode="numeric" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+        </div>
+        <div class="field">
+          <label>پیش‌پرداخت مشتری — تومان (اختیاری)</label>
+          <input type="text" class="num-input" id="order_prepayment" inputmode="numeric" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+        </div>
+      </div>
+      <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+        اگه قیمت کل و پیش‌پرداخت رو الان وارد نکنی، بعداً از داخل کارت سفارش می‌تونی قیمت رو تنظیم کنی و پرداخت‌های بعدی رو هم ثبت کنی.
+      </div>
       <button class="add-btn" onclick="submitOrder()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         ثبت سفارش
@@ -966,6 +980,14 @@
       این اعداد بر اساس قیمت و درصد سودی هست که برای هر محصول در تب «محصولات» تعریف کردی، نه فروش واقعی. برای دیدن فروش‌های ثبت‌شده، تب «فروش» رو ببین.
     </div>
     <div id="summary-content"></div>
+
+    <div class="section-title" style="margin-top:26px;"><span class="bar"></span>حسابداری کسب‌وکار</div>
+    <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+      جمع فروش‌های تب «فروش» به‌عنوان دریافت‌شده کامل حساب می‌شه؛ مانده بدهی فقط برای سفارش‌هایی محاسبه می‌شه که براشون قیمت کل ثبت شده و کامل پرداخت نشده‌اند.
+    </div>
+    <div id="accounting-overview" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;"></div>
+    <div class="section-title" style="font-size:14px; margin:0 6px 10px;">وضعیت مشتریان</div>
+    <div id="accounting-customers"></div>
   </div>
 
 </main>
@@ -2230,6 +2252,86 @@ function renderSummary(){
     <div class="stat-card highlight"><span class="stat-label">سود بالقوه انبار (فروش عمده)</span><span class="stat-value">${fmt(stockProfitW)}</span></div>
     <div class="stat-card highlight"><span class="stat-label">سود بالقوه انبار (فروش خرده)</span><span class="stat-value">${fmt(stockProfitR)}</span></div>
   `;
+  renderAccounting();
+}
+
+// ————— حسابداری کلی کسب‌وکار: جمع فروش نقدی + وضعیت مطالبات سفارش‌ها —————
+function customerKey(name, phone){
+  return phone ? ('p:'+phone) : ('n:'+(name||'').trim());
+}
+
+function computeAccounting(){
+  const map = new Map(); // key -> {name, phone, salesTotal, ordersTotal, ordersPaid}
+  const getEntry = (name, phone) => {
+    const key = customerKey(name, phone);
+    if(!map.has(key)) map.set(key, {name: name||'', phone: phone||'', salesTotal:0, ordersTotal:0, ordersPaid:0});
+    const entry = map.get(key);
+    if(!entry.name && name) entry.name = name;
+    if(!entry.phone && phone) entry.phone = phone;
+    return entry;
+  };
+  let totalSales = 0;
+  sales.forEach(s => {
+    const amount = (s.unitPrice||0) * (s.qty||0);
+    totalSales += amount;
+    if(s.buyerName || s.buyerPhone){
+      getEntry(s.buyerName, s.buyerPhone).salesTotal += amount;
+    }
+  });
+  let totalOrdersValue = 0, totalOrdersPaid = 0;
+  orders.forEach(o => {
+    if(!o.totalPrice) return;
+    const paid = orderPaidTotal(o);
+    totalOrdersValue += o.totalPrice;
+    totalOrdersPaid += Math.min(paid, o.totalPrice);
+    if(o.customerName || o.customerPhone){
+      const entry = getEntry(o.customerName, o.customerPhone);
+      entry.ordersTotal += o.totalPrice;
+      entry.ordersPaid += Math.min(paid, o.totalPrice);
+    }
+  });
+  const totalReceived = totalSales + totalOrdersPaid;
+  const totalOutstanding = Math.max(0, totalOrdersValue - totalOrdersPaid);
+  const customerRows = Array.from(map.values())
+    .map(e => ({...e, remaining: Math.max(0, e.ordersTotal - e.ordersPaid)}))
+    .filter(e => e.name || e.phone)
+    .sort((a,b) => b.remaining - a.remaining || (b.salesTotal+b.ordersTotal) - (a.salesTotal+a.ordersTotal));
+  return {totalSales, totalOrdersValue, totalOrdersPaid, totalReceived, totalOutstanding, customerRows};
+}
+
+function renderAccounting(){
+  const overviewEl = document.getElementById('accounting-overview');
+  const customersEl = document.getElementById('accounting-customers');
+  if(!overviewEl || !customersEl) return;
+  const acc = computeAccounting();
+  overviewEl.innerHTML = `
+    <div class="stat-card"><span class="stat-label">جمع فروش نقدی (تب فروش)</span><span class="stat-value">${fmt(acc.totalSales)}</span></div>
+    <div class="stat-card"><span class="stat-label">جمع ارزش سفارش‌های قیمت‌گذاری‌شده</span><span class="stat-value">${fmt(acc.totalOrdersValue)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">جمع کل دریافتی (فروش + پرداخت سفارش‌ها)</span><span class="stat-value">${fmt(acc.totalReceived)}</span></div>
+    <div class="stat-card" style="${acc.totalOutstanding>0?'background:var(--orange-soft);':''}"><span class="stat-label">جمع کل مطالبات (بدهی مشتریان از سفارش‌ها)</span><span class="stat-value" style="${acc.totalOutstanding>0?'color:var(--red);':''}">${fmt(acc.totalOutstanding)}</span></div>
+  `;
+  if(!acc.customerRows.length){
+    customersEl.innerHTML = `<div class="empty"><p>هنوز فروش یا سفارش قیمت‌گذاری‌شده‌ای ثبت نشده.</p></div>`;
+    return;
+  }
+  customersEl.innerHTML = acc.customerRows.map(c => `
+    <div class="sale-item">
+      <div class="sale-item-top">
+        <span class="sale-item-name">${escapeHtml(c.name || 'بدون نام')}</span>
+      </div>
+      <div class="sale-item-meta">
+        ${c.phone ? `<span class="mono">${c.phone}</span>` : ''}
+        ${c.remaining>0 ? `<span class="tag pending">بدهکار</span>` : `<span class="tag">تسویه</span>`}
+      </div>
+      <div class="sale-item-bottom">
+        <span>جمع فروش نقدی: <b>${fmt(c.salesTotal)}</b></span>
+        <span>جمع سفارش‌ها: <b>${fmt(c.ordersTotal)}</b></span>
+      </div>
+      <div class="sale-item-bottom">
+        <span class="profit-pos">پرداخت‌شده سفارش‌ها: <b>${fmt(c.ordersPaid)}</b></span>
+        <span class="${c.remaining>0?'profit-neg':'profit-pos'}">مانده بدهی: <b>${fmt(c.remaining)}</b></span>
+      </div>
+    </div>`).join('');
 }
 
 function makeSale(productId, productName, qty, unitPrice, costPerUnit, saleType, note, date, buyerName, buyerPhone){
@@ -2914,7 +3016,7 @@ function renderSalesTab(){
 }
 
 // ————— تب سفارشات: گرفتن سفارش تولید از مشتری، بر اساس محصولات —————
-function makeOrder(items, customerName, customerPhone, dueDate, notes){
+function makeOrder(items, customerName, customerPhone, dueDate, notes, totalPrice, payments){
   return {
     id: 'o_' + Date.now() + Math.random().toString(36).slice(2,7),
     items,
@@ -2923,8 +3025,64 @@ function makeOrder(items, customerName, customerPhone, dueDate, notes){
     dueDate: dueDate || null,
     notes: (notes||'').trim(),
     status: 'pending', // 'pending' | 'done'
+    totalPrice: totalPrice > 0 ? totalPrice : 0,
+    payments: Array.isArray(payments) ? payments : [], // {id, amount, date, note}
     createdAt: new Date().toISOString()
   };
+}
+
+// ————— حسابداری سفارش‌ها: پیش‌پرداخت، پرداخت‌های بعدی و مانده بدهی —————
+function makePayment(amount, note){
+  return {
+    id: 'pay_' + Date.now() + Math.random().toString(36).slice(2,7),
+    amount: Math.max(0, Math.round(amount) || 0),
+    date: new Date().toISOString().slice(0,10),
+    note: note || ''
+  };
+}
+function orderPaidTotal(order){
+  return (order.payments||[]).reduce((sum,p)=> sum + (p.amount||0), 0);
+}
+function orderRemaining(order){
+  return Math.max(0, (order.totalPrice||0) - orderPaidTotal(order));
+}
+
+function editOrderTotalPrice(id){
+  if(!isAdmin){ alert('فقط مدیر می‌تونه قیمت کل سفارش رو تنظیم کنه.'); return; }
+  const order = orders.find(o => o.id === id);
+  if(!order) return;
+  const input = prompt('قیمت کل سفارش (تومان):', order.totalPrice ? String(order.totalPrice) : '');
+  if(input === null) return;
+  const val = parseNum(input);
+  order.totalPrice = val > 0 ? val : 0;
+  persist();
+  renderOrdersTab();
+  renderSummary();
+}
+
+function addOrderPayment(id){
+  const order = orders.find(o => o.id === id);
+  if(!order) return;
+  const input = prompt('مبلغ پرداخت جدید (تومان):');
+  if(input === null) return;
+  const amount = parseNum(input);
+  if(!amount || amount <= 0){ alert('مبلغ نامعتبره.'); return; }
+  if(!Array.isArray(order.payments)) order.payments = [];
+  order.payments.push(makePayment(amount));
+  persist();
+  renderOrdersTab();
+  renderSummary();
+}
+
+function deleteOrderPayment(orderId, paymentId){
+  if(!isAdmin) return;
+  const order = orders.find(o => o.id === orderId);
+  if(!order) return;
+  if(!confirm('این پرداخت حذف بشه؟')) return;
+  order.payments = (order.payments||[]).filter(p => p.id !== paymentId);
+  persist();
+  renderOrdersTab();
+  renderSummary();
 }
 
 function toggleOrderItemPicker(){
@@ -3021,6 +3179,8 @@ function resetOrderForm(){
   document.getElementById('order_customer_name').value = '';
   document.getElementById('order_customer_phone').value = '';
   document.getElementById('order_notes').value = '';
+  document.getElementById('order_total_price').value = '';
+  document.getElementById('order_prepayment').value = '';
   clearOrderDueDate();
 }
 
@@ -3036,7 +3196,10 @@ function submitOrder(){
   const phone = normalizeDigits(phoneEl.value);
   const notes = document.getElementById('order_notes').value;
   const dueDate = document.getElementById('order_due_date').value || null;
-  orders.unshift(makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes));
+  const totalPrice = parseNum(document.getElementById('order_total_price').value);
+  const prepayment = parseNum(document.getElementById('order_prepayment').value);
+  const payments = prepayment > 0 ? [makePayment(prepayment, 'پیش‌پرداخت اولیه')] : [];
+  orders.unshift(makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes, totalPrice, payments));
   if(name || phone){
     upsertCustomer(name, phone);
     renderCustomersTab();
@@ -3044,6 +3207,7 @@ function submitOrder(){
   persist();
   resetOrderForm();
   renderOrdersTab();
+  renderSummary();
 }
 
 function setOrderStatus(id, status){
@@ -3060,6 +3224,7 @@ function deleteOrder(id){
   orders = orders.filter(o => o.id !== id);
   persist();
   renderOrdersTab();
+  renderSummary();
 }
 
 function setOrdersFilter(f){
@@ -3112,6 +3277,7 @@ function renderOrdersTab(){
       </div>
       <div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${itemsText}</div>
       ${o.notes ? `<div class="sale-item-note">${escapeHtml(o.notes)}</div>` : ''}
+      ${renderOrderAccountingBlock(o)}
       <div class="sale-item-bottom" style="justify-content:flex-end;">
         ${o.status === 'done'
           ? `<button type="button" class="order-status-btn" onclick="setOrderStatus('${o.id}','pending')">بازگردانی به در حال انجام</button>`
@@ -3119,6 +3285,40 @@ function renderOrdersTab(){
       </div>
     </div>`;
   }).join('');
+}
+
+function renderOrderAccountingBlock(o){
+  const paid = orderPaidTotal(o);
+  const remaining = orderRemaining(o);
+  const paymentsHistory = (o.payments||[]).length
+    ? `<div class="sale-item-note">${(o.payments||[]).map(p => `
+        <span style="display:inline-flex; align-items:center; gap:6px; margin-left:10px;">
+          ${fmt(p.amount)} تومان (${formatDateFa(p.date)})${p.note ? ' — ' + escapeHtml(p.note) : ''}
+          ${isAdmin ? `<button type="button" onclick="deleteOrderPayment('${o.id}','${p.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این پرداخت">✕</button>` : ''}
+        </span>`).join('')}</div>`
+    : '';
+  if(!o.totalPrice){
+    return `
+      <div class="sale-item-bottom" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">
+        <span class="hint" style="margin:0;">قیمتی برای این سفارش هنوز ثبت نشده.</span>
+        ${isAdmin ? `<button type="button" class="order-status-btn" onclick="editOrderTotalPrice('${o.id}')">ثبت قیمت سفارش</button>` : ''}
+      </div>
+      ${paymentsHistory}`;
+  }
+  return `
+    <div class="sale-item-bottom" style="border-top:1px solid var(--line); padding-top:10px; margin-top:4px;">
+      <span>قیمت کل: <b>${fmt(o.totalPrice)}</b></span>
+      <span>پرداخت‌شده: <b class="profit-pos">${fmt(paid)}</b></span>
+    </div>
+    <div class="sale-item-bottom">
+      <span class="${remaining>0 ? 'profit-neg' : 'profit-pos'}">${remaining>0 ? 'باقیمانده بدهی' : 'تسویه‌شده'}: <b>${fmt(remaining)}</b></span>
+      ${isAdmin ? `<button type="button" class="order-status-btn" onclick="editOrderTotalPrice('${o.id}')">ویرایش قیمت</button>` : ''}
+    </div>
+    ${remaining>0 ? `
+    <div style="margin-top:8px;">
+      <button type="button" class="order-status-btn" style="width:100%;" onclick="addOrderPayment('${o.id}')">ثبت پرداخت جدید</button>
+    </div>` : ''}
+    ${paymentsHistory}`;
 }
 
 function exportData(){
