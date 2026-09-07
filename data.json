@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:28:37.747Z",
+  "updatedAt": "2026-09-07T15:32:44.025Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -36,18 +36,18 @@
   "products": [
     {
       "id": "p_1788794902491u6nxw",
-      "name": "محصول جدید",
-      "weight": 50,
-      "printHours": 3,
-      "manualHours": 0,
-      "paintHours": 0,
+      "name": "والتر وایت",
+      "weight": 140,
+      "printHours": 8,
+      "manualHours": 0.5,
+      "paintHours": 1,
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": null,
-      "imagePath": null,
-      "imageSha": null,
-      "stock": 0,
+      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw.jpg?v=1788795157776",
+      "imagePath": "product-images/p_1788794902491u6nxw.jpg",
+      "imageSha": "d2c503dac3aa0bd23e016fde7cce6c997421445b",
+      "stock": 1,
       "category": "g_mtreb2q5k4dk"
     },
     {
