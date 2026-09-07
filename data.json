@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:36:05.585Z",
+  "updatedAt": "2026-09-07T15:36:56.837Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -37,17 +37,17 @@
     {
       "id": "p_1788795346363187ax",
       "name": "دافی داک عصبانی",
-      "weight": 50,
+      "weight": 130,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": null,
-      "imagePath": null,
-      "imageSha": null,
-      "stock": 0,
+      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795346363187ax.jpg?v=1788795415064",
+      "imagePath": "product-images/p_1788795346363187ax.jpg",
+      "imageSha": "924fe2d7f3251a18586706680ae01ccff3e2d880",
+      "stock": 1,
       "category": "g_mtreb2q5k4dk"
     },
     {
