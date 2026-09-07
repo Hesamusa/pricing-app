@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:54:30.766Z",
+  "updatedAt": "2026-09-07T15:54:44.120Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -38,10 +38,10 @@
       "id": "p_1788796315293vahtq",
       "name": "جغد کوچک",
       "weight": 12,
-      "printHours": 3,
+      "printHours": 1,
       "manualHours": 0,
-      "paintHours": 0,
-      "accessoryCost": 0,
+      "paintHours": 1,
+      "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
       "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
