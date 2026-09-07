@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:56:12.775Z",
+  "updatedAt": "2026-09-07T15:56:20.918Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -36,7 +36,7 @@
   "products": [
     {
       "id": "p_17887965710100v1nz",
-      "name": "محصول جدید",
+      "name": "تیرکس ربا",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
