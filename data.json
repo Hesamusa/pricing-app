@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:41:42.002Z",
+  "updatedAt": "2026-09-07T15:41:53.429Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -37,7 +37,7 @@
     {
       "id": "p_1788795669560tpznq",
       "name": "اوختاپوس مفصلی",
-      "weight": 50,
+      "weight": 60,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
