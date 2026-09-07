@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:51:34.375Z",
+  "updatedAt": "2026-09-07T15:51:57.059Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -35,13 +35,28 @@
   },
   "products": [
     {
-      "id": "p_1788796218199rdwc3",
-      "name": "سگ مفصلی سفید صورتی",
-      "weight": 15,
+      "id": "p_1788796315293vahtq",
+      "name": "محصول جدید",
+      "weight": 50,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "imageUrl": null,
+      "imagePath": null,
+      "imageSha": null,
+      "stock": 0
+    },
+    {
+      "id": "p_1788796218199rdwc3",
+      "name": "سگ مفصلی سفید صورتی",
+      "weight": 15,
+      "printHours": 1,
+      "manualHours": 0,
+      "paintHours": 0.5,
+      "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
       "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796218199rdwc3.jpg?v=1788796254312",
