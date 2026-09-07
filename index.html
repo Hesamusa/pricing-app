@@ -548,6 +548,16 @@
 
     <div class="section-title"><span class="bar"></span>اشتراک‌گذاری صفحه اینستاگرام</div>
     <div class="card">
+      <div class="field">
+        <label>عکس کیوآر کد (اختیاری — خودت آپلود کن)</label>
+        <div id="qr-image-preview" style="display:flex; align-items:center; gap:12px; margin:8px 0;"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="photo-btn" onclick="triggerQrImageUpload()">آپلود عکس کیوآر کد</button>
+          <button type="button" class="photo-btn danger" id="qr-image-remove-btn" style="display:none;" onclick="removeQrImage()">حذف عکس</button>
+          <input type="file" accept="image/*" id="qrImageInput" style="display:none" onchange="handleQrImageFile(this)">
+        </div>
+        <div class="hint" style="margin-top:8px; line-height:1.7;">اگه عکس کیوآر کد خودت رو اینجا آپلود کنی، همون عکس نمایش داده می‌شه (بدون نیاز به اینترنت برای ساختنش). اگه آپلود نکنی، از یک سرویس آنلاین ساخته می‌شه.</div>
+      </div>
       <div class="field" style="text-align:center; padding:20px 0;">
         <button class="add-btn" style="background:var(--blue); margin:0;" onclick="showShareQr()">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>
@@ -1040,6 +1050,7 @@ const DEFAULT_SETTINGS = {
   githubOwner: '', githubRepo: '', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
   companyName: '', logoUrl: null, logoPath: null, logoSha: null,
   instagramUrl: '',
+  qrImageUrl: null,
   adminPin: '1234'
 };
 let settings = {...DEFAULT_SETTINGS};
@@ -1387,6 +1398,7 @@ function renderSettings(){
   if(pinEl) pinEl.value = settings.adminPin || '';
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
+  renderQrImagePreview();
   renderBrand();
   applySettingsLock();
   autosizeAllNumInputs();
@@ -1499,12 +1511,78 @@ function showShareQr(){
   if(!url){ alert('آدرس صفحه اینستاگرام نامعتبره.'); return; }
   openQrOverlay(url, handle ? '@' + handle : url);
 }
+function renderQrImagePreview(){
+  const wrap = document.getElementById('qr-image-preview');
+  const removeBtn = document.getElementById('qr-image-remove-btn');
+  if(!wrap) return;
+  if(settings.qrImageUrl){
+    wrap.innerHTML = `<img src="${settings.qrImageUrl}" alt="" style="width:64px; height:64px; object-fit:contain; border-radius:10px; border:1.5px solid var(--line); background:#fff;">`;
+    if(removeBtn) removeBtn.style.display = '';
+  }else{
+    wrap.innerHTML = `<span class="hint" style="margin:0;">هنوز عکسی آپلود نشده؛ کیوآر کد به‌صورت خودکار ساخته می‌شه.</span>`;
+    if(removeBtn) removeBtn.style.display = 'none';
+  }
+}
+
+function triggerQrImageUpload(){
+  const el = document.getElementById('qrImageInput');
+  if(el) el.click();
+}
+
+function readImageAsDataURL(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w >= h){ if(w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
+        else{ if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/png', quality));
+      };
+      img.onerror = () => reject(new Error('فایل عکس قابل خواندن نبود'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('خواندن فایل با خطا مواجه شد'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleQrImageFile(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  try{
+    const dataUrl = await readImageAsDataURL(file, 800, 0.92);
+    settings.qrImageUrl = dataUrl;
+    persist();
+    renderQrImagePreview();
+  }catch(e){
+    alert('آپلود عکس با خطا مواجه شد. دوباره امتحان کن.');
+  }
+  input.value = '';
+}
+
+function removeQrImage(){
+  if(!confirm('عکس کیوآر کد حذف بشه؟')) return;
+  settings.qrImageUrl = null;
+  persist();
+  renderQrImagePreview();
+}
+
 function openQrOverlay(url, label){
   const overlay = document.getElementById('qr-overlay');
   const img = document.getElementById('qr-image');
   const labelEl = document.getElementById('qr-label');
   if(!overlay || !img) return;
-  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=0&data=' + encodeURIComponent(url);
+  img.src = settings.qrImageUrl
+    ? settings.qrImageUrl
+    : 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=0&data=' + encodeURIComponent(url);
   if(labelEl) labelEl.textContent = label || '';
   overlay.classList.add('show');
 }
