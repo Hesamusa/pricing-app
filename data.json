@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:23:16.126Z",
+  "updatedAt": "2026-09-07T15:23:18.930Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -43,7 +43,8 @@
       "imageUrl": null,
       "imagePath": null,
       "imageSha": null,
-      "stock": 0
+      "stock": 0,
+      "category": "g_mtqsahf4t778"
     },
     {
       "id": "p_1788787726489xvrd0",
