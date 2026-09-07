@@ -57,7 +57,7 @@
   body{
     font-family:'Vazirmatn', sans-serif;
     -webkit-font-smoothing:antialiased;
-    padding-bottom: calc(102px + env(safe-area-inset-bottom));
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
     min-height:100vh;
     font-size:17px;
     line-height:1.5;
@@ -330,21 +330,21 @@
   .stat-card.highlight{background:var(--green-soft);}
   .stat-card.highlight .stat-value{color:var(--green);}
 
-  /* Bottom nav */
+  /* Bottom nav — flush against the very bottom edge of the screen (no gap
+     underneath) so nothing can peek through and get tapped by mistake. */
   nav{
     position:fixed; bottom:0; left:0; right:0; z-index:10;
     display:flex; justify-content:center;
-    padding:0 14px calc(14px + env(safe-area-inset-bottom));
-    pointer-events:none;
+    padding:0;
+    pointer-events:auto;
   }
   nav .nav-inner{
     display:flex; gap:2px; width:100%; max-width:560px;
-    background:rgba(var(--card-rgb),0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    border:1px solid var(--line);
-    border-radius:32px;
-    padding:8px;
-    box-shadow:0 10px 34px rgba(0,0,0,0.14);
-    pointer-events:auto;
+    background:rgba(var(--card-rgb),0.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--line);
+    border-radius:22px 22px 0 0;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 24px rgba(0,0,0,0.14);
   }
   nav button{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
@@ -355,6 +355,34 @@
   }
   nav button.active{color:var(--orange); background:var(--orange-soft);}
   nav button svg{width:24px; height:24px;}
+
+  /* Big QR share overlay */
+  .qr-overlay{
+    display:none; position:fixed; inset:0; z-index:100;
+    background:rgba(0,0,0,0.92);
+    align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .qr-overlay.show{display:flex;}
+  .qr-overlay-inner{
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    max-width:400px; width:100%; position:relative;
+  }
+  .qr-close{
+    position:fixed; top:calc(18px + env(safe-area-inset-top)); left:18px; z-index:101;
+    width:44px; height:44px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.14); color:#fff; font-size:18px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .qr-box{
+    background:#fff; border-radius:24px; padding:22px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.5);
+    width:min(76vw, 320px); aspect-ratio:1/1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .qr-box img{width:100%; height:100%; object-fit:contain; display:block;}
+  .qr-label{color:#fff; font-size:21px; font-weight:800; direction:ltr;}
+  .qr-sub{color:rgba(255,255,255,0.72); font-size:14px; text-align:center; line-height:1.8; font-weight:600;}
 
   .save-note{
     display:flex; align-items:center; gap:8px; font-size:14px; color:var(--green);
@@ -422,6 +450,25 @@
   .sale-item-bottom .profit-pos b{color:var(--green);}
   .sale-item-bottom .profit-neg b{color:var(--red);}
   .sale-item-note{margin-top:10px; font-size:13px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px; line-height:1.6;}
+  .sale-item-meta .tag.pending{background:var(--orange-soft); color:var(--orange);}
+
+  /* Order form: temporary added-items list */
+  .order-item-row{
+    display:flex; align-items:center; gap:10px; background:var(--bg);
+    border-radius:12px; padding:10px 12px; margin-bottom:8px;
+  }
+  .order-item-row-name{flex:1; min-width:0; font-size:14.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .order-item-row-qty{font-size:13px; color:var(--ink-soft); flex-shrink:0;}
+  .order-item-row-del{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; border:none;
+    background:var(--orange-soft); color:var(--red); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .order-status-btn{
+    border:1.5px solid var(--line); background:transparent; color:var(--ink);
+    border-radius:12px; padding:9px 14px; font-size:13px; font-weight:700;
+    font-family:'Vazirmatn',sans-serif; cursor:pointer; min-height:40px;
+  }
+  .order-status-btn.done{border-color:var(--green); color:var(--green);}
   .cust-name-input{
     font-size:16px; font-weight:700; color:var(--ink); border:none; background:transparent;
     padding:2px 0; min-width:0; flex:1; font-family:'Vazirmatn',sans-serif; text-align:right;
@@ -499,6 +546,17 @@
       </div>
     </div>
 
+    <div class="section-title"><span class="bar"></span>اشتراک‌گذاری صفحه اینستاگرام</div>
+    <div class="card">
+      <div class="field" style="text-align:center; padding:20px 0;">
+        <button class="add-btn" style="background:var(--blue); margin:0;" onclick="showShareQr()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="21" y1="14" x2="21" y2="21"/><line x1="14" y1="17.5" x2="21" y2="17.5"/></svg>
+          نمایش کیوآر کد بزرگ
+        </button>
+        <div class="hint" style="margin-top:12px;">گوشی رو به مشتری نشون بده تا با دوربین یا اپ اینستاگرام کد رو اسکن کنه و مستقیم وارد صفحه‌ت بشه.</div>
+      </div>
+    </div>
+
     <div id="settings-locked" class="admin-lock-screen" style="display:none;">
       <div class="card" style="text-align:center; padding:36px 20px;">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px; display:block;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -519,6 +577,14 @@
           <input type="text" class="num-input" id="s_filPrice" inputmode="numeric">
           <span class="unit">تومان</span>
         </div>
+      </div>
+      <div class="field">
+        <label>قیمت هر کیلوگرم رزین</label>
+        <div class="input-row">
+          <input type="text" class="num-input" id="s_resin" inputmode="numeric">
+          <span class="unit">تومان</span>
+        </div>
+        <div class="hint">برای کارهایی که با پرینتر رزینی (SLA) ساخته می‌شن.</div>
       </div>
       <div class="field">
         <label>توان مصرفی دستگاه پرینتر</label>
@@ -588,6 +654,15 @@
           <button type="button" class="sale-type-chip" data-step="5000" onclick="setRoundStep(5000)">نزدیک‌ترین ۵۰۰۰</button>
         </div>
         <div class="hint">قیمت پیشنهادی عمده/خرده (بعد از اضافه‌شدن درصد سود) به این عدد گرد می‌شه تا خرده‌ریز نداشته باشه.</div>
+      </div>
+    </div>
+
+    <div class="section-title orange"><span class="bar"></span>صفحه اینستاگرام</div>
+    <div class="card">
+      <div class="field">
+        <label>آیدی یا لینک صفحه اینستاگرام</label>
+        <input type="text" class="gh-field" id="s_instagram" placeholder="مثلاً printplus3d یا https://instagram.com/printplus3d" style="direction:ltr; text-align:left;">
+        <div class="hint">فقط آیدی کافیه (بدون @)؛ یا آدرس کامل صفحه رو بچسبون. همین آدرس برای ساختن کیوآر کد بخش «اشتراک‌گذاری» بالای همین تب استفاده می‌شه.</div>
       </div>
     </div>
 
@@ -776,6 +851,83 @@
     <div id="sales-list" style="margin-top:14px;"></div>
   </div>
 
+  <!-- ORDERS TAB — customer production/order requests -->
+  <div id="tab-orders" class="tab-panel">
+    <div class="section-title">ثبت سفارش جدید مشتری</div>
+    <div class="card" id="order-form-wrap">
+      <div class="field">
+        <label>افزودن محصول به سفارش</label>
+        <div class="product-picker" id="order_item_picker">
+          <button type="button" class="product-picker-btn" onclick="toggleOrderItemPicker()">
+            <span id="order_item_picker_label">— انتخاب محصول —</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="product-picker-panel" id="order_item_picker_panel">
+            <div class="search-box" style="margin:8px;">
+              <input type="text" id="order_item_picker_search" placeholder="جستجوی محصول…" oninput="onOrderItemPickerSearch(this.value)" onclick="event.stopPropagation()" style="direction:rtl; text-align:right;">
+              <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <div class="product-picker-list" id="order_item_picker_list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>تعداد</label>
+          <input type="text" class="num-input" id="order_item_qty" inputmode="numeric" value="۱" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+        </div>
+        <div class="field" style="display:flex; align-items:flex-end;">
+          <button type="button" class="add-btn" style="margin:0; background:var(--blue);" onclick="addItemToOrder()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            افزودن به سفارش
+          </button>
+        </div>
+      </div>
+      <div id="order-items-list" style="margin:4px 0 6px;"></div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>نام مشتری</label>
+          <input type="text" class="gh-field" id="order_customer_name" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="نام مشتری">
+        </div>
+        <div class="field">
+          <label>شماره تماس مشتری</label>
+          <input type="text" class="gh-field" id="order_customer_phone" inputmode="numeric" maxlength="11" oninput="sanitizePhoneInput(this)" onblur="markPhoneValidity(this,'order_customer_phone_hint')" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+          <div class="hint" id="order_customer_phone_hint"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>تاریخ تحویل (اختیاری)</label>
+        <div class="jalali-date-row">
+          <select class="jalali-date-select" id="order_due_day" onchange="onOrderDueDateSelectChange()"></select>
+          <select class="jalali-date-select" id="order_due_month" onchange="onOrderDueDateSelectChange()"></select>
+          <select class="jalali-date-select" id="order_due_year" onchange="onOrderDueDateSelectChange()"></select>
+        </div>
+        <input type="hidden" id="order_due_date">
+        <button type="button" class="hint" style="margin-top:8px; text-decoration:underline; background:none; border:none; padding:0; cursor:pointer;" onclick="clearOrderDueDate()">حذف تاریخ تحویل</button>
+      </div>
+      <div class="field">
+        <label>توضیحات سفارش (اختیاری)</label>
+        <input type="text" class="gh-field" id="order_notes" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً رنگ دلخواه، اندازه، توضیح خاص">
+      </div>
+      <button class="add-btn" onclick="submitOrder()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        ثبت سفارش
+      </button>
+    </div>
+    <div class="empty" id="order-empty-hint" style="display:none;">
+      <p>اول از تب «محصولات» یک محصول اضافه کن، بعد سفارش مشتری رو اینجا ثبت کن.</p>
+    </div>
+
+    <div class="section-title"><span class="bar"></span>سفارش‌های ثبت‌شده</div>
+    <div class="filter-row">
+      <button type="button" class="filter-chip active" data-orders-filter="all" onclick="setOrdersFilter('all')">همه</button>
+      <button type="button" class="filter-chip" data-orders-filter="pending" onclick="setOrdersFilter('pending')">در حال انجام</button>
+      <button type="button" class="filter-chip" data-orders-filter="done" onclick="setOrdersFilter('done')">تحویل‌شده</button>
+    </div>
+    <div id="orders-list" style="margin-top:14px;"></div>
+  </div>
+
   <!-- CUSTOMERS TAB -->
   <div id="tab-customers" class="tab-panel">
     <div class="search-box" id="customer-search-box">
@@ -832,6 +984,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
     فروش
   </button>
+  <button id="nav-orders" onclick="switchTab('orders')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+    سفارشات
+  </button>
   <button id="nav-customers" onclick="switchTab('customers')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     مشتریان
@@ -843,20 +999,36 @@
   </div>
 </nav>
 
+<!-- Big QR code overlay for sharing the Instagram page with a customer in-store -->
+<div id="qr-overlay" class="qr-overlay" onclick="if(event.target===this) closeQrOverlay()">
+  <div class="qr-overlay-inner">
+    <button type="button" class="qr-close" onclick="closeQrOverlay()">✕</button>
+    <div class="qr-box"><img id="qr-image" alt="کد QR صفحه اینستاگرام"></div>
+    <div class="qr-label" id="qr-label"></div>
+    <div class="qr-sub">گوشیت رو نگه دار تا مشتری با دوربین یا اپ اینستاگرام این کد رو اسکن کنه</div>
+  </div>
+</div>
+
 <script>
 const DEFAULT_SETTINGS = {
-  filPrice: 1200000, power: 250, elec: 3000, depr: 15000,
+  filPrice: 1200000, resinPrice: 0, power: 250, elec: 3000, depr: 15000,
   labor: 200000, paint: 300000, marginW: 50, marginR: 120,
   roundStep: 1000,
   productGroups: [],
   githubOwner: '', githubRepo: '', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
   companyName: '', logoUrl: null, logoPath: null, logoSha: null,
+  instagramUrl: '',
   adminPin: '1234'
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
 let sales = [];
 let customers = [];
+let orders = [];
+let currentOrderItems = [];
+let orderItemProductId = null;
+let orderItemPickerQuery = '';
+let ordersFilter = 'all';
 let openProductId = null;
 let salesFilter = 'all';
 let productSearchQuery = '';
@@ -995,6 +1167,10 @@ document.addEventListener('click', function(e){
   if(picker && picker.classList.contains('open') && !picker.contains(e.target)){
     closeProductPicker();
   }
+  const orderPicker = document.getElementById('order_item_picker');
+  if(orderPicker && orderPicker.classList.contains('open') && !orderPicker.contains(e.target)){
+    closeOrderItemPicker();
+  }
 });
 
 function loadState(){
@@ -1014,6 +1190,10 @@ function loadState(){
     const c = localStorage.getItem('pricing_app_customers');
     if(c) customers = JSON.parse(c);
   }catch(e){ /* no saved customers یا هنوز ذخیره‌ای نداره */ }
+  try{
+    const o = localStorage.getItem('pricing_app_orders');
+    if(o) orders = JSON.parse(o);
+  }catch(e){ /* no saved orders yet */ }
   // پاک‌سازی یک‌باره‌ی محصول نمونه‌ای که قبلاً به‌صورت خودکار ساخته می‌شد
   // (اگه هنوز دست‌نخورده مونده و کاربر خودش عمداً همچین محصولی نساخته باشه)
   if(products.length){
@@ -1025,6 +1205,7 @@ function loadState(){
   renderProducts();
   renderSummary();
   renderCustomersTab();
+  renderOrdersTab();
 
   if(githubConfigured()){
     githubSyncInitialized = true;
@@ -1035,12 +1216,15 @@ function loadState(){
         products = Array.isArray(remote.products) ? remote.products : products;
         sales = Array.isArray(remote.sales) ? remote.sales : sales;
         customers = Array.isArray(remote.customers) ? remote.customers : customers;
+        orders = Array.isArray(remote.orders) ? remote.orders : orders;
         renderSettings();
         renderProducts();
         renderSummary();
         renderCustomersTab();
         const salesTab = document.getElementById('tab-sales');
         if(salesTab && salesTab.classList.contains('active')) renderSalesTab();
+        const ordersTab = document.getElementById('tab-orders');
+        if(ordersTab && ordersTab.classList.contains('active')) renderOrdersTab();
         persist({skipSync:true});
         setSyncStatus('همگام با گیت‌هاب ✓ (' + formatTimeFa(new Date(remote.updatedAt || Date.now())) + ')', 'success');
       }else{
@@ -1071,6 +1255,7 @@ function persist(opts){
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
       localStorage.setItem('pricing_app_sales', JSON.stringify(sales));
       localStorage.setItem('pricing_app_customers', JSON.stringify(customers));
+      localStorage.setItem('pricing_app_orders', JSON.stringify(orders));
       flashSaved();
     }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
     if(!(opts && opts.skipSync)) scheduleSync();
@@ -1089,6 +1274,7 @@ function switchTab(name){
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='summary') renderSummary();
   if(name==='sales') renderSalesTab();
+  if(name==='orders') renderOrdersTab();
   if(name==='customers') renderCustomersTab();
   if(name==='settings') applySettingsLock();
 }
@@ -1159,6 +1345,7 @@ function updateModeUI(){
 
 function renderSettings(){
   document.getElementById('s_filPrice').value = groupDigits(settings.filPrice);
+  document.getElementById('s_resin').value = groupDigits(settings.resinPrice);
   document.getElementById('s_power').value = groupDigits(settings.power);
   document.getElementById('s_elec').value = groupDigits(settings.elec);
   document.getElementById('s_depr').value = groupDigits(settings.depr);
@@ -1176,6 +1363,8 @@ function renderSettings(){
   document.getElementById('s_ghToken').value = settings.githubToken || '';
   const pinEl = document.getElementById('s_adminPin');
   if(pinEl) pinEl.value = settings.adminPin || '';
+  const igEl = document.getElementById('s_instagram');
+  if(igEl) igEl.value = settings.instagramUrl || '';
   renderBrand();
   applySettingsLock();
   autosizeAllNumInputs();
@@ -1195,7 +1384,7 @@ function groupDigits(n){
   return toFaNum(n, 0);
 }
 
-const COMMA_FIELDS = {s_filPrice:'filPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
+const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
 const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
 
@@ -1219,6 +1408,13 @@ function bindGithubInputs(){
       persist();
     });
   }
+  const igEl = document.getElementById('s_instagram');
+  if(igEl){
+    igEl.addEventListener('input', ()=>{
+      settings.instagramUrl = igEl.value;
+      persist();
+    });
+  }
 }
 
 async function maybeInitGithubSync(){
@@ -1234,17 +1430,65 @@ async function maybeInitGithubSync(){
       products = Array.isArray(remote.products) ? remote.products : products;
       sales = Array.isArray(remote.sales) ? remote.sales : sales;
       customers = Array.isArray(remote.customers) ? remote.customers : customers;
+      orders = Array.isArray(remote.orders) ? remote.orders : orders;
       renderSettings();
       renderProducts();
       renderSummary();
       renderSalesTab();
       renderCustomersTab();
+      renderOrdersTab();
       persist({skipSync:true});
       setSyncStatus('نسخه گیت‌هاب بارگذاری شد ✓', 'success');
       return;
     }
   }
   syncToGithub();
+}
+
+// ————— اشتراک‌گذاری اینستاگرام (کیوآر کد بزرگ) —————
+function instagramHandleOnly(v){
+  v = (v||'').trim();
+  v = v.replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/^@/, '').replace(/\/+$/, '');
+  return v;
+}
+function normalizeInstagramUrl(v){
+  const handle = instagramHandleOnly(v);
+  if(!handle) return '';
+  return 'https://instagram.com/' + handle;
+}
+function showShareQr(){
+  let raw = (settings.instagramUrl || '').trim();
+  if(!raw){
+    if(isAdmin){
+      const val = prompt('آیدی یا لینک صفحه اینستاگرام رو وارد کن (بدون @):');
+      if(!val) return;
+      settings.instagramUrl = val.trim();
+      const igEl = document.getElementById('s_instagram');
+      if(igEl) igEl.value = settings.instagramUrl;
+      persist();
+      raw = settings.instagramUrl;
+    }else{
+      alert('اول باید مدیر آدرس صفحه اینستاگرام رو از تب «تنظیمات» وارد کنه.');
+      return;
+    }
+  }
+  const url = normalizeInstagramUrl(raw);
+  const handle = instagramHandleOnly(raw);
+  if(!url){ alert('آدرس صفحه اینستاگرام نامعتبره.'); return; }
+  openQrOverlay(url, handle ? '@' + handle : url);
+}
+function openQrOverlay(url, label){
+  const overlay = document.getElementById('qr-overlay');
+  const img = document.getElementById('qr-image');
+  const labelEl = document.getElementById('qr-label');
+  if(!overlay || !img) return;
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=0&data=' + encodeURIComponent(url);
+  if(labelEl) labelEl.textContent = label || '';
+  overlay.classList.add('show');
+}
+function closeQrOverlay(){
+  const overlay = document.getElementById('qr-overlay');
+  if(overlay) overlay.classList.remove('show');
 }
 
 function setRoundStep(step){
@@ -1680,7 +1924,7 @@ function githubDataPath(){ return 'data.json'; }
 
 function buildSyncPayload(){
   const {githubToken, ...safeSettings} = settings; // never store the token itself in the repo
-  return { updatedAt: new Date().toISOString(), settings: safeSettings, products, sales, customers };
+  return { updatedAt: new Date().toISOString(), settings: safeSettings, products, sales, customers, orders };
 }
 
 function formatTimeFa(d){
@@ -2476,7 +2720,9 @@ function populateJalaliDateSelects(jy, jm, jd){
     const [thisJy] = todayJalali();
     const years = [];
     for(let y = thisJy+1; y >= thisJy-5; y--) years.push(y);
-    yearEl.innerHTML = years.map(y=>`<option value="${y}">${toFaNum(y,0)}</option>`).join('');
+    // سال به‌صورت رقم به رقم (بدون جداکننده هزارگان) نشون داده می‌شه؛
+    // مثلاً «۱۴۰۴»، نه «۱٬۴۰۴».
+    yearEl.innerHTML = years.map(y=>`<option value="${y}">${toFaDigitsOnly(y)}</option>`).join('');
   }
   const dayCount = jalaliMonthLength(jy, jm);
   const prevDay = dayEl.value ? parseInt(dayEl.value,10) : jd;
@@ -2505,6 +2751,45 @@ function onJalaliDateSelectChange(){
     populateJalaliDateSelects(jy, jm, jd);
   }
   document.getElementById('sale_date').value = jalaliToIso(jy, jm, jd);
+}
+
+// انتخابگر تاریخ تحویل (اختیاری) در فرم ثبت سفارش مشتری — همون منطق
+// انتخابگر تاریخ فروش، با آی‌دی‌های مستقل تا مزاحم فرم فروش نشه.
+function populateOrderDueDateSelects(jy, jm, jd){
+  const dayEl = document.getElementById('order_due_day');
+  const monthEl = document.getElementById('order_due_month');
+  const yearEl = document.getElementById('order_due_year');
+  if(!dayEl || !monthEl || !yearEl) return;
+  if(!monthEl.options.length){
+    monthEl.innerHTML = JALALI_MONTH_NAMES.map((name,i)=>`<option value="${i+1}">${name}</option>`).join('');
+  }
+  if(!yearEl.options.length){
+    const [thisJy] = todayJalali();
+    const years = [];
+    for(let y = thisJy+2; y >= thisJy-1; y--) years.push(y);
+    yearEl.innerHTML = years.map(y=>`<option value="${y}">${toFaDigitsOnly(y)}</option>`).join('');
+  }
+  const dayCount = jalaliMonthLength(jy, jm);
+  const prevDay = dayEl.value ? parseInt(dayEl.value,10) : jd;
+  dayEl.innerHTML = Array.from({length:dayCount}, (_,i)=>i+1).map(d=>`<option value="${d}">${toFaNum(d,0)}</option>`).join('');
+  dayEl.value = Math.min(prevDay || jd, dayCount);
+  monthEl.value = jm;
+  yearEl.value = jy;
+}
+function onOrderDueDateSelectChange(){
+  const jy = parseInt(document.getElementById('order_due_year').value,10);
+  const jm = parseInt(document.getElementById('order_due_month').value,10);
+  let jd = parseInt(document.getElementById('order_due_day').value,10);
+  const dayCount = jalaliMonthLength(jy, jm);
+  if(jd > dayCount){
+    jd = dayCount;
+    populateOrderDueDateSelects(jy, jm, jd);
+  }
+  document.getElementById('order_due_date').value = jalaliToIso(jy, jm, jd);
+}
+function clearOrderDueDate(){
+  const hidden = document.getElementById('order_due_date');
+  if(hidden) hidden.value = '';
 }
 
 function resetSaleForm(){
@@ -2628,13 +2913,222 @@ function renderSalesTab(){
   }).join('');
 }
 
+// ————— تب سفارشات: گرفتن سفارش تولید از مشتری، بر اساس محصولات —————
+function makeOrder(items, customerName, customerPhone, dueDate, notes){
+  return {
+    id: 'o_' + Date.now() + Math.random().toString(36).slice(2,7),
+    items,
+    customerName: (customerName||'').trim(),
+    customerPhone: normalizeDigits(customerPhone||''),
+    dueDate: dueDate || null,
+    notes: (notes||'').trim(),
+    status: 'pending', // 'pending' | 'done'
+    createdAt: new Date().toISOString()
+  };
+}
+
+function toggleOrderItemPicker(){
+  const picker = document.getElementById('order_item_picker');
+  if(!picker) return;
+  if(picker.classList.contains('open')) closeOrderItemPicker();
+  else openOrderItemPicker();
+}
+function openOrderItemPicker(){
+  const picker = document.getElementById('order_item_picker');
+  if(!picker || !products.length) return;
+  picker.classList.add('open');
+  orderItemPickerQuery = '';
+  const search = document.getElementById('order_item_picker_search');
+  if(search) search.value = '';
+  renderOrderItemPickerList();
+  setTimeout(() => { if(search) search.focus(); }, 30);
+}
+function closeOrderItemPicker(){
+  const picker = document.getElementById('order_item_picker');
+  if(picker) picker.classList.remove('open');
+}
+function onOrderItemPickerSearch(v){
+  orderItemPickerQuery = v;
+  renderOrderItemPickerList();
+}
+function renderOrderItemPickerList(){
+  const listEl = document.getElementById('order_item_picker_list');
+  if(!listEl) return;
+  const q = normalizeFaText(orderItemPickerQuery);
+  const filtered = q ? products.filter(p => normalizeFaText(p.name).includes(q)) : products;
+  if(filtered.length === 0){
+    listEl.innerHTML = `<div class="empty" style="padding:16px 8px;"><p>نتیجه‌ای پیدا نشد.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===orderItemProductId?'active':''}" onclick="selectOrderItemProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
+}
+function selectOrderItemProduct(id){
+  orderItemProductId = id;
+  updateOrderItemPickerLabel();
+  closeOrderItemPicker();
+}
+function updateOrderItemPickerLabel(){
+  const label = document.getElementById('order_item_picker_label');
+  if(!label) return;
+  const prod = products.find(p => p.id === orderItemProductId);
+  label.textContent = prod ? prod.name : (products.length ? '— انتخاب محصول —' : 'ابتدا یک محصول اضافه کن');
+}
+
+function addItemToOrder(){
+  if(!orderItemProductId && products.length){
+    orderItemProductId = products[0].id;
+    updateOrderItemPickerLabel();
+  }
+  const prod = products.find(p => p.id === orderItemProductId);
+  if(!prod){ alert('اول یک محصول رو انتخاب کن.'); return; }
+  const qtyEl = document.getElementById('order_item_qty');
+  const qty = Math.max(1, Math.round(parseNum(qtyEl.value)) || 1);
+  const existing = currentOrderItems.find(it => it.productId === prod.id);
+  if(existing){ existing.qty += qty; }
+  else{ currentOrderItems.push({productId: prod.id, productName: prod.name, qty}); }
+  qtyEl.value = '۱';
+  renderOrderItemsList();
+}
+function removeOrderItem(index){
+  currentOrderItems.splice(index, 1);
+  renderOrderItemsList();
+}
+function renderOrderItemsList(){
+  const el = document.getElementById('order-items-list');
+  if(!el) return;
+  if(!currentOrderItems.length){
+    el.innerHTML = `<div class="hint" style="margin:0 6px 10px;">هنوز محصولی به این سفارش اضافه نشده.</div>`;
+    return;
+  }
+  el.innerHTML = currentOrderItems.map((it, i) => `
+    <div class="order-item-row">
+      <span class="order-item-row-name">${escapeHtml(it.productName)}</span>
+      <span class="order-item-row-qty mono">× ${fa.format(it.qty)}</span>
+      <button type="button" class="order-item-row-del" onclick="removeOrderItem(${i})">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+      </button>
+    </div>`).join('');
+}
+
+function resetOrderForm(){
+  currentOrderItems = [];
+  orderItemProductId = null;
+  updateOrderItemPickerLabel();
+  closeOrderItemPicker();
+  renderOrderItemsList();
+  const qtyEl = document.getElementById('order_item_qty');
+  if(qtyEl) qtyEl.value = '۱';
+  document.getElementById('order_customer_name').value = '';
+  document.getElementById('order_customer_phone').value = '';
+  document.getElementById('order_notes').value = '';
+  clearOrderDueDate();
+}
+
+function submitOrder(){
+  if(!currentOrderItems.length){ alert('اول حداقل یک محصول به سفارش اضافه کن.'); return; }
+  const phoneEl = document.getElementById('order_customer_phone');
+  if(!markPhoneValidity(phoneEl, 'order_customer_phone_hint')){
+    alert('شماره تماس مشتری نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
+    phoneEl.focus();
+    return;
+  }
+  const name = document.getElementById('order_customer_name').value.trim();
+  const phone = normalizeDigits(phoneEl.value);
+  const notes = document.getElementById('order_notes').value;
+  const dueDate = document.getElementById('order_due_date').value || null;
+  orders.unshift(makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes));
+  if(name || phone){
+    upsertCustomer(name, phone);
+    renderCustomersTab();
+  }
+  persist();
+  resetOrderForm();
+  renderOrdersTab();
+}
+
+function setOrderStatus(id, status){
+  const order = orders.find(o => o.id === id);
+  if(!order) return;
+  order.status = status;
+  persist();
+  renderOrdersTab();
+}
+
+function deleteOrder(id){
+  if(!isAdmin) return;
+  if(!confirm('این سفارش حذف بشه؟')) return;
+  orders = orders.filter(o => o.id !== id);
+  persist();
+  renderOrdersTab();
+}
+
+function setOrdersFilter(f){
+  ordersFilter = f;
+  document.querySelectorAll('#tab-orders .filter-chip').forEach(b => b.classList.toggle('active', b.dataset.ordersFilter===f));
+  renderOrdersTab();
+}
+
+function filteredOrders(){
+  if(ordersFilter === 'all') return orders;
+  return orders.filter(o => o.status === ordersFilter);
+}
+
+function renderOrdersTab(){
+  const formWrap = document.getElementById('order-form-wrap');
+  const emptyHint = document.getElementById('order-empty-hint');
+  if(!formWrap || !emptyHint) return; // orders tab not on this page yet
+  formWrap.style.display = products.length ? 'block' : 'none';
+  emptyHint.style.display = products.length ? 'none' : 'block';
+  updateOrderItemPickerLabel();
+  closeOrderItemPicker();
+  renderOrderItemsList();
+  if(!document.getElementById('order_due_year').options.length){
+    const [jy,jm,jd] = todayJalali();
+    populateOrderDueDateSelects(jy,jm,jd);
+  }
+
+  const listEl = document.getElementById('orders-list');
+  const list = filteredOrders();
+  if(list.length === 0){
+    listEl.innerHTML = `<div class="empty"><p>سفارشی در این بخش ثبت نشده.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = list.map(o => {
+    const itemsText = o.items.map(it => `${escapeHtml(it.productName)} × ${fa.format(it.qty)}`).join('، ');
+    const statusLabel = o.status === 'done' ? 'تحویل‌شده' : 'در حال انجام';
+    const statusClass = o.status === 'done' ? 'tag' : 'tag pending';
+    return `
+    <div class="sale-item">
+      <div class="sale-item-top">
+        <span class="sale-item-name">${escapeHtml(o.customerName || 'بدون نام')}</span>
+        <button class="sale-del${isAdmin?'':' is-disabled'}" ${isAdmin ? `onclick="deleteOrder('${o.id}')"` : 'disabled title="فقط مدیر می‌تونه سفارش حذف کنه"'}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+        </button>
+      </div>
+      <div class="sale-item-meta">
+        <span class="${statusClass}">${statusLabel}</span>
+        ${o.customerPhone ? `<span class="mono">${o.customerPhone}</span>` : ''}
+        ${o.dueDate ? `<span>تحویل: ${formatDateFa(o.dueDate)}</span>` : ''}
+      </div>
+      <div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${itemsText}</div>
+      ${o.notes ? `<div class="sale-item-note">${escapeHtml(o.notes)}</div>` : ''}
+      <div class="sale-item-bottom" style="justify-content:flex-end;">
+        ${o.status === 'done'
+          ? `<button type="button" class="order-status-btn" onclick="setOrderStatus('${o.id}','pending')">بازگردانی به در حال انجام</button>`
+          : `<button type="button" class="order-status-btn done" onclick="setOrderStatus('${o.id}','done')">علامت‌گذاری به‌عنوان تحویل‌شده</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function exportData(){
   const payload = {
     exportedAt: new Date().toISOString(),
     settings: settings,
     products: products,
     sales: sales,
-    customers: customers
+    customers: customers,
+    orders: orders
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -2661,12 +3155,14 @@ function importData(event){
       products = data.products;
       sales = Array.isArray(data.sales) ? data.sales : [];
       customers = Array.isArray(data.customers) ? data.customers : [];
+      orders = Array.isArray(data.orders) ? data.orders : [];
       openProductId = null;
       renderSettings();
       renderProducts();
       renderSummary();
       renderSalesTab();
       renderCustomersTab();
+      renderOrdersTab();
       persist();
       statusEl.style.color = 'var(--green)';
       statusEl.textContent = 'بازگردانی با موفقیت انجام شد ✓';
