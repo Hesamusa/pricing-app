@@ -679,7 +679,7 @@
     <div class="section-title orange"><span class="bar"></span>ذخیره‌سازی عکس محصولات (گیت‌هاب)</div>
     <div class="card">
       <div class="hint" style="margin-bottom:14px;">
-        عکس هر محصول کوچک می‌شه و مستقیم توی یک مخزن گیت‌هاب آپلود می‌شه. یک Personal Access Token با دسترسی نوشتن روی همون مخزن بساز (ترجیحاً fine-grained و محدود به همین ریپو). این توکن روی همین گوشی/مرورگر ذخیره می‌شه؛ فقط روی دستگاه شخصی خودت استفاده‌اش کن.
+        مخزن گیت‌هاب Public هست، پس هر دستگاهی که این لینک رو باز کنه خودکار و بدون نیاز به توکن، آخرین داده‌ها رو می‌بینه. اما برای ثبت تغییرات (سفارش، محصول، عکس و ...) هر دستگاه باید یک Personal Access Token خودش رو اینجا وارد کنه؛ یک توکن با دسترسی نوشتن روی همین مخزن بساز (ترجیحاً fine-grained و محدود به همین ریپو). این توکن فقط روی همین گوشی/مرورگر ذخیره می‌شه و هیچ‌وقت داخل خود مخزن یا لینک قرار نمی‌گیره؛ فقط به افرادی بده که بهشون اعتماد داری.
       </div>
       <div class="field">
         <label>نام کاربری یا سازمان گیت‌هاب</label>
@@ -709,7 +709,7 @@
     <div class="section-title orange"><span class="bar"></span>همگام‌سازی داده‌ها با گیت‌هاب</div>
     <div class="card">
       <div class="hint" style="margin-bottom:14px;">
-        با همون اطلاعات گیت‌هاب بالا (کاربر، ریپو، توکن)، تنظیمات، محصولات و فروش‌ها هم به‌صورت خودکار توی یک فایل <span class="mono">data.json</span> در ریشه همون مخزن ذخیره می‌شن. این‌طوری می‌تونی از چند گوشی/مرورگر به یک نسخه از داده وصل بشی. توکن گیت‌هاب هیچ‌وقت داخل این فایل ذخیره نمی‌شه.
+        تنظیمات، محصولات، سفارش‌ها و فروش‌ها توی یک فایل <span class="mono">data.json</span> در ریشه همون مخزن ذخیره می‌شن. چون مخزن Public هست، همه‌ی دستگاه‌ها بدون نیاز به توکن این فایل رو می‌خونن و آخرین نسخه رو می‌بینن. برای ذخیره‌ی تغییرات جدید (نوشتن روی همین فایل)، همون دستگاه باید توکن گیت‌هابش رو بالا وارد کرده باشه. توکن گیت‌هاب هیچ‌وقت داخل این فایل ذخیره نمی‌شه.
       </div>
       <div class="hint" id="sync-status" style="margin-bottom:14px; font-weight:600;"></div>
       <button class="add-btn" style="background:var(--blue); margin-top:0;" onclick="syncToGithub()">
@@ -1047,7 +1047,7 @@ const DEFAULT_SETTINGS = {
   labor: 200000, paint: 300000, marginW: 50, marginR: 120,
   roundStep: 1000,
   productGroups: [],
-  githubOwner: '', githubRepo: '', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
+  githubOwner: 'Hesamusa', githubRepo: 'pricing-app', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
   companyName: '', logoUrl: null, logoPath: null, logoSha: null,
   instagramUrl: '',
   qrImageUrl: null,
@@ -1240,7 +1240,7 @@ function loadState(){
   renderCustomersTab();
   renderOrdersTab();
 
-  if(githubConfigured()){
+  if(githubReadConfigured()){
     githubSyncInitialized = true;
     setSyncStatus('در حال دریافت آخرین نسخه از گیت‌هاب...', '');
     fetchRemoteData().then(remote => {
@@ -1259,7 +1259,11 @@ function loadState(){
         const ordersTab = document.getElementById('tab-orders');
         if(ordersTab && ordersTab.classList.contains('active')) renderOrdersTab();
         persist({skipSync:true});
-        setSyncStatus('همگام با گیت‌هاب ✓ (' + formatTimeFa(new Date(remote.updatedAt || Date.now())) + ')', 'success');
+        const canWrite = githubConfigured();
+        setSyncStatus(
+          (canWrite ? 'همگام با گیت‌هاب ✓ (' : 'داده‌ها دریافت شد؛ فقط نمایش (') + formatTimeFa(new Date(remote.updatedAt || Date.now())) + ')' + (canWrite ? '' : ' — برای ویرایش، توکن رو در تنظیمات وارد کن'),
+          canWrite ? 'success' : ''
+        );
       }else{
         setSyncStatus('هنوز نسخه‌ای روی گیت‌هاب ذخیره نشده؛ با اولین تغییر ساخته می‌شه.', '');
       }
@@ -1994,10 +1998,11 @@ function resizeImageToBase64(file, maxDim, quality){
 }
 
 function githubHeaders(){
-  return {
-    'Authorization': `token ${settings.githubToken.trim()}`,
-    'Accept': 'application/vnd.github+json'
-  };
+  const headers = { 'Accept': 'application/vnd.github+json' };
+  if(settings.githubToken && settings.githubToken.trim()){
+    headers['Authorization'] = `token ${settings.githubToken.trim()}`;
+  }
+  return headers;
 }
 
 function githubContentsUrl(path){
@@ -2020,6 +2025,12 @@ function githubConfigured(){
             settings.githubToken && settings.githubToken.trim());
 }
 
+// برای خوندن داده از مخزن Public نیازی به توکن نیست؛ فقط owner/repo کافیه
+function githubReadConfigured(){
+  return !!(settings.githubOwner && settings.githubOwner.trim() &&
+            settings.githubRepo && settings.githubRepo.trim());
+}
+
 function githubDataPath(){ return 'data.json'; }
 
 function buildSyncPayload(){
@@ -2040,7 +2051,7 @@ function setSyncStatus(text, kind){
 }
 
 async function fetchRemoteData(){
-  if(!githubConfigured()) return null;
+  if(!githubReadConfigured()) return null;
   try{
     const branch = (settings.githubBranch || 'main').trim();
     const apiUrl = githubContentsUrl(githubDataPath());
@@ -2058,7 +2069,12 @@ async function fetchRemoteData(){
 }
 
 async function syncToGithub(){
-  if(!githubConfigured()) return;
+  if(!githubConfigured()){
+    if(githubReadConfigured()){
+      setSyncStatus('برای ذخیره‌ی تغییرات، اول توکن گیت‌هابت رو در همین صفحه تنظیمات وارد کن.', 'error');
+    }
+    return;
+  }
   if(syncInFlight) return;
   syncInFlight = true;
   setSyncStatus('در حال همگام‌سازی با گیت‌هاب...', '');
