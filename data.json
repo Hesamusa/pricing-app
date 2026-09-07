@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:50:19.963Z",
+  "updatedAt": "2026-09-07T15:50:29.000Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -36,7 +36,7 @@
   "products": [
     {
       "id": "p_1788796218199rdwc3",
-      "name": "محصول جدید",
+      "name": "سگ مفصلی سفید صورتی",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
