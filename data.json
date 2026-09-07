@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:39:31.264Z",
+  "updatedAt": "2026-09-07T15:39:36.979Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -37,7 +37,7 @@
     {
       "id": "p_1788795486741tfdfu",
       "name": "ماکسی روباه",
-      "weight": 50,
+      "weight": 90,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
