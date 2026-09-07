@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:38:08.501Z",
+  "updatedAt": "2026-09-07T15:39:20.141Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -36,7 +36,7 @@
   "products": [
     {
       "id": "p_1788795486741tfdfu",
-      "name": "محصول جدید",
+      "name": "lh;sd ",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
@@ -44,10 +44,11 @@
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": null,
-      "imagePath": null,
-      "imageSha": null,
-      "stock": 0
+      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795486741tfdfu.jpg?v=1788795556971",
+      "imagePath": "product-images/p_1788795486741tfdfu.jpg",
+      "imageSha": "57c08c1547d460fd5fa10a4d0970339317923010",
+      "stock": 0,
+      "category": "g_mtqsahf4t778"
     },
     {
       "id": "p_1788795346363187ax",
