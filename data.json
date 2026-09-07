@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T13:28:46.673Z",
+  "updatedAt": "2026-09-07T13:31:11.277Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -32,18 +32,19 @@
   "products": [
     {
       "id": "p_1788787726489xvrd0",
-      "name": "محصول جدید",
-      "weight": 50,
-      "printHours": 3,
+      "name": "بی دندون سیاه",
+      "weight": 8,
+      "printHours": 1,
       "manualHours": 0,
-      "paintHours": 0,
+      "paintHours": 0.5,
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": null,
-      "imagePath": null,
-      "imageSha": null,
-      "stock": 0
+      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788787726489xvrd0.jpg?v=1788787802061",
+      "imagePath": "product-images/p_1788787726489xvrd0.jpg",
+      "imageSha": "bdee9a309f828a89a8246fdb66d36caf4c4fcbd5",
+      "stock": 1,
+      "category": "g_mtqsahf4t778"
     },
     {
       "id": "p_1788757924479oy27y",
