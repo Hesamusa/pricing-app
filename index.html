@@ -882,6 +882,19 @@
 
   <!-- ORDERS TAB — customer production/order requests -->
   <div id="tab-orders" class="tab-panel">
+    <div id="orders-login-gate" style="display:none;">
+      <div class="card" style="text-align:center; padding:36px 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px; display:block;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p style="margin:0 0 20px; font-weight:700;">برای ثبت و دیدن سفارش‌ها اول وارد شو</p>
+        <button class="add-btn" style="margin-top:0;" onclick="switchTab('sales')">رفتن به صفحه ورود</button>
+      </div>
+    </div>
+
+    <div id="orders-authed-content" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:8px;">
+      <span id="orders-user-email" class="hint" style="direction:ltr; text-align:right; margin:0;"></span>
+      <button type="button" class="add-btn" style="margin:0; background:var(--red); width:auto; padding:8px 16px;" onclick="sbSignOut()">خروج</button>
+    </div>
     <div class="section-title">ثبت سفارش جدید مشتری</div>
     <div class="card" id="order-form-wrap">
       <div class="field">
@@ -969,6 +982,7 @@
       <button type="button" class="filter-chip" data-orders-filter="done" onclick="setOrdersFilter('done')">تحویل‌شده</button>
     </div>
     <div id="orders-list" style="margin-top:14px;"></div>
+    </div><!-- /orders-authed-content -->
   </div>
 
   <!-- CUSTOMERS TAB -->
@@ -1019,6 +1033,14 @@
     <div id="accounting-overview" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;"></div>
     <div class="section-title" style="font-size:14px; margin:0 6px 10px;">وضعیت مشتریان</div>
     <div id="accounting-customers"></div>
+
+    <div id="staff-performance-section" style="display:none;">
+      <div class="section-title" style="margin-top:26px;"><span class="bar"></span>عملکرد پرسنل</div>
+      <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+        این بخش فقط برای مدیر دیده می‌شه: فروش و سفارش‌های ثبت‌شده توسط هر کاربر، جدا از بقیه.
+      </div>
+      <div id="staff-performance-list"></div>
+    </div>
   </div>
 
 </main>
@@ -1246,10 +1268,8 @@ function loadState(){
     const c = localStorage.getItem('pricing_app_customers');
     if(c) customers = JSON.parse(c);
   }catch(e){ /* no saved customers یا هنوز ذخیره‌ای نداره */ }
-  try{
-    const o = localStorage.getItem('pricing_app_orders');
-    if(o) orders = JSON.parse(o);
-  }catch(e){ /* no saved orders yet */ }
+  // سفارش‌ها دیگه لوکال ذخیره نمی‌شن؛ منبع اصلی‌شون Supabase هست (هر کاربر
+  // فقط سفارش‌های خودش رو می‌بینه، مدیر همه رو) — با ورود، از سرور می‌آد.
   // پاک‌سازی یک‌باره‌ی محصول نمونه‌ای که قبلاً به‌صورت خودکار ساخته می‌شد
   // (اگه هنوز دست‌نخورده مونده و کاربر خودش عمداً همچین محصولی نساخته باشه)
   if(products.length){
@@ -1262,7 +1282,6 @@ function loadState(){
   renderProducts();
   renderSummary();
   renderCustomersTab();
-  renderOrdersTab();
 
   if(githubReadConfigured()){
     githubSyncInitialized = true;
@@ -1272,13 +1291,11 @@ function loadState(){
         settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
         products = Array.isArray(remote.products) ? remote.products : products;
         customers = Array.isArray(remote.customers) ? remote.customers : customers;
-        orders = Array.isArray(remote.orders) ? remote.orders : orders;
+        // سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
         renderSettings();
         renderProducts();
         renderSummary();
         renderCustomersTab();
-        const ordersTab = document.getElementById('tab-orders');
-        if(ordersTab && ordersTab.classList.contains('active')) renderOrdersTab();
         persist({skipSync:true});
         const canWrite = githubConfigured();
         setSyncStatus(
@@ -1312,7 +1329,6 @@ function persist(opts){
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
       localStorage.setItem('pricing_app_customers', JSON.stringify(customers));
-      localStorage.setItem('pricing_app_orders', JSON.stringify(orders));
       flashSaved();
     }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
     if(!(opts && opts.skipSync)) scheduleSync();
@@ -1331,7 +1347,7 @@ function switchTab(name){
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='summary'){ renderSummary(); updateSummaryVisibility(); }
   if(name==='sales') updateSalesAuthUI();
-  if(name==='orders') renderOrdersTab();
+  if(name==='orders') updateOrdersAuthUI();
   if(name==='customers') renderCustomersTab();
   if(name==='settings') applySettingsLock();
 }
@@ -1381,6 +1397,8 @@ async function tryUnlockAdmin(){
   updateModeUI();
   renderProducts();
   renderCustomersTab();
+  renderSummary();
+  updateSummaryVisibility();
 }
 
 async function lockAdmin(){
@@ -1389,6 +1407,8 @@ async function lockAdmin(){
   updateModeUI();
   renderProducts();
   renderCustomersTab();
+  renderSummary();
+  updateSummaryVisibility();
   switchTab('sales');
 }
 
@@ -1406,6 +1426,7 @@ async function refreshAuthState(){
   updateModeUI();
   applySettingsLock();
   await updateSalesAuthUI();
+  await updateOrdersAuthUI();
 }
 
 async function fetchUserRole(){
@@ -1477,6 +1498,46 @@ async function loadSalesFromSupabase(){
   }catch(e){ console.error(e); sales = []; }
 }
 
+// ————— سفارش‌ها هم دقیقاً مثل فروش‌ها روی Supabase ذخیره می‌شن (نه لوکال/گیت‌هاب)
+// تا هر کاربر فقط سفارش‌های خودش رو ببینه و مدیر همه رو —————
+async function updateOrdersAuthUI(){
+  const gate = document.getElementById('orders-login-gate');
+  const content = document.getElementById('orders-authed-content');
+  const emailLabel = document.getElementById('orders-user-email');
+  if(!gate || !content) return;
+  if(currentUser){
+    gate.style.display = 'none';
+    content.style.display = '';
+    if(emailLabel) emailLabel.textContent = currentUser.email;
+    await loadOrdersFromSupabase();
+    renderOrdersTab();
+  }else{
+    gate.style.display = '';
+    content.style.display = 'none';
+    orders = [];
+  }
+}
+
+async function loadOrdersFromSupabase(){
+  if(!currentUser){ orders = []; return; }
+  try{
+    const { data, error } = await sb.from('orders').select('id, creator_id, data, created_at').order('created_at', { ascending:false });
+    if(error){ console.error('خطا در دریافت سفارش‌ها از Supabase', error); orders = []; return; }
+    orders = (data||[]).map(row => ({ ...(row.data||{}), id: row.id, creatorId: row.creator_id }));
+  }catch(e){ console.error(e); orders = []; }
+}
+
+// بعد از هر تغییر روی یک سفارش موجود (وضعیت، قیمت، پرداخت‌ها)، کل شیء سفارش
+// رو (بدون id/creatorId که ستون‌های جدا هستن) توی ستون data روی سرور به‌روز می‌کنیم.
+async function syncOrderToSupabase(order){
+  const { id, creatorId, creatorEmail, ...rest } = order;
+  try{
+    const { error } = await sb.from('orders').update({ data: { ...rest, creatorEmail } }).eq('id', id);
+    if(error){ alert('به‌روزرسانی سفارش روی سرور ناموفق بود: ' + error.message); return false; }
+    return true;
+  }catch(e){ alert('به‌روزرسانی سفارش ناموفق بود؛ اتصال رو چک کن.'); return false; }
+}
+
 sb.auth.onAuthStateChange(() => { refreshAuthState(); });
 
 function onModeBadgeClick(){
@@ -1505,6 +1566,8 @@ function updateModeUI(){
 function updateSummaryVisibility(){
   const pricingSection = document.getElementById('summary-pricing-section');
   if(pricingSection) pricingSection.style.display = isAdmin ? '' : 'none';
+  const staffSection = document.getElementById('staff-performance-section');
+  if(staffSection) staffSection.style.display = isAdmin ? '' : 'none';
 }
 
 function renderSettings(){
@@ -2553,6 +2616,60 @@ function renderAccounting(){
         <span class="${c.remaining>0?'profit-neg':'profit-pos'}">مانده بدهی: <b>${fmt(c.remaining)}</b></span>
       </div>
     </div>`).join('');
+  renderStaffPerformance();
+}
+
+// ————— عملکرد پرسنل: فروش و سفارش‌های هر کاربر جدا از بقیه (فقط برای مدیر) —————
+function computeStaffPerformance(){
+  const map = new Map(); // key: uid یا ایمیل -> آمار اون کاربر
+  const getEntry = (uid, email) => {
+    const key = uid || ('e:' + (email || 'نامشخص'));
+    if(!map.has(key)) map.set(key, {email: email || 'نامشخص', salesCount:0, salesRevenue:0, salesProfit:0, ordersCount:0, ordersValue:0, ordersPaid:0});
+    const entry = map.get(key);
+    if(email && (!entry.email || entry.email==='نامشخص')) entry.email = email;
+    return entry;
+  };
+  sales.forEach(s => {
+    const entry = getEntry(s.sellerId, s.sellerEmail);
+    entry.salesCount += 1;
+    entry.salesRevenue += (s.unitPrice||0) * (s.qty||0);
+    entry.salesProfit += ((s.unitPrice||0) - (s.costPerUnit||0)) * (s.qty||0);
+  });
+  orders.forEach(o => {
+    const entry = getEntry(o.creatorId, o.creatorEmail);
+    entry.ordersCount += 1;
+    entry.ordersValue += (o.totalPrice||0);
+    entry.ordersPaid += Math.min(orderPaidTotal(o), o.totalPrice||0);
+  });
+  return Array.from(map.values()).sort((a,b) => (b.salesRevenue+b.ordersValue) - (a.salesRevenue+a.ordersValue));
+}
+
+function renderStaffPerformance(){
+  const listEl = document.getElementById('staff-performance-list');
+  if(!listEl || !isAdmin) return;
+  const rows = computeStaffPerformance();
+  if(!rows.length){
+    listEl.innerHTML = `<div class="empty"><p>هنوز فروش یا سفارشی ثبت نشده.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = rows.map(r => `
+    <div class="sale-item">
+      <div class="sale-item-top">
+        <span class="sale-item-name mono" style="direction:ltr; display:block; text-align:right;">${escapeHtml(r.email)}</span>
+      </div>
+      <div class="sale-item-bottom">
+        <span>تعداد فروش: <b>${fa.format(r.salesCount)}</b></span>
+        <span>جمع فروش: <b>${fmt(r.salesRevenue)}</b></span>
+      </div>
+      <div class="sale-item-bottom">
+        <span class="profit-pos">سود فروش‌ها: <b>${fmt(r.salesProfit)}</b></span>
+        <span>تعداد سفارش: <b>${fa.format(r.ordersCount)}</b></span>
+      </div>
+      <div class="sale-item-bottom">
+        <span>جمع ارزش سفارش‌ها: <b>${fmt(r.ordersValue)}</b></span>
+        <span class="profit-pos">دریافتی سفارش‌ها: <b>${fmt(r.ordersPaid)}</b></span>
+      </div>
+    </div>`).join('');
 }
 
 function makeSale(productId, productName, qty, unitPrice, costPerUnit, saleType, note, date, buyerName, buyerPhone){
@@ -3151,6 +3268,7 @@ async function submitSale(){
   const type = document.getElementById('sale_price').dataset.type || 'retail';
   const c = calc(prod);
   const saleData = makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone);
+  saleData.sellerEmail = currentUser.email;
   let insertedRow;
   try{
     const { data, error } = await sb.from('sales').insert({ seller_id: currentUser.id, data: saleData }).select().single();
@@ -3238,6 +3356,7 @@ function renderSalesTab(){
         <span class="tag">${typeLabel}</span>
         <span>${formatDateFa(s.date)}</span>
         ${s.buyerName ? `<span>خریدار: ${escapeHtml(s.buyerName)}</span>` : ''}
+        ${isAdmin && s.sellerEmail ? `<span class="tag pending">فروشنده: ${escapeHtml(s.sellerEmail)}</span>` : ''}
       </div>
       <div class="sale-item-bottom">
         <span>جمع فروش: <b>${fmt(total)}</b></span>
@@ -3280,20 +3399,22 @@ function orderRemaining(order){
   return Math.max(0, (order.totalPrice||0) - orderPaidTotal(order));
 }
 
-function editOrderTotalPrice(id){
+async function editOrderTotalPrice(id){
   if(!isAdmin){ alert('فقط مدیر می‌تونه قیمت کل سفارش رو تنظیم کنه.'); return; }
   const order = orders.find(o => o.id === id);
   if(!order) return;
   const input = prompt('قیمت کل سفارش (تومان):', order.totalPrice ? String(order.totalPrice) : '');
   if(input === null) return;
+  const prevVal = order.totalPrice;
   const val = parseNum(input);
   order.totalPrice = val > 0 ? val : 0;
-  persist();
   renderOrdersTab();
   renderSummary();
+  const ok = await syncOrderToSupabase(order);
+  if(!ok){ order.totalPrice = prevVal; renderOrdersTab(); renderSummary(); }
 }
 
-function addOrderPayment(id){
+async function addOrderPayment(id){
   const order = orders.find(o => o.id === id);
   if(!order) return;
   const input = prompt('مبلغ پرداخت جدید (تومان):');
@@ -3301,21 +3422,25 @@ function addOrderPayment(id){
   const amount = parseNum(input);
   if(!amount || amount <= 0){ alert('مبلغ نامعتبره.'); return; }
   if(!Array.isArray(order.payments)) order.payments = [];
-  order.payments.push(makePayment(amount));
-  persist();
+  const payment = makePayment(amount);
+  order.payments.push(payment);
   renderOrdersTab();
   renderSummary();
+  const ok = await syncOrderToSupabase(order);
+  if(!ok){ order.payments = order.payments.filter(p => p.id !== payment.id); renderOrdersTab(); renderSummary(); }
 }
 
-function deleteOrderPayment(orderId, paymentId){
+async function deleteOrderPayment(orderId, paymentId){
   if(!isAdmin) return;
   const order = orders.find(o => o.id === orderId);
   if(!order) return;
   if(!confirm('این پرداخت حذف بشه؟')) return;
+  const prevPayments = order.payments;
   order.payments = (order.payments||[]).filter(p => p.id !== paymentId);
-  persist();
   renderOrdersTab();
   renderSummary();
+  const ok = await syncOrderToSupabase(order);
+  if(!ok){ order.payments = prevPayments; renderOrdersTab(); renderSummary(); }
 }
 
 function toggleOrderItemPicker(){
@@ -3417,7 +3542,8 @@ function resetOrderForm(){
   clearOrderDueDate();
 }
 
-function submitOrder(){
+async function submitOrder(){
+  if(!currentUser){ alert('اول باید وارد بشی.'); return; }
   if(!currentOrderItems.length){ alert('اول حداقل یک محصول به سفارش اضافه کن.'); return; }
   const phoneEl = document.getElementById('order_customer_phone');
   if(!markPhoneValidity(phoneEl, 'order_customer_phone_hint')){
@@ -3432,30 +3558,42 @@ function submitOrder(){
   const totalPrice = parseNum(document.getElementById('order_total_price').value);
   const prepayment = parseNum(document.getElementById('order_prepayment').value);
   const payments = prepayment > 0 ? [makePayment(prepayment, 'پیش‌پرداخت اولیه')] : [];
-  orders.unshift(makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes, totalPrice, payments));
+  const orderData = makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes, totalPrice, payments);
+  orderData.creatorEmail = currentUser.email;
+  let insertedRow;
+  try{
+    const { data, error } = await sb.from('orders').insert({ creator_id: currentUser.id, data: orderData }).select().single();
+    if(error){ alert('ثبت سفارش روی سرور ناموفق بود: ' + error.message); return; }
+    insertedRow = data;
+  }catch(e){ alert('ثبت سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
+  orders.unshift({ ...orderData, id: insertedRow.id, creatorId: currentUser.id });
   if(name || phone){
     upsertCustomer(name, phone);
     renderCustomersTab();
   }
-  persist();
   resetOrderForm();
   renderOrdersTab();
   renderSummary();
 }
 
-function setOrderStatus(id, status){
+async function setOrderStatus(id, status){
   const order = orders.find(o => o.id === id);
   if(!order) return;
+  const prevStatus = order.status;
   order.status = status;
-  persist();
   renderOrdersTab();
+  const ok = await syncOrderToSupabase(order);
+  if(!ok){ order.status = prevStatus; renderOrdersTab(); }
 }
 
-function deleteOrder(id){
+async function deleteOrder(id){
   if(!isAdmin) return;
   if(!confirm('این سفارش حذف بشه؟')) return;
+  try{
+    const { error } = await sb.from('orders').delete().eq('id', id);
+    if(error){ alert('حذف سفارش روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ alert('حذف سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
   orders = orders.filter(o => o.id !== id);
-  persist();
   renderOrdersTab();
   renderSummary();
 }
@@ -3507,6 +3645,7 @@ function renderOrdersTab(){
         <span class="${statusClass}">${statusLabel}</span>
         ${o.customerPhone ? `<span class="mono">${o.customerPhone}</span>` : ''}
         ${o.dueDate ? `<span>تحویل: ${formatDateFa(o.dueDate)}</span>` : ''}
+        ${isAdmin && o.creatorEmail ? `<span class="tag pending">ثبت‌کننده: ${escapeHtml(o.creatorEmail)}</span>` : ''}
       </div>
       <div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${itemsText}</div>
       ${o.notes ? `<div class="sale-item-note">${escapeHtml(o.notes)}</div>` : ''}
