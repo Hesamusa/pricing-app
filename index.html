@@ -2811,19 +2811,33 @@ function makeCustomer(name, phone){
     id: 'c_' + Date.now() + Math.random().toString(36).slice(2,7),
     name: (name||'').trim(),
     phone: normalizeDigits(phone),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    ownerId: currentUser ? currentUser.id : null,
+    ownerEmail: currentUser ? currentUser.email : null
   };
 }
 
-// اگر شماره تماس از قبل در لیست مشتریان باشه، همون رکورد به‌روزرسانی می‌شه؛
-// در غیر این صورت یک مشتری جدید ساخته می‌شه. این تابع از تب فروش صدا زده می‌شه.
+// مشتری‌هایی که کاربر فعلی خودش ثبت کرده (مدیر همه رو می‌بینه).
+// همه‌جای دیگه به‌جای آرایه‌ی خام customers از همین تابع استفاده کن
+// تا هیچ‌جا اطلاعات مشتریِ بقیه‌ی کاربرها لو نره.
+function myCustomers(){
+  if(isAdmin) return customers;
+  if(!currentUser) return [];
+  return customers.filter(c => c.ownerId === currentUser.id);
+}
+
+// اگر شماره تماس از قبل در لیست مشتریانِ خودِ همین کاربر باشه، همون رکورد
+// به‌روزرسانی می‌شه؛ وگرنه یک مشتری جدید (متعلق به همین کاربر) ساخته می‌شه.
+// عمداً فقط داخل مشتری‌های خودِ کاربر جستجو می‌کنیم تا رکورد مشتریِ یک
+// همکارِ دیگه (حتی با شماره‌ی یکسان) دیده یا بازنویسی نشه. این تابع از تب فروش صدا زده می‌شه.
 function upsertCustomer(name, phone){
   name = (name||'').trim();
   phone = normalizeDigits(phone);
   if(!name && !phone) return;
-  let cust = phone ? customers.find(c => c.phone === phone) : null;
+  const own = myCustomers();
+  let cust = phone ? own.find(c => c.phone === phone) : null;
   if(!cust && !phone && name){
-    cust = customers.find(c => !c.phone && c.name === name);
+    cust = own.find(c => !c.phone && c.name === name);
   }
   if(cust){
     if(name) cust.name = name;
@@ -2851,7 +2865,7 @@ function addCustomerManual(){
     phoneEl.focus();
     return;
   }
-  if(phone && customers.some(c => c.phone === phone)){
+  if(phone && myCustomers().some(c => c.phone === phone)){
     alert('مشتری‌ای با این شماره تماس قبلاً ثبت شده.');
     return;
   }
@@ -2866,6 +2880,7 @@ function addCustomerManual(){
 function updateCustomer(id, field, value){
   const cust = customers.find(c=>c.id===id);
   if(!cust) return;
+  if(!isAdmin && (!currentUser || cust.ownerId !== currentUser.id)) return;
   if(field === 'phone'){
     cust.phone = normalizeDigits(value);
   }else{
@@ -2909,15 +2924,16 @@ function toggleCustomerEdit(id){
 function renderCustomersTab(){
   const listEl = document.getElementById('customers-list');
   if(!listEl) return;
-  if(customers.length === 0){
+  const own = myCustomers();
+  if(own.length === 0){
     listEl.innerHTML = `<div class="empty"><p>هنوز مشتری‌ای ثبت نشده. از فرم بالا اضافه کن یا هنگام ثبت فروش، نام و شماره خریدار رو وارد کن.</p></div>`;
     return;
   }
   const q = normalizeFaText(customerSearchQuery);
   const qDigits = normalizeDigits(customerSearchQuery).replace(/[^0-9]/g,'');
   const filteredCustomers = (q || qDigits)
-    ? customers.filter(c => normalizeFaText(c.name).includes(q) || (qDigits && normalizeDigits(c.phone).includes(qDigits)))
-    : customers;
+    ? own.filter(c => normalizeFaText(c.name).includes(q) || (qDigits && normalizeDigits(c.phone).includes(qDigits)))
+    : own;
   if(filteredCustomers.length === 0){
     listEl.innerHTML = `<div class="empty"><p>نتیجه‌ای برای «${escapeHtml(customerSearchQuery)}» پیدا نشد.</p></div>`;
     return;
