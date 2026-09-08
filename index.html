@@ -985,11 +985,13 @@
 
   <!-- SUMMARY TAB -->
   <div id="tab-summary" class="tab-panel">
-    <div class="section-title"><span class="bar"></span>قیمت‌گذاری محصولات (بر اساس تعریف محصولات)</div>
-    <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
-      این اعداد بر اساس قیمت و درصد سودی هست که برای هر محصول در تب «محصولات» تعریف کردی، نه فروش واقعی. برای دیدن فروش‌های ثبت‌شده، تب «فروش» رو ببین.
+    <div id="summary-pricing-section">
+      <div class="section-title"><span class="bar"></span>قیمت‌گذاری محصولات (بر اساس تعریف محصولات)</div>
+      <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+        این اعداد بر اساس قیمت و درصد سودی هست که برای هر محصول در تب «محصولات» تعریف کردی، نه فروش واقعی. برای دیدن فروش‌های ثبت‌شده، تب «فروش» رو ببین.
+      </div>
+      <div id="summary-content"></div>
     </div>
-    <div id="summary-content"></div>
 
     <div class="section-title" style="margin-top:26px;"><span class="bar"></span>حسابداری کسب‌وکار</div>
     <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
@@ -1309,7 +1311,7 @@ function switchTab(name){
   document.querySelectorAll('nav button').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
-  if(name==='summary') renderSummary();
+  if(name==='summary'){ renderSummary(); updateSummaryVisibility(); }
   if(name==='sales') renderSalesTab();
   if(name==='orders') renderOrdersTab();
   if(name==='customers') renderCustomersTab();
@@ -1378,6 +1380,14 @@ function updateModeUI(){
   const note = document.getElementById('products-locked-note');
   if(addBtn) addBtn.style.display = isAdmin ? '' : 'none';
   if(note) note.style.display = isAdmin ? 'none' : '';
+  updateSummaryVisibility();
+}
+
+// در تب «خلاصه» فقط برای مدیر، بخش «قیمت‌گذاری محصولات» نمایش داده می‌شه؛
+// برای کاربر غیرمدیر فقط «حسابداری کسب‌وکار» دیده می‌شه.
+function updateSummaryVisibility(){
+  const pricingSection = document.getElementById('summary-pricing-section');
+  if(pricingSection) pricingSection.style.display = isAdmin ? '' : 'none';
 }
 
 function renderSettings(){
