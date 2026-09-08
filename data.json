@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T20:18:11.241Z",
+  "updatedAt": "2026-09-08T20:21:01.025Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -63,7 +63,7 @@
       "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
       "imagePath": "product-images/p_1788796315293vahtq.jpg",
       "imageSha": "d7a4f9f92a924fe7cd1ad1875c5ef238af865f57",
-      "stock": 0,
+      "stock": 1,
       "category": "g_mtqsahf4t778"
     },
     {
@@ -213,21 +213,6 @@
   ],
   "sales": [
     {
-      "id": "24a9f202-7198-41c7-89bf-637d9d24e4c3",
-      "productId": "p_1788796315293vahtq",
-      "productName": "جغد کوچک",
-      "qty": 1,
-      "unitPrice": 240000,
-      "costPerUnit": 109100,
-      "saleType": "retail",
-      "note": "",
-      "date": "2026-09-08",
-      "buyerName": "",
-      "buyerPhone": "",
-      "sellerEmail": "hesam.mograph@gmail.com",
-      "sellerId": "72220c6c-4119-49cf-b201-9d49889f181f"
-    },
-    {
       "id": "f34b25e1-197d-4971-87c2-feeabef2834e",
       "qty": 1,
       "date": "2026-09-08",
@@ -241,6 +226,20 @@
       "productName": "تیرکس رباتی",
       "sellerEmail": "hesam.mograph@gmail.com",
       "sellerId": "72220c6c-4119-49cf-b201-9d49889f181f"
+    },
+    {
+      "id": "20bd1b17-8d65-4820-8c5a-78c7d1e291af",
+      "qty": 1,
+      "date": "2026-09-08",
+      "note": "",
+      "saleType": "retail",
+      "buyerName": "خریدار 01",
+      "productId": "p_17887945861715k5ol",
+      "unitPrice": 235000,
+      "buyerPhone": "09352403763",
+      "costPerUnit": 106500,
+      "productName": "گربه تپل",
+      "sellerId": "d0ba5028-2807-4c51-a67b-8b3d6a5f3891"
     }
   ],
   "customers": [
