@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-07T15:59:05.719Z",
+  "updatedAt": "2026-09-08T19:56:37.214Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -175,7 +175,7 @@
       "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol.jpg?v=1788794736875",
       "imagePath": "product-images/p_17887945861715k5ol.jpg",
       "imageSha": "463014a8364f11ad7801afdf2d2125d76818f87d",
-      "stock": 1,
+      "stock": 0,
       "category": "g_mtqsahf4t778"
     },
     {
@@ -213,17 +213,18 @@
   ],
   "sales": [
     {
-      "id": "sl_17887795933274rewl",
-      "productId": "p_1788757924479oy27y",
-      "productName": "بی دندون سیاه",
+      "id": "20bd1b17-8d65-4820-8c5a-78c7d1e291af",
+      "productId": "p_17887945861715k5ol",
+      "productName": "گربه تپل",
       "qty": 1,
-      "unitPrice": 160000,
-      "costPerUnit": 73500,
+      "unitPrice": 235000,
+      "costPerUnit": 106500,
       "saleType": "retail",
       "note": "",
-      "date": "2026-09-07",
-      "buyerName": "رهگذر",
-      "buyerPhone": "09354864646"
+      "date": "2026-09-08",
+      "buyerName": "خریدار 01",
+      "buyerPhone": "09352403763",
+      "sellerId": "d0ba5028-2807-4c51-a67b-8b3d6a5f3891"
     }
   ],
   "customers": [
@@ -238,6 +239,12 @@
       "name": "رهگذر",
       "phone": "09354864646",
       "createdAt": "2026-09-07T11:13:13.327Z"
+    },
+    {
+      "id": "c_1788897395437lrfon",
+      "name": "خریدار 01",
+      "phone": "09352403763",
+      "createdAt": "2026-09-08T19:56:35.437Z"
     }
   ],
   "orders": [
