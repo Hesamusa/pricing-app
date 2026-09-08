@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T20:33:07.273Z",
+  "updatedAt": "2026-09-08T20:53:51.583Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -214,16 +214,16 @@
   "sales": [
     {
       "id": "38199a29-2fab-4ed2-904c-6617680eec9b",
-      "productId": "p_17887965710100v1nz",
-      "productName": "تیرکس رباتی",
       "qty": 1,
-      "unitPrice": 935000,
-      "costPerUnit": 426000,
-      "saleType": "retail",
-      "note": "",
       "date": "2026-09-08",
+      "note": "",
+      "saleType": "retail",
       "buyerName": "",
+      "productId": "p_17887965710100v1nz",
+      "unitPrice": 935000,
       "buyerPhone": "",
+      "costPerUnit": 426000,
+      "productName": "تیرکس رباتی",
       "sellerEmail": "hesam.mograph@gmail.com",
       "sellerId": "72220c6c-4119-49cf-b201-9d49889f181f"
     }
@@ -234,18 +234,6 @@
       "name": "حسن",
       "phone": "09325131600",
       "createdAt": "2026-09-07T05:14:36.660Z"
-    },
-    {
-      "id": "c_17887795933272iyyc",
-      "name": "رهگذر",
-      "phone": "09354864646",
-      "createdAt": "2026-09-07T11:13:13.327Z"
-    },
-    {
-      "id": "c_1788897395437lrfon",
-      "name": "خریدار 2",
-      "phone": "09352403763",
-      "createdAt": "2026-09-08T19:56:35.437Z"
     }
   ],
   "orders": []
