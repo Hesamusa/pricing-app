@@ -1283,10 +1283,9 @@ function loadState(){
     const p = localStorage.getItem('pricing_app_products');
     if(p) products = JSON.parse(p);
   }catch(e){ /* no saved products yet */ }
-  try{
-    const c = localStorage.getItem('pricing_app_customers');
-    if(c) customers = JSON.parse(c);
-  }catch(e){ /* no saved customers یا هنوز ذخیره‌ای نداره */ }
+  // مشتریان هم مثل سفارش‌ها دیگه لوکال/گیت‌هاب ذخیره نمی‌شن؛ منبع اصلی‌شون
+  // Supabase‌ه (هر کاربر فقط مشتری‌های خودش رو می‌بینه، مدیر همه رو) — با
+  // باز کردن تب مشتریان، از سرور می‌آد (به updateCustomersAuthUI نگاه کن).
   // سفارش‌ها دیگه لوکال ذخیره نمی‌شن؛ منبع اصلی‌شون Supabase هست (هر کاربر
   // فقط سفارش‌های خودش رو می‌بینه، مدیر همه رو) — با ورود، از سرور می‌آد.
   // پاک‌سازی یک‌باره‌ی محصول نمونه‌ای که قبلاً به‌صورت خودکار ساخته می‌شد
@@ -1300,7 +1299,6 @@ function loadState(){
   renderSettings();
   renderProducts();
   renderSummary();
-  renderCustomersTab();
 
   if(githubReadConfigured()){
     githubSyncInitialized = true;
@@ -1309,8 +1307,7 @@ function loadState(){
       if(remote){
         settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
         products = Array.isArray(remote.products) ? remote.products : products;
-        customers = Array.isArray(remote.customers) ? remote.customers : customers;
-        // سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
+        // مشتریان و سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
         renderSettings();
         renderProducts();
         renderSummary();
@@ -1347,7 +1344,6 @@ function persist(opts){
     try{
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
-      localStorage.setItem('pricing_app_customers', JSON.stringify(customers));
       flashSaved();
     }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
     if(!(opts && opts.skipSync)) scheduleSync();
@@ -1370,7 +1366,7 @@ function switchTab(name){
   if(name==='sellers') renderStaffPerformance();
   if(name==='sales') updateSalesAuthUI();
   if(name==='orders') updateOrdersAuthUI();
-  if(name==='customers') renderCustomersTab();
+  if(name==='customers') updateCustomersAuthUI();
   if(name==='settings') applySettingsLock();
 }
 
@@ -1727,13 +1723,11 @@ async function maybeInitGithubSync(){
       settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
       products = Array.isArray(remote.products) ? remote.products : products;
       sales = Array.isArray(remote.sales) ? remote.sales : sales;
-      customers = Array.isArray(remote.customers) ? remote.customers : customers;
       orders = Array.isArray(remote.orders) ? remote.orders : orders;
       renderSettings();
       renderProducts();
       renderSummary();
       renderSalesTab();
-      renderCustomersTab();
       renderOrdersTab();
       persist({skipSync:true});
       setSyncStatus('نسخه گیت‌هاب بارگذاری شد ✓', 'success');
@@ -2295,7 +2289,9 @@ function githubDataPath(){ return 'data.json'; }
 
 function buildSyncPayload(){
   const {githubToken, ...safeSettings} = settings; // never store the token itself in the repo
-  return { updatedAt: new Date().toISOString(), settings: safeSettings, products, sales, customers, orders };
+  // مشتریان (و فروش/سفارش) عمداً توی این payload نیستن: این فایل روی گیت‌هاب
+  // مشترک/عمومیه و اگه داده‌ی هر کاربر این‌جا هم می‌رفت، همون نشتی قبلی برمی‌گشت.
+  return { updatedAt: new Date().toISOString(), settings: safeSettings, products };
 }
 
 function formatTimeFa(d){
@@ -2806,20 +2802,35 @@ function markPhoneValidity(el, hintId){
   return valid;
 }
 
-function makeCustomer(name, phone){
+// ————— مشتری‌ها دقیقاً مثل فروش‌ها/سفارش‌ها روی Supabase ذخیره می‌شن
+// (نه لوکال/گیت‌هاب) تا با RLS واقعی، هر کاربر فقط مشتری‌های خودش رو
+// ببینه/ویرایش کنه و مدیر همه رو —————
+function makeCustomerData(name, phone){
   return {
-    id: 'c_' + Date.now() + Math.random().toString(36).slice(2,7),
     name: (name||'').trim(),
     phone: normalizeDigits(phone),
-    createdAt: new Date().toISOString(),
-    ownerId: currentUser ? currentUser.id : null,
-    ownerEmail: currentUser ? currentUser.email : null
+    createdAt: new Date().toISOString()
   };
 }
 
-// مشتری‌هایی که کاربر فعلی خودش ثبت کرده (مدیر همه رو می‌بینه).
-// همه‌جای دیگه به‌جای آرایه‌ی خام customers از همین تابع استفاده کن
-// تا هیچ‌جا اطلاعات مشتریِ بقیه‌ی کاربرها لو نره.
+async function loadCustomersFromSupabase(){
+  if(!currentUser){ customers = []; return; }
+  try{
+    const { data, error } = await sb.from('customers').select('id, owner_id, data, created_at').order('created_at', { ascending:false });
+    if(error){ console.error('خطا در دریافت مشتریان از Supabase', error); customers = []; return; }
+    customers = (data||[]).map(row => ({ ...(row.data||{}), id: row.id, ownerId: row.owner_id }));
+  }catch(e){ console.error(e); customers = []; }
+}
+
+async function updateCustomersAuthUI(){
+  if(!currentUser){ customers = []; renderCustomersTab(); return; }
+  await loadCustomersFromSupabase();
+  renderCustomersTab();
+}
+
+// مشتری‌هایی که کاربر فعلی خودش ثبت کرده (مدیر همه رو می‌بینه). چون
+// loadCustomersFromSupabase از قبل با RLS فقط ردیف‌های مجاز رو می‌گیره،
+// این تابع بیشتر برای وضوح کده؛ ولی به‌عنوان لایه‌ی دوم هم فیلتر می‌کنه.
 function myCustomers(){
   if(isAdmin) return customers;
   if(!currentUser) return [];
@@ -2827,10 +2838,12 @@ function myCustomers(){
 }
 
 // اگر شماره تماس از قبل در لیست مشتریانِ خودِ همین کاربر باشه، همون رکورد
-// به‌روزرسانی می‌شه؛ وگرنه یک مشتری جدید (متعلق به همین کاربر) ساخته می‌شه.
-// عمداً فقط داخل مشتری‌های خودِ کاربر جستجو می‌کنیم تا رکورد مشتریِ یک
-// همکارِ دیگه (حتی با شماره‌ی یکسان) دیده یا بازنویسی نشه. این تابع از تب فروش صدا زده می‌شه.
-function upsertCustomer(name, phone){
+// روی سرور به‌روزرسانی می‌شه؛ وگرنه یک مشتری جدید (متعلق به همین کاربر)
+// ساخته می‌شه. عمداً فقط داخل مشتری‌های خودِ کاربر جستجو می‌کنیم تا رکورد
+// مشتریِ یک همکارِ دیگه (حتی با شماره‌ی یکسان) دیده یا بازنویسی نشه.
+// این تابع از تب فروش/سفارش صدا زده می‌شه.
+async function upsertCustomer(name, phone){
+  if(!currentUser) return;
   name = (name||'').trim();
   phone = normalizeDigits(phone);
   if(!name && !phone) return;
@@ -2840,10 +2853,20 @@ function upsertCustomer(name, phone){
     cust = own.find(c => !c.phone && c.name === name);
   }
   if(cust){
-    if(name) cust.name = name;
-    if(phone) cust.phone = phone;
+    const newData = { ...cust, name: name || cust.name, phone: phone || cust.phone };
+    delete newData.id; delete newData.ownerId;
+    try{
+      const { error } = await sb.from('customers').update({ data: newData }).eq('id', cust.id);
+      if(error){ console.error('به‌روزرسانی مشتری ناموفق بود', error); return; }
+      cust.name = newData.name; cust.phone = newData.phone;
+    }catch(e){ console.error(e); }
   }else{
-    customers.push(makeCustomer(name, phone));
+    const customerData = makeCustomerData(name, phone);
+    try{
+      const { data, error } = await sb.from('customers').insert({ owner_id: currentUser.id, data: customerData }).select().single();
+      if(error){ console.error('ثبت مشتری ناموفق بود', error); return; }
+      customers.unshift({ ...customerData, id: data.id, ownerId: currentUser.id });
+    }catch(e){ console.error(e); }
   }
 }
 
@@ -2854,7 +2877,8 @@ function customerStats(phone){
   return {count: list.length, totalSpent};
 }
 
-function addCustomerManual(){
+async function addCustomerManual(){
+  if(!currentUser){ alert('اول باید وارد بشی.'); return; }
   const nameEl = document.getElementById('new_customer_name');
   const phoneEl = document.getElementById('new_customer_phone');
   const name = nameEl.value.trim();
@@ -2869,31 +2893,44 @@ function addCustomerManual(){
     alert('مشتری‌ای با این شماره تماس قبلاً ثبت شده.');
     return;
   }
-  customers.push(makeCustomer(name, phone));
+  const customerData = makeCustomerData(name, phone);
+  try{
+    const { data, error } = await sb.from('customers').insert({ owner_id: currentUser.id, data: customerData }).select().single();
+    if(error){ alert('ثبت مشتری روی سرور ناموفق بود: ' + error.message); return; }
+    customers.unshift({ ...customerData, id: data.id, ownerId: currentUser.id });
+  }catch(e){ alert('ثبت مشتری ناموفق بود؛ اتصال رو چک کن.'); return; }
   nameEl.value = '';
   phoneEl.value = '';
   document.getElementById('new_customer_phone_hint').textContent = '';
-  persist();
   renderCustomersTab();
 }
 
-function updateCustomer(id, field, value){
+async function updateCustomer(id, field, value){
   const cust = customers.find(c=>c.id===id);
   if(!cust) return;
   if(!isAdmin && (!currentUser || cust.ownerId !== currentUser.id)) return;
+  const prevName = cust.name, prevPhone = cust.phone;
   if(field === 'phone'){
     cust.phone = normalizeDigits(value);
   }else{
     cust.name = value;
   }
-  persist();
+  const newData = { ...cust };
+  delete newData.id; delete newData.ownerId;
+  try{
+    const { error } = await sb.from('customers').update({ data: newData }).eq('id', id);
+    if(error){ console.error('به‌روزرسانی مشتری ناموفق بود', error); cust.name = prevName; cust.phone = prevPhone; renderCustomersTab(); }
+  }catch(e){ console.error(e); cust.name = prevName; cust.phone = prevPhone; renderCustomersTab(); }
 }
 
-function deleteCustomer(id){
+async function deleteCustomer(id){
   if(!isAdmin) return;
   if(!confirm('این مشتری حذف بشه؟')) return;
+  try{
+    const { error } = await sb.from('customers').delete().eq('id', id);
+    if(error){ alert('حذف مشتری روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ alert('حذف مشتری ناموفق بود؛ اتصال رو چک کن.'); return; }
   customers = customers.filter(c => c.id !== id);
-  persist();
   renderCustomersTab();
 }
 
@@ -3366,7 +3403,7 @@ async function submitSale(){
   sales.unshift({ ...saleData, id: insertedRow.id, sellerId: currentUser.id });
   prod.stock = currentStock - qty;
   if(buyerName || buyerPhone){
-    upsertCustomer(buyerName, buyerPhone);
+    await upsertCustomer(buyerName, buyerPhone);
     renderCustomersTab();
   }
   updateProductDisplay(prod.id);
@@ -3657,7 +3694,7 @@ async function submitOrder(){
   }catch(e){ alert('ثبت سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
   orders.unshift({ ...orderData, id: insertedRow.id, creatorId: currentUser.id });
   if(name || phone){
-    upsertCustomer(name, phone);
+    await upsertCustomer(name, phone);
     renderCustomersTab();
   }
   resetOrderForm();
