@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T19:56:37.214Z",
+  "updatedAt": "2026-09-08T19:57:26.234Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -242,12 +242,37 @@
     },
     {
       "id": "c_1788897395437lrfon",
-      "name": "خریدار 01",
+      "name": "خریدار 2",
       "phone": "09352403763",
       "createdAt": "2026-09-08T19:56:35.437Z"
     }
   ],
   "orders": [
+    {
+      "id": "o_1788897444470qmc7b",
+      "items": [
+        {
+          "productId": "p_17887965710100v1nz",
+          "productName": "تیرکس رباتی",
+          "qty": 1
+        }
+      ],
+      "customerName": "خریدار 2",
+      "customerPhone": "09352403763",
+      "dueDate": null,
+      "notes": "",
+      "status": "pending",
+      "totalPrice": 800000,
+      "payments": [
+        {
+          "id": "pay_1788897444470grybs",
+          "amount": 500000,
+          "date": "2026-09-08",
+          "note": "پیش‌پرداخت اولیه"
+        }
+      ],
+      "createdAt": "2026-09-08T19:57:24.470Z"
+    },
     {
       "id": "o_17887796408025ctf6",
       "items": [
