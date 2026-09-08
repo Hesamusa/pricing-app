@@ -530,6 +530,19 @@
   </div>
 </header>
 
+<!-- گیت ورود سراسری: تا وقتی لاگین نشده، هیچ‌کدوم از تب‌ها (حتی محصولات/مشتریان/خلاصه) دیده نمی‌شن -->
+<div id="app-login-gate" style="display:flex; min-height:60vh; align-items:center; justify-content:center; padding:24px 16px;">
+  <div class="card" style="max-width:320px; width:100%; text-align:center;">
+    <div class="section-title" style="justify-content:center;"><span class="bar"></span>ورود به دفترچه</div>
+    <p class="hint" style="margin:0 0 14px; line-height:1.7;">برای دیدن هر بخشی از اپ (محصولات، فروش، سفارشات، مشتریان و خلاصه) اول باید وارد بشی.</p>
+    <input type="email" id="appLoginEmail" class="gh-field" placeholder="ایمیل" style="text-align:center; direction:ltr; margin-bottom:10px;">
+    <input type="password" id="appLoginPass" class="gh-field" placeholder="رمز عبور" style="text-align:center; direction:ltr; margin-bottom:12px;" onkeydown="if(event.key==='Enter') tryAppLogin()">
+    <button class="add-btn" style="margin-top:0;" onclick="tryAppLogin()">ورود</button>
+    <div id="appLoginError" style="color:var(--red); font-weight:600; margin-top:12px; font-size:13px;"></div>
+  </div>
+</div>
+
+<div id="app-content" style="display:none;">
 <main>
 
   <!-- SETTINGS TAB -->
@@ -1033,14 +1046,15 @@
     <div id="accounting-overview" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;"></div>
     <div class="section-title" style="font-size:14px; margin:0 6px 10px;">وضعیت مشتریان</div>
     <div id="accounting-customers"></div>
+  </div>
 
-    <div id="staff-performance-section" style="display:none;">
-      <div class="section-title" style="margin-top:26px;"><span class="bar"></span>عملکرد پرسنل</div>
-      <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
-        این بخش فقط برای مدیر دیده می‌شه: فروش و سفارش‌های ثبت‌شده توسط هر کاربر، جدا از بقیه.
-      </div>
-      <div id="staff-performance-list"></div>
+  <!-- SELLERS TAB (فقط مدیر — هم دکمه‌ی منو و هم خودِ تب فقط برای مدیر نمایش داده می‌شه) -->
+  <div id="tab-sellers" class="tab-panel">
+    <div class="section-title"><span class="bar"></span>عملکرد فروشنده‌ها</div>
+    <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+      این بخش فقط برای مدیر دیده می‌شه: فروش و سفارش‌های ثبت‌شده توسط هر کاربر، جدا از بقیه.
     </div>
+    <div id="staff-performance-list"></div>
   </div>
 
 </main>
@@ -1071,8 +1085,13 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14.1"/></svg>
     خلاصه
   </button>
+  <button id="nav-sellers" onclick="switchTab('sellers')" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    فروشنده‌ها
+  </button>
   </div>
 </nav>
+</div><!-- /app-content -->
 
 <!-- Big QR code overlay for sharing the Instagram page with a customer in-store -->
 <div id="qr-overlay" class="qr-overlay" onclick="if(event.target===this) closeQrOverlay()">
@@ -1341,11 +1360,14 @@ function flashSaved(){
 }
 
 function switchTab(name){
+  // تب فروشنده‌ها فقط برای مدیر باز می‌شه؛ حتی اگه کسی دستی صداش بزنه، برمی‌گرده به خلاصه.
+  if(name==='sellers' && !isAdmin) name = 'summary';
   document.querySelectorAll('.tab-panel').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='summary'){ renderSummary(); updateSummaryVisibility(); }
+  if(name==='sellers') renderStaffPerformance();
   if(name==='sales') updateSalesAuthUI();
   if(name==='orders') updateOrdersAuthUI();
   if(name==='customers') renderCustomersTab();
@@ -1423,23 +1445,66 @@ async function refreshAuthState(){
     userRole = null;
     isAdmin = false;
   }
+  updateAppGateUI();
   updateModeUI();
   applySettingsLock();
   await updateSalesAuthUI();
   await updateOrdersAuthUI();
 }
 
+// گیت سراسری: تا لاگین نشده، نه main دیده می‌شه نه nav — هیچ تبی (حتی محصولات/مشتریان/خلاصه).
+function updateAppGateUI(){
+  const gate = document.getElementById('app-login-gate');
+  const content = document.getElementById('app-content');
+  if(!gate || !content) return;
+  if(currentUser){
+    gate.style.display = 'none';
+    content.style.display = '';
+  }else{
+    gate.style.display = 'flex';
+    content.style.display = 'none';
+  }
+}
+
+async function tryAppLogin(){
+  const emailEl = document.getElementById('appLoginEmail');
+  const passEl = document.getElementById('appLoginPass');
+  const err = document.getElementById('appLoginError');
+  if(err) err.textContent = '';
+  const email = (emailEl?.value || '').trim();
+  const pass = passEl?.value || '';
+  if(!email || !pass){
+    if(err) err.textContent = 'ایمیل و رمز عبور رو وارد کن.';
+    return;
+  }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if(error){
+    if(err) err.textContent = 'ایمیل یا رمز عبور اشتباهه.';
+    return;
+  }
+  if(passEl) passEl.value = '';
+  await refreshAuthState();
+}
+
 async function fetchUserRole(){
   if(!currentUser){ userRole = null; isAdmin = false; return; }
   try{
-    const { data, error } = await sb.from('profiles').select('role').eq('id', currentUser.id).single();
+    const { data, error } = await sb.from('profiles').select('role, full_name').eq('id', currentUser.id).single();
     if(!error && data){
       userRole = data.role;
       isAdmin = data.role === 'admin';
+      currentUser.name = (data.full_name && data.full_name.trim()) ? data.full_name.trim() : currentUser.email;
     }else{
       userRole = null; isAdmin = false;
+      currentUser.name = currentUser.email;
     }
-  }catch(e){ userRole = null; isAdmin = false; }
+  }catch(e){ userRole = null; isAdmin = false; if(currentUser) currentUser.name = currentUser.email; }
+}
+
+// اسم نمایشی کاربر: اگه توی پروفایلش full_name ثبت شده باشه همون نشون داده می‌شه، وگرنه ایمیلش.
+function displayNameFor(uidOrEmail, fallbackEmail){
+  if(currentUser && (uidOrEmail === currentUser.id) && currentUser.name) return currentUser.name;
+  return fallbackEmail || 'نامشخص';
 }
 
 async function trySalesLogin(){
@@ -1474,7 +1539,7 @@ async function updateSalesAuthUI(){
   if(currentUser){
     gate.style.display = 'none';
     content.style.display = '';
-    if(emailLabel) emailLabel.textContent = currentUser.email;
+    if(emailLabel) emailLabel.textContent = currentUser.name || currentUser.email;
     await loadSalesFromSupabase();
     renderSalesTab();
   }else{
@@ -1508,7 +1573,7 @@ async function updateOrdersAuthUI(){
   if(currentUser){
     gate.style.display = 'none';
     content.style.display = '';
-    if(emailLabel) emailLabel.textContent = currentUser.email;
+    if(emailLabel) emailLabel.textContent = currentUser.name || currentUser.email;
     await loadOrdersFromSupabase();
     renderOrdersTab();
   }else{
@@ -1558,6 +1623,13 @@ function updateModeUI(){
   const note = document.getElementById('products-locked-note');
   if(addBtn) addBtn.style.display = isAdmin ? '' : 'none';
   if(note) note.style.display = isAdmin ? 'none' : '';
+  const sellersBtn = document.getElementById('nav-sellers');
+  if(sellersBtn) sellersBtn.style.display = isAdmin ? '' : 'none';
+  // اگه کاربر همین الان روی تب فروشنده‌ها بود و از حالت مدیر خارج شد، برگردونش به خلاصه.
+  if(!isAdmin){
+    const sellersTab = document.getElementById('tab-sellers');
+    if(sellersTab && sellersTab.classList.contains('active')) switchTab('summary');
+  }
   updateSummaryVisibility();
 }
 
@@ -1566,8 +1638,6 @@ function updateModeUI(){
 function updateSummaryVisibility(){
   const pricingSection = document.getElementById('summary-pricing-section');
   if(pricingSection) pricingSection.style.display = isAdmin ? '' : 'none';
-  const staffSection = document.getElementById('staff-performance-section');
-  if(staffSection) staffSection.style.display = isAdmin ? '' : 'none';
 }
 
 function renderSettings(){
@@ -2622,21 +2692,22 @@ function renderAccounting(){
 // ————— عملکرد پرسنل: فروش و سفارش‌های هر کاربر جدا از بقیه (فقط برای مدیر) —————
 function computeStaffPerformance(){
   const map = new Map(); // key: uid یا ایمیل -> آمار اون کاربر
-  const getEntry = (uid, email) => {
+  const getEntry = (uid, email, name) => {
     const key = uid || ('e:' + (email || 'نامشخص'));
-    if(!map.has(key)) map.set(key, {email: email || 'نامشخص', salesCount:0, salesRevenue:0, salesProfit:0, ordersCount:0, ordersValue:0, ordersPaid:0});
+    if(!map.has(key)) map.set(key, {email: email || 'نامشخص', name: name || '', salesCount:0, salesRevenue:0, salesProfit:0, ordersCount:0, ordersValue:0, ordersPaid:0});
     const entry = map.get(key);
     if(email && (!entry.email || entry.email==='نامشخص')) entry.email = email;
+    if(name && !entry.name) entry.name = name;
     return entry;
   };
   sales.forEach(s => {
-    const entry = getEntry(s.sellerId, s.sellerEmail);
+    const entry = getEntry(s.sellerId, s.sellerEmail, s.sellerName);
     entry.salesCount += 1;
     entry.salesRevenue += (s.unitPrice||0) * (s.qty||0);
     entry.salesProfit += ((s.unitPrice||0) - (s.costPerUnit||0)) * (s.qty||0);
   });
   orders.forEach(o => {
-    const entry = getEntry(o.creatorId, o.creatorEmail);
+    const entry = getEntry(o.creatorId, o.creatorEmail, o.creatorName);
     entry.ordersCount += 1;
     entry.ordersValue += (o.totalPrice||0);
     entry.ordersPaid += Math.min(orderPaidTotal(o), o.totalPrice||0);
@@ -2655,7 +2726,7 @@ function renderStaffPerformance(){
   listEl.innerHTML = rows.map(r => `
     <div class="sale-item">
       <div class="sale-item-top">
-        <span class="sale-item-name mono" style="direction:ltr; display:block; text-align:right;">${escapeHtml(r.email)}</span>
+        <span class="sale-item-name" style="display:block; text-align:right;">${escapeHtml(r.name || r.email)}</span>
       </div>
       <div class="sale-item-bottom">
         <span>تعداد فروش: <b>${fa.format(r.salesCount)}</b></span>
@@ -3269,6 +3340,7 @@ async function submitSale(){
   const c = calc(prod);
   const saleData = makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone);
   saleData.sellerEmail = currentUser.email;
+  saleData.sellerName = currentUser.name || currentUser.email;
   let insertedRow;
   try{
     const { data, error } = await sb.from('sales').insert({ seller_id: currentUser.id, data: saleData }).select().single();
@@ -3356,7 +3428,7 @@ function renderSalesTab(){
         <span class="tag">${typeLabel}</span>
         <span>${formatDateFa(s.date)}</span>
         ${s.buyerName ? `<span>خریدار: ${escapeHtml(s.buyerName)}</span>` : ''}
-        ${isAdmin && s.sellerEmail ? `<span class="tag pending">فروشنده: ${escapeHtml(s.sellerEmail)}</span>` : ''}
+        ${isAdmin && (s.sellerName || s.sellerEmail) ? `<span class="tag pending">فروشنده: ${escapeHtml(s.sellerName || s.sellerEmail)}</span>` : ''}
       </div>
       <div class="sale-item-bottom">
         <span>جمع فروش: <b>${fmt(total)}</b></span>
@@ -3560,6 +3632,7 @@ async function submitOrder(){
   const payments = prepayment > 0 ? [makePayment(prepayment, 'پیش‌پرداخت اولیه')] : [];
   const orderData = makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes, totalPrice, payments);
   orderData.creatorEmail = currentUser.email;
+  orderData.creatorName = currentUser.name || currentUser.email;
   let insertedRow;
   try{
     const { data, error } = await sb.from('orders').insert({ creator_id: currentUser.id, data: orderData }).select().single();
@@ -3645,7 +3718,7 @@ function renderOrdersTab(){
         <span class="${statusClass}">${statusLabel}</span>
         ${o.customerPhone ? `<span class="mono">${o.customerPhone}</span>` : ''}
         ${o.dueDate ? `<span>تحویل: ${formatDateFa(o.dueDate)}</span>` : ''}
-        ${isAdmin && o.creatorEmail ? `<span class="tag pending">ثبت‌کننده: ${escapeHtml(o.creatorEmail)}</span>` : ''}
+        ${isAdmin && (o.creatorName || o.creatorEmail) ? `<span class="tag pending">ثبت‌کننده: ${escapeHtml(o.creatorName || o.creatorEmail)}</span>` : ''}
       </div>
       <div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${itemsText}</div>
       ${o.notes ? `<div class="sale-item-note">${escapeHtml(o.notes)}</div>` : ''}
