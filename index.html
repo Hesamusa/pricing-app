@@ -509,6 +509,7 @@
 </style>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <header>
   <div class="header-row">
@@ -571,7 +572,8 @@
       <div class="card" style="text-align:center; padding:36px 20px;">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px; display:block;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         <p style="margin:0 0 20px; font-weight:700;">این بخش فقط برای مدیر قابل دسترسیه</p>
-        <input type="password" inputmode="numeric" id="adminPinInput" class="gh-field" placeholder="رمز مدیر" style="text-align:center; direction:ltr; margin-bottom:12px;" onkeydown="if(event.key==='Enter') tryUnlockAdmin()">
+        <input type="email" id="adminEmailInput" class="gh-field" placeholder="ایمیل" style="text-align:center; direction:ltr; margin-bottom:10px;">
+        <input type="password" id="adminPassInput" class="gh-field" placeholder="رمز عبور" style="text-align:center; direction:ltr; margin-bottom:12px;" onkeydown="if(event.key==='Enter') tryUnlockAdmin()">
         <button class="add-btn" style="margin-top:0;" onclick="tryUnlockAdmin()">ورود به حالت مدیر</button>
         <div id="adminPinError" style="color:var(--red); font-weight:600; margin-top:12px; font-size:13px;"></div>
       </div>
@@ -771,6 +773,22 @@
 
   <!-- SALES TAB -->
   <div id="tab-sales" class="tab-panel">
+    <div id="sales-login-gate" style="display:none;">
+      <div class="card" style="text-align:center; padding:36px 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px; display:block;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p style="margin:0 0 20px; font-weight:700;">برای ثبت و دیدن فروش‌ها اول وارد شو</p>
+        <input type="email" id="salesEmailInput" class="gh-field" placeholder="ایمیل" style="text-align:center; direction:ltr; margin-bottom:10px;">
+        <input type="password" id="salesPassInput" class="gh-field" placeholder="رمز عبور" style="text-align:center; direction:ltr; margin-bottom:12px;" onkeydown="if(event.key==='Enter') trySalesLogin()">
+        <button class="add-btn" style="margin-top:0;" onclick="trySalesLogin()">ورود</button>
+        <div id="salesLoginError" style="color:var(--red); font-weight:600; margin-top:12px; font-size:13px;"></div>
+      </div>
+    </div>
+
+    <div id="sales-authed-content" style="display:none;">
+    <div id="sales-user-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:8px;">
+      <span id="sales-user-email" class="hint" style="direction:ltr; text-align:right; margin:0;"></span>
+      <button type="button" class="add-btn" style="margin:0; background:var(--red); width:auto; padding:8px 16px;" onclick="sbSignOut()">خروج</button>
+    </div>
     <div class="section-title">ثبت فروش جدید</div>
     <div class="card" id="sale-form-wrap">
       <div class="field">
@@ -859,6 +877,7 @@
     </div>
     <div id="sales-stats"></div>
     <div id="sales-list" style="margin-top:14px;"></div>
+    </div>
   </div>
 
   <!-- ORDERS TAB — customer production/order requests -->
@@ -1044,6 +1063,12 @@
 </div>
 
 <script>
+const SUPABASE_URL = 'https://rclxqndwkfnuhkdzcgpu.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_eGcYa0_DTyo8KJlkQXM4lg_6z-3c5fN';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null; // {id, email}
+let userRole = null; // 'admin' | 'user' | null
+
 const DEFAULT_SETTINGS = {
   filPrice: 1200000, resinPrice: 0, power: 250, elec: 3000, depr: 15000,
   labor: 200000, paint: 300000, marginW: 50, marginR: 120,
@@ -1218,10 +1243,6 @@ function loadState(){
     if(p) products = JSON.parse(p);
   }catch(e){ /* no saved products yet */ }
   try{
-    const s2 = localStorage.getItem('pricing_app_sales');
-    if(s2) sales = JSON.parse(s2);
-  }catch(e){ /* no saved sales yet */ }
-  try{
     const c = localStorage.getItem('pricing_app_customers');
     if(c) customers = JSON.parse(c);
   }catch(e){ /* no saved customers یا هنوز ذخیره‌ای نداره */ }
@@ -1235,6 +1256,7 @@ function loadState(){
     products = products.filter(p => !(p.name==='مجسمه اژدها ۱۵ سانتی' && p.weight===85 && p.printHours===6 && p.manualHours===0.5 && p.paintHours===1 && !p.imageUrl && (p.stock||0)===0));
   }
   ready = true;
+  refreshAuthState();
   updateModeUI();
   renderSettings();
   renderProducts();
@@ -1249,15 +1271,12 @@ function loadState(){
       if(remote){
         settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
         products = Array.isArray(remote.products) ? remote.products : products;
-        sales = Array.isArray(remote.sales) ? remote.sales : sales;
         customers = Array.isArray(remote.customers) ? remote.customers : customers;
         orders = Array.isArray(remote.orders) ? remote.orders : orders;
         renderSettings();
         renderProducts();
         renderSummary();
         renderCustomersTab();
-        const salesTab = document.getElementById('tab-sales');
-        if(salesTab && salesTab.classList.contains('active')) renderSalesTab();
         const ordersTab = document.getElementById('tab-orders');
         if(ordersTab && ordersTab.classList.contains('active')) renderOrdersTab();
         persist({skipSync:true});
@@ -1292,7 +1311,6 @@ function persist(opts){
     try{
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
-      localStorage.setItem('pricing_app_sales', JSON.stringify(sales));
       localStorage.setItem('pricing_app_customers', JSON.stringify(customers));
       localStorage.setItem('pricing_app_orders', JSON.stringify(orders));
       flashSaved();
@@ -1312,7 +1330,7 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='summary'){ renderSummary(); updateSummaryVisibility(); }
-  if(name==='sales') renderSalesTab();
+  if(name==='sales') updateSalesAuthUI();
   if(name==='orders') renderOrdersTab();
   if(name==='customers') renderCustomersTab();
   if(name==='settings') applySettingsLock();
@@ -1328,39 +1346,138 @@ function applySettingsLock(){
   }else{
     locked.style.display = '';
     content.style.display = 'none';
-    const pinInput = document.getElementById('adminPinInput');
+    const emailInput = document.getElementById('adminEmailInput');
+    const passInput = document.getElementById('adminPassInput');
     const err = document.getElementById('adminPinError');
-    if(pinInput) pinInput.value = '';
+    if(passInput) passInput.value = '';
     if(err) err.textContent = '';
   }
 }
 
-function tryUnlockAdmin(){
-  const pinInput = document.getElementById('adminPinInput');
+async function tryUnlockAdmin(){
+  const emailEl = document.getElementById('adminEmailInput');
+  const passEl = document.getElementById('adminPassInput');
   const err = document.getElementById('adminPinError');
-  const entered = pinInput ? pinInput.value.trim() : '';
-  if(entered && entered === String(settings.adminPin || '')){
-    isAdmin = true;
-    try{ sessionStorage.setItem('pricing_app_admin', '1'); }catch(e){}
-    applySettingsLock();
-    renderSettings();
-    updateModeUI();
-    renderProducts();
-    renderCustomersTab();
-  }else{
-    if(err) err.textContent = 'رمز اشتباهه، دوباره امتحان کن.';
-    if(pinInput){ pinInput.value=''; pinInput.focus(); }
+  const email = emailEl ? emailEl.value.trim() : '';
+  const pass = passEl ? passEl.value : '';
+  if(!email || !pass){ if(err) err.textContent = 'ایمیل و رمز رو وارد کن.'; return; }
+  if(err) err.textContent = 'در حال ورود...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if(error){
+    if(err) err.textContent = 'ورود ناموفق بود: ایمیل یا رمز اشتباهه.';
+    if(passEl){ passEl.value=''; passEl.focus(); }
+    return;
   }
+  await refreshAuthState();
+  if(!isAdmin){
+    if(err) err.textContent = 'این حساب دسترسی مدیر نداره.';
+    await sb.auth.signOut();
+    await refreshAuthState();
+    return;
+  }
+  if(err) err.textContent = '';
+  applySettingsLock();
+  renderSettings();
+  updateModeUI();
+  renderProducts();
+  renderCustomersTab();
 }
 
-function lockAdmin(){
-  isAdmin = false;
-  try{ sessionStorage.removeItem('pricing_app_admin'); }catch(e){}
+async function lockAdmin(){
+  await sb.auth.signOut();
+  await refreshAuthState();
   updateModeUI();
   renderProducts();
   renderCustomersTab();
   switchTab('sales');
 }
+
+// ————— Supabase auth: shared session used by هم قفل مدیر تنظیمات و هم دروازه‌ی ورود تب فروش‌ها —————
+async function refreshAuthState(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user){
+    currentUser = { id: session.user.id, email: session.user.email };
+    await fetchUserRole();
+  }else{
+    currentUser = null;
+    userRole = null;
+    isAdmin = false;
+  }
+  updateModeUI();
+  applySettingsLock();
+  await updateSalesAuthUI();
+}
+
+async function fetchUserRole(){
+  if(!currentUser){ userRole = null; isAdmin = false; return; }
+  try{
+    const { data, error } = await sb.from('profiles').select('role').eq('id', currentUser.id).single();
+    if(!error && data){
+      userRole = data.role;
+      isAdmin = data.role === 'admin';
+    }else{
+      userRole = null; isAdmin = false;
+    }
+  }catch(e){ userRole = null; isAdmin = false; }
+}
+
+async function trySalesLogin(){
+  const emailEl = document.getElementById('salesEmailInput');
+  const passEl = document.getElementById('salesPassInput');
+  const err = document.getElementById('salesLoginError');
+  const email = emailEl ? emailEl.value.trim() : '';
+  const pass = passEl ? passEl.value : '';
+  if(!email || !pass){ if(err) err.textContent = 'ایمیل و رمز رو وارد کن.'; return; }
+  if(err) err.textContent = 'در حال ورود...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if(error){
+    if(err) err.textContent = 'ورود ناموفق بود: ایمیل یا رمز اشتباهه.';
+    if(passEl) passEl.value='';
+    return;
+  }
+  if(err) err.textContent = '';
+  await refreshAuthState();
+}
+
+async function sbSignOut(){
+  await sb.auth.signOut();
+  await refreshAuthState();
+  switchTab('sales');
+}
+
+async function updateSalesAuthUI(){
+  const gate = document.getElementById('sales-login-gate');
+  const content = document.getElementById('sales-authed-content');
+  const emailLabel = document.getElementById('sales-user-email');
+  if(!gate || !content) return;
+  if(currentUser){
+    gate.style.display = 'none';
+    content.style.display = '';
+    if(emailLabel) emailLabel.textContent = currentUser.email;
+    await loadSalesFromSupabase();
+    renderSalesTab();
+  }else{
+    gate.style.display = '';
+    content.style.display = 'none';
+    sales = [];
+    const emailEl = document.getElementById('salesEmailInput');
+    const passEl = document.getElementById('salesPassInput');
+    const err = document.getElementById('salesLoginError');
+    if(passEl) passEl.value = '';
+    if(err) err.textContent = '';
+  }
+}
+
+async function loadSalesFromSupabase(){
+  if(!currentUser){ sales = []; return; }
+  try{
+    const { data, error } = await sb.from('sales').select('id, seller_id, data, created_at').order('created_at', { ascending:false });
+    if(error){ console.error('خطا در دریافت فروش‌ها از Supabase', error); sales = []; return; }
+    sales = (data||[]).map(row => ({ ...(row.data||{}), id: row.id, sellerId: row.seller_id }));
+  }catch(e){ console.error(e); sales = []; }
+}
+
+sb.auth.onAuthStateChange(() => { refreshAuthState(); });
 
 function onModeBadgeClick(){
   if(isAdmin){
@@ -3008,7 +3125,8 @@ function resetSaleForm(){
   updateSaleStockHint();
 }
 
-function submitSale(){
+async function submitSale(){
+  if(!currentUser){ alert('اول باید وارد بشی.'); return; }
   const prodId = currentSaleProductId();
   const prod = products.find(p => p.id === prodId);
   if(!prod){ alert('اول یک محصول اضافه کن'); return; }
@@ -3032,7 +3150,14 @@ function submitSale(){
   const buyerPhone = normalizeDigits(phoneEl.value);
   const type = document.getElementById('sale_price').dataset.type || 'retail';
   const c = calc(prod);
-  sales.unshift(makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone));
+  const saleData = makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone);
+  let insertedRow;
+  try{
+    const { data, error } = await sb.from('sales').insert({ seller_id: currentUser.id, data: saleData }).select().single();
+    if(error){ alert('ثبت فروش روی سرور ناموفق بود: ' + error.message); return; }
+    insertedRow = data;
+  }catch(e){ alert('ثبت فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
+  sales.unshift({ ...saleData, id: insertedRow.id, sellerId: currentUser.id });
   prod.stock = currentStock - qty;
   if(buyerName || buyerPhone){
     upsertCustomer(buyerName, buyerPhone);
@@ -3044,10 +3169,14 @@ function submitSale(){
   renderSalesTab();
 }
 
-function deleteSale(id){
+async function deleteSale(id){
   if(!isAdmin) return;
   if(!confirm('این فروش حذف بشه؟')) return;
   const sale = sales.find(s => s.id === id);
+  try{
+    const { error } = await sb.from('sales').delete().eq('id', id);
+    if(error){ alert('حذف فروش روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ alert('حذف فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
   sales = sales.filter(s => s.id !== id);
   if(sale){
     const prod = products.find(p => p.id === sale.productId);
