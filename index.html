@@ -187,19 +187,10 @@
   .photo-row{display:flex; align-items:center; gap:14px;}
   .photo-carousel{display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0;}
   .photo-preview{
-    position:relative;
     width:88px; height:88px; border-radius:18px; overflow:hidden; flex-shrink:0;
     background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
   }
   .photo-preview img{width:100%; height:100%; object-fit:cover; display:block;}
-  .carousel-nav{
-    position:absolute; top:50%; transform:translateY(-50%);
-    width:24px; height:24px; border-radius:50%; border:none;
-    background:rgba(0,0,0,.45); color:#fff; font-size:15px; line-height:1;
-    display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer;
-  }
-  .carousel-nav.prev{left:4px;}
-  .carousel-nav.next{right:4px;}
   .carousel-dots{display:flex; gap:5px; justify-content:center;}
   .carousel-dots .dot{width:5px; height:5px; border-radius:50%; background:var(--line);}
   .carousel-dots .dot.active{background:var(--ink); width:12px; border-radius:3px;}
@@ -216,6 +207,25 @@
   .photo-status.uploading{color:var(--ink-soft);}
   .photo-status.error{color:var(--red); line-height:1.6;}
   .photo-status.success{color:var(--green);}
+
+  /* Fullscreen product photo viewer (swipeable) */
+  .photo-lightbox{
+    display:none; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,0.94);
+    align-items:center; justify-content:center;
+  }
+  .photo-lightbox.show{display:flex;}
+  .photo-lightbox-inner{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .photo-lightbox-img{max-width:92vw; max-height:80vh; object-fit:contain; display:block; touch-action:pan-y; user-select:none; -webkit-user-drag:none; cursor:pointer;}
+  .photo-lightbox-close{
+    position:fixed; top:calc(18px + env(safe-area-inset-top)); left:18px; z-index:201;
+    width:44px; height:44px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.14); color:#fff; font-size:18px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .photo-lightbox-dots{position:absolute; bottom:calc(28px + env(safe-area-inset-bottom)); left:0; right:0; display:flex; gap:7px; justify-content:center;}
+  .photo-lightbox-dots .dot{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.35);}
+  .photo-lightbox-dots .dot.active{background:#fff; width:18px; border-radius:4px;}
 
   .stock-field{margin-bottom:20px;}
   .stock-stepper{display:flex; align-items:center; gap:10px;}
@@ -1105,6 +1115,18 @@
     <div class="qr-box"><img id="qr-image" alt="کد QR صفحه اینستاگرام"></div>
     <div class="qr-label" id="qr-label"></div>
     <div class="qr-sub">گوشیت رو نگه دار تا مشتری با دوربین یا اپ اینستاگرام این کد رو اسکن کنه</div>
+  </div>
+</div>
+
+<!-- ویوئر تمام‌صفحه و سوایپ‌شونده‌ی عکس‌های محصول -->
+<div id="photo-lightbox" class="photo-lightbox" onclick="if(event.target===this) closePhotoLightbox()">
+  <button type="button" class="photo-lightbox-close" onclick="closePhotoLightbox()">✕</button>
+  <div class="photo-lightbox-inner">
+    <img id="photo-lightbox-img" class="photo-lightbox-img" alt=""
+      onclick="onLightboxImgClick(event)"
+      ontouchstart="onLightboxTouchStart(event)"
+      ontouchend="onLightboxTouchEnd(event)">
+    <div class="photo-lightbox-dots" id="photo-lightbox-dots"></div>
   </div>
 </div>
 
@@ -2003,7 +2025,7 @@ function renderProducts(){
             <span>موجودی: <b id="stockBadge_${prod.id}" style="${(prod.stock||0)<=0?'color:var(--red)':''}">${fa.format(prod.stock||0)}</b></span>
           </div>
         </div>
-        <div class="head-thumb" id="headThumb_${prod.id}">${(prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32)}</div>
+        <div class="head-thumb" id="headThumb_${prod.id}" onclick="event.stopPropagation(); headThumbClick('${prod.id}')" style="cursor:pointer;">${(prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32)}</div>
       </div>
       <div class="product-body">
         <div class="product-body-inner">
@@ -2251,20 +2273,17 @@ function setPhotoStatus(id, text, kind){
 
 const PRODUCT_MAX_IMAGES = 5;
 
-// بخش تصویری کاروسل (عکس فعلی + فلش‌های قبل/بعد + نقطه‌ها)
+// بخش تصویری کاروسل (عکس فعلی + نقطه‌ها) — با لمس/کلیک روی عکس، ویوئر تمام‌صفحه باز می‌شه
 function photoCarouselInnerHTML(prod){
   const images = prod.images || [];
   let idx = productCarouselIndex[prod.id] || 0;
   if(idx > images.length - 1) idx = Math.max(images.length - 1, 0);
   productCarouselIndex[prod.id] = idx;
   const current = images[idx];
+  const clickAttr = images.length ? `onclick="event.stopPropagation(); openPhotoLightbox('${prod.id}')" style="cursor:pointer;"` : '';
   return `
-    <div class="photo-preview" id="photoPrev_${prod.id}">
+    <div class="photo-preview" id="photoPrev_${prod.id}" ${clickAttr}>
       ${current ? `<img src="${current.url}" alt="">` : cameraIconSVG(36)}
-      ${images.length > 1 ? `
-        <button type="button" class="carousel-nav prev" onclick="event.stopPropagation(); prodCarouselStep('${prod.id}', -1)" aria-label="عکس قبلی">‹</button>
-        <button type="button" class="carousel-nav next" onclick="event.stopPropagation(); prodCarouselStep('${prod.id}', 1)" aria-label="عکس بعدی">›</button>
-      ` : ''}
     </div>
     ${images.length > 1 ? `<div class="carousel-dots">${images.map((_,i)=>`<span class="dot${i===idx?' active':''}"></span>`).join('')}</div>` : ''}
   `;
@@ -2284,17 +2303,6 @@ function photoActionsInnerHTML(prod, lk){
   `;
 }
 
-function prodCarouselStep(id, dir){
-  const prod = products.find(p=>p.id===id);
-  if(!prod || !prod.images || prod.images.length < 2) return;
-  const len = prod.images.length;
-  let idx = ((productCarouselIndex[id]||0) + dir) % len;
-  if(idx < 0) idx += len;
-  productCarouselIndex[id] = idx;
-  const carousel = document.getElementById('photoCarousel_'+id);
-  if(carousel) carousel.innerHTML = photoCarouselInnerHTML(prod);
-}
-
 function updateProductPhotoUI(id){
   const prod = products.find(p=>p.id===id);
   if(!prod) return;
@@ -2304,6 +2312,79 @@ function updateProductPhotoUI(id){
   if(carousel) carousel.innerHTML = photoCarouselInnerHTML(prod);
   const actions = document.getElementById('photoActions_'+id);
   if(actions) actions.innerHTML = photoActionsInnerHTML(prod, !isAdmin);
+}
+
+function headThumbClick(id){
+  const prod = products.find(p=>p.id===id);
+  if(prod && prod.images && prod.images.length){
+    openPhotoLightbox(id);
+  }else{
+    toggleProduct(id);
+  }
+}
+
+// --- ویوئر تمام‌صفحه‌ی عکس‌های محصول (قابل سوایپ) ---
+let lightboxProductId = null;
+let lightboxIndex = 0;
+let lbTouchStartX = null;
+
+function openPhotoLightbox(id){
+  const prod = products.find(p=>p.id===id);
+  if(!prod || !prod.images || !prod.images.length) return;
+  lightboxProductId = id;
+  lightboxIndex = Math.min(productCarouselIndex[id]||0, prod.images.length-1);
+  renderLightbox();
+  const overlay = document.getElementById('photo-lightbox');
+  if(overlay) overlay.classList.add('show');
+}
+
+function closePhotoLightbox(){
+  const overlay = document.getElementById('photo-lightbox');
+  if(overlay) overlay.classList.remove('show');
+  lightboxProductId = null;
+}
+
+function lightboxStep(dir){
+  const prod = products.find(p=>p.id===lightboxProductId);
+  if(!prod || !prod.images || prod.images.length < 2) return;
+  const len = prod.images.length;
+  lightboxIndex = ((lightboxIndex + dir) % len + len) % len;
+  productCarouselIndex[lightboxProductId] = lightboxIndex; // تصویر کوچیک روی کارت هم هماهنگ بمونه
+  renderLightbox();
+  updateProductPhotoUI(lightboxProductId);
+}
+
+function renderLightbox(){
+  const prod = products.find(p=>p.id===lightboxProductId);
+  if(!prod) return;
+  const img = document.getElementById('photo-lightbox-img');
+  const dotsWrap = document.getElementById('photo-lightbox-dots');
+  const current = prod.images[lightboxIndex];
+  if(img) img.src = current ? current.url : '';
+  if(dotsWrap){
+    dotsWrap.innerHTML = prod.images.length > 1
+      ? prod.images.map((_,i)=>`<span class="dot${i===lightboxIndex?' active':''}"></span>`).join('')
+      : '';
+  }
+}
+
+function onLightboxImgClick(e){
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  lightboxStep(x < rect.width/2 ? -1 : 1);
+}
+
+function onLightboxTouchStart(e){
+  lbTouchStartX = e.changedTouches[0].clientX;
+}
+
+function onLightboxTouchEnd(e){
+  if(lbTouchStartX===null) return;
+  const dx = e.changedTouches[0].clientX - lbTouchStartX;
+  lbTouchStartX = null;
+  if(Math.abs(dx) > 40){
+    lightboxStep(dx < 0 ? 1 : -1);
+  }
 }
 
 function resizeImageToBase64(file, maxDim, quality){
