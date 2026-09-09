@@ -1121,7 +1121,7 @@
 <!-- ویوئر تمام‌صفحه و سوایپ‌شونده‌ی عکس‌های محصول -->
 <div id="photo-lightbox" class="photo-lightbox" onclick="if(event.target===this) closePhotoLightbox()">
   <button type="button" class="photo-lightbox-close" onclick="closePhotoLightbox()">✕</button>
-  <div class="photo-lightbox-inner">
+  <div class="photo-lightbox-inner" onclick="if(event.target===this) closePhotoLightbox()">
     <img id="photo-lightbox-img" class="photo-lightbox-img" alt=""
       onclick="onLightboxImgClick(event)"
       ontouchstart="onLightboxTouchStart(event)"
