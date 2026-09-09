@@ -594,6 +594,11 @@
 
     <div id="settings-admin-content">
 
+    <div id="settings-user-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:8px;">
+      <span id="settings-user-email" class="hint" style="direction:ltr; text-align:right; margin:0;"></span>
+      <button type="button" class="add-btn" style="margin:0; background:var(--red); width:auto; padding:8px 16px;" onclick="sbSignOut()">خروج</button>
+    </div>
+
     <div class="section-title"><span class="bar"></span>هزینه‌های مواد و دستگاه</div>
     <div class="card">
       <div class="field">
@@ -750,18 +755,6 @@
       <div class="hint" id="import-status" style="margin-top:10px; color:var(--green); font-weight:600;"></div>
     </div>
 
-    <div class="section-title orange"><span class="bar"></span>دسترسی مدیر</div>
-    <div class="card">
-      <div class="field">
-        <label>رمز ورود به حالت مدیر</label>
-        <input type="text" class="gh-field" id="s_adminPin" inputmode="numeric" placeholder="مثلاً 1234" style="direction:ltr; text-align:center;">
-        <div class="hint">هر کس این رمز رو بدونه می‌تونه وارد حالت مدیر بشه. رمز رو نزد خودت نگه دار.</div>
-      </div>
-      <button class="add-btn" style="background:transparent; border:1.5px solid var(--red); color:var(--red); margin-top:10px;" onclick="lockAdmin()">
-        خروج از حالت مدیر (رفتن به حالت کاربر)
-      </button>
-    </div>
-
     </div><!-- /settings-admin-content -->
   </div>
 
@@ -798,9 +791,8 @@
     </div>
 
     <div id="sales-authed-content" style="display:none;">
-    <div id="sales-user-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:8px;">
+    <div id="sales-user-bar" style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:14px; gap:8px;">
       <span id="sales-user-email" class="hint" style="direction:ltr; text-align:right; margin:0;"></span>
-      <button type="button" class="add-btn" style="margin:0; background:var(--red); width:auto; padding:8px 16px;" onclick="sbSignOut()">خروج</button>
     </div>
     <div class="section-title">ثبت فروش جدید</div>
     <div class="card" id="sale-form-wrap">
@@ -904,9 +896,8 @@
     </div>
 
     <div id="orders-authed-content" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:8px;">
+    <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:14px; gap:8px;">
       <span id="orders-user-email" class="hint" style="direction:ltr; text-align:right; margin:0;"></span>
-      <button type="button" class="add-btn" style="margin:0; background:var(--red); width:auto; padding:8px 16px;" onclick="sbSignOut()">خروج</button>
     </div>
     <div class="section-title">ثبت سفارش جدید مشتری</div>
     <div class="card" id="order-form-wrap">
@@ -942,11 +933,11 @@
 
       <div class="grid-2">
         <div class="field">
-          <label>نام مشتری</label>
+          <label>نام مشتری *</label>
           <input type="text" class="gh-field" id="order_customer_name" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="نام مشتری">
         </div>
         <div class="field">
-          <label>شماره تماس مشتری</label>
+          <label>شماره تماس مشتری *</label>
           <input type="text" class="gh-field" id="order_customer_phone" inputmode="numeric" maxlength="11" oninput="sanitizePhoneInput(this)" onblur="markPhoneValidity(this,'order_customer_phone_hint')" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
           <div class="hint" id="order_customer_phone_hint"></div>
         </div>
@@ -1118,8 +1109,7 @@ const DEFAULT_SETTINGS = {
   githubOwner: 'Hesamusa', githubRepo: 'pricing-app', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
   companyName: '', logoUrl: null, logoPath: null, logoSha: null,
   instagramUrl: '',
-  qrImageUrl: null,
-  adminPin: '1234'
+  qrImageUrl: null
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -1241,6 +1231,24 @@ function handleGroupedIntInput(el, onValue){
 function handleDecimalInput(el, onValue){
   onValue(parseNum(el.value));
   autosizeNumInput(el);
+}
+// ساعت‌های اعشاری (مثل 1.5) رو به ساعت و دقیقهٔ جدا برای نمایش تبدیل می‌کنه.
+function hoursToHM(dec){
+  const total = Math.max(0, Number(dec) || 0);
+  const h = Math.floor(total + 1e-9);
+  let m = Math.round((total - h) * 60);
+  if(m >= 60){ m = 0; }
+  return { h, m };
+}
+// دو ورودی ساعت و دقیقهٔ یک فیلد زمانی محصول رو می‌خونه، به عدد اعشاری
+// تبدیل می‌کنه و توی محصول ذخیره می‌کنه.
+function updateProductHM(id, field, hourElId, minElId){
+  const hourEl = document.getElementById(hourElId);
+  const minEl = document.getElementById(minElId);
+  const h = Math.max(0, Math.round(parseNum(hourEl ? hourEl.value : 0)));
+  let m = Math.max(0, Math.round(parseNum(minEl ? minEl.value : 0)));
+  if(m > 59) m = 59;
+  updateProduct(id, field, h + (m / 60));
 }
 function formatNumField(el, maxFrac){
   // Called on blur only: now it's safe to pretty-print (Persian digits,
@@ -1377,6 +1385,8 @@ function applySettingsLock(){
   if(isAdmin){
     locked.style.display = 'none';
     content.style.display = '';
+    const emailLabel = document.getElementById('settings-user-email');
+    if(emailLabel) emailLabel.textContent = currentUser ? (currentUser.name || currentUser.email) : '';
   }else{
     locked.style.display = '';
     content.style.display = 'none';
@@ -1654,8 +1664,6 @@ function renderSettings(){
   document.getElementById('s_ghBranch').value = settings.githubBranch || 'main';
   document.getElementById('s_ghFolder').value = settings.githubFolder || 'product-images';
   document.getElementById('s_ghToken').value = settings.githubToken || '';
-  const pinEl = document.getElementById('s_adminPin');
-  if(pinEl) pinEl.value = settings.adminPin || '';
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
   renderQrImagePreview();
@@ -1695,13 +1703,7 @@ function bindGithubInputs(){
     const el = document.getElementById(id);
     if(el) el.addEventListener('blur', maybeInitGithubSync);
   });
-  const pinEl = document.getElementById('s_adminPin');
-  if(pinEl){
-    pinEl.addEventListener('input', ()=>{
-      settings.adminPin = pinEl.value.trim();
-      persist();
-    });
-  }
+
   const igEl = document.getElementById('s_instagram');
   if(igEl){
     igEl.addEventListener('input', ()=>{
@@ -2019,16 +2021,31 @@ function renderProducts(){
               <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
             </div>
             <div class="field">
-              <label>زمان پرینت (ساعت)</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.printHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','printHours',n))" onblur="formatNumField(this,2)">
+              <label>زمان پرینت (ساعت و دقیقه)</label>
+              <div class="input-row" style="gap:6px;">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="printHrs_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.printHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','printHours','printHrs_${prod.id}','printMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <span class="unit">ساعت</span>
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="printMins_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.printHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','printHours','printHrs_${prod.id}','printMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <span class="unit">دقیقه</span>
+              </div>
             </div>
             <div class="field">
-              <label>ساعت کار دستی</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.manualHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','manualHours',n))" onblur="formatNumField(this,2)">
+              <label>ساعت کار دستی (ساعت و دقیقه)</label>
+              <div class="input-row" style="gap:6px;">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualHrs_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.manualHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <span class="unit">ساعت</span>
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualMins_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.manualHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <span class="unit">دقیقه</span>
+              </div>
             </div>
             <div class="field">
-              <label>ساعت نقاشی</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.paintHours,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','paintHours',n))" onblur="formatNumField(this,2)">
+              <label>ساعت نقاشی (ساعت و دقیقه)</label>
+              <div class="input-row" style="gap:6px;">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintHrs_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.paintHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <span class="unit">ساعت</span>
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintMins_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.paintHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <span class="unit">دقیقه</span>
+              </div>
             </div>
             <div class="field">
               <label>هزینه متعلقات (زنجیر، قلاب و...)</label>
@@ -3670,14 +3687,25 @@ function resetOrderForm(){
 async function submitOrder(){
   if(!currentUser){ alert('اول باید وارد بشی.'); return; }
   if(!currentOrderItems.length){ alert('اول حداقل یک محصول به سفارش اضافه کن.'); return; }
+  const nameEl = document.getElementById('order_customer_name');
+  const name = nameEl.value.trim();
+  if(!name){
+    alert('نام مشتری رو وارد کن.');
+    nameEl.focus();
+    return;
+  }
   const phoneEl = document.getElementById('order_customer_phone');
-  if(!markPhoneValidity(phoneEl, 'order_customer_phone_hint')){
-    alert('شماره تماس مشتری نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
+  const phone = normalizeDigits(phoneEl.value);
+  if(!phone){
+    alert('شماره تماس مشتری رو وارد کن.');
     phoneEl.focus();
     return;
   }
-  const name = document.getElementById('order_customer_name').value.trim();
-  const phone = normalizeDigits(phoneEl.value);
+  if(!markPhoneValidity(phoneEl, 'order_customer_phone_hint')){
+    alert('شماره تماس مشتری نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه.');
+    phoneEl.focus();
+    return;
+  }
   const notes = document.getElementById('order_notes').value;
   const dueDate = document.getElementById('order_due_date').value || null;
   const totalPrice = parseNum(document.getElementById('order_total_price').value);
