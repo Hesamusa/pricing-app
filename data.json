@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-09T02:33:05.295Z",
+  "updatedAt": "2026-09-09T05:13:58.695Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -44,11 +44,35 @@
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz.jpg?v=1788796610985",
-      "imagePath": "product-images/p_17887965710100v1nz.jpg",
-      "imageSha": "8de77a682a511e0d7ed1cf84b9675af6d7409e3c",
       "stock": 1,
-      "category": "g_mtreb2q5k4dk"
+      "category": "g_mtreb2q5k4dk",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz.jpg?v=1788796610985",
+          "path": "product-images/p_17887965710100v1nz.jpg",
+          "sha": "8de77a682a511e0d7ed1cf84b9675af6d7409e3c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1788930831923_0.jpg?v=1788930833129",
+          "path": "product-images/p_17887965710100v1nz_1788930831923_0.jpg",
+          "sha": "5cfdc0715335954a43bfc88f23de480f4cde6914"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1788930833156_1.jpg?v=1788930834563",
+          "path": "product-images/p_17887965710100v1nz_1788930833156_1.jpg",
+          "sha": "fc33cc360a10f74fc0e2cda6e0566e99e955cedf"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1788930834584_2.jpg?v=1788930835657",
+          "path": "product-images/p_17887965710100v1nz_1788930834584_2.jpg",
+          "sha": "f256205770f6192b96ae9df7cb1c2dc263e95b23"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1788930835681_3.jpg?v=1788930836933",
+          "path": "product-images/p_17887965710100v1nz_1788930835681_3.jpg",
+          "sha": "f58f72ab8c1a313075e906371a6084ca3ac12828"
+        }
+      ]
     },
     {
       "id": "p_1788796315293vahtq",
@@ -60,11 +84,15 @@
       "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
-      "imagePath": "product-images/p_1788796315293vahtq.jpg",
-      "imageSha": "d7a4f9f92a924fe7cd1ad1875c5ef238af865f57",
       "stock": 1,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
+          "path": "product-images/p_1788796315293vahtq.jpg",
+          "sha": "d7a4f9f92a924fe7cd1ad1875c5ef238af865f57"
+        }
+      ]
     },
     {
       "id": "p_1788796218199rdwc3",
@@ -76,11 +104,15 @@
       "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796218199rdwc3.jpg?v=1788796254312",
-      "imagePath": "product-images/p_1788796218199rdwc3.jpg",
-      "imageSha": "14338fa651a2aa7ab73037286d573a8b54f81b5b",
       "stock": 1,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796218199rdwc3.jpg?v=1788796254312",
+          "path": "product-images/p_1788796218199rdwc3.jpg",
+          "sha": "14338fa651a2aa7ab73037286d573a8b54f81b5b"
+        }
+      ]
     },
     {
       "id": "p_17887958075931fier",
@@ -92,11 +124,15 @@
       "accessoryCost": 50000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier.jpg?v=1788796163243",
-      "imagePath": "product-images/p_17887958075931fier.jpg",
-      "imageSha": "29f4ef6432f8d8bf1c5f4131b68fca9e2d262aa7",
       "stock": 1,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier.jpg?v=1788796163243",
+          "path": "product-images/p_17887958075931fier.jpg",
+          "sha": "29f4ef6432f8d8bf1c5f4131b68fca9e2d262aa7"
+        }
+      ]
     },
     {
       "id": "p_1788795669560tpznq",
@@ -108,11 +144,15 @@
       "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq.jpg?v=1788796133566",
-      "imagePath": "product-images/p_1788795669560tpznq.jpg",
-      "imageSha": "57bae186760a7720be9bbda9342f69d0fb90a4b7",
       "stock": 1,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq.jpg?v=1788796133566",
+          "path": "product-images/p_1788795669560tpznq.jpg",
+          "sha": "57bae186760a7720be9bbda9342f69d0fb90a4b7"
+        }
+      ]
     },
     {
       "id": "p_1788795486741tfdfu",
@@ -124,11 +164,15 @@
       "accessoryCost": 50000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795486741tfdfu.jpg?v=1788795556971",
-      "imagePath": "product-images/p_1788795486741tfdfu.jpg",
-      "imageSha": "57c08c1547d460fd5fa10a4d0970339317923010",
       "stock": 1,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795486741tfdfu.jpg?v=1788795556971",
+          "path": "product-images/p_1788795486741tfdfu.jpg",
+          "sha": "57c08c1547d460fd5fa10a4d0970339317923010"
+        }
+      ]
     },
     {
       "id": "p_1788795346363187ax",
@@ -140,11 +184,15 @@
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795346363187ax.jpg?v=1788795415064",
-      "imagePath": "product-images/p_1788795346363187ax.jpg",
-      "imageSha": "924fe2d7f3251a18586706680ae01ccff3e2d880",
       "stock": 1,
-      "category": "g_mtreb2q5k4dk"
+      "category": "g_mtreb2q5k4dk",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795346363187ax.jpg?v=1788795415064",
+          "path": "product-images/p_1788795346363187ax.jpg",
+          "sha": "924fe2d7f3251a18586706680ae01ccff3e2d880"
+        }
+      ]
     },
     {
       "id": "p_1788794902491u6nxw",
@@ -156,11 +204,15 @@
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw.jpg?v=1788795277219",
-      "imagePath": "product-images/p_1788794902491u6nxw.jpg",
-      "imageSha": "1b703f6138faeff10ba4ef217408342dca51a50a",
       "stock": 1,
-      "category": "g_mtreb2q5k4dk"
+      "category": "g_mtreb2q5k4dk",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw.jpg?v=1788795277219",
+          "path": "product-images/p_1788794902491u6nxw.jpg",
+          "sha": "1b703f6138faeff10ba4ef217408342dca51a50a"
+        }
+      ]
     },
     {
       "id": "p_17887945861715k5ol",
@@ -172,11 +224,15 @@
       "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol.jpg?v=1788794736875",
-      "imagePath": "product-images/p_17887945861715k5ol.jpg",
-      "imageSha": "463014a8364f11ad7801afdf2d2125d76818f87d",
       "stock": 1,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol.jpg?v=1788794736875",
+          "path": "product-images/p_17887945861715k5ol.jpg",
+          "sha": "463014a8364f11ad7801afdf2d2125d76818f87d"
+        }
+      ]
     },
     {
       "id": "p_1788787726489xvrd0",
@@ -188,11 +244,15 @@
       "accessoryCost": 0,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788787726489xvrd0.jpg?v=1788787802061",
-      "imagePath": "product-images/p_1788787726489xvrd0.jpg",
-      "imageSha": "bdee9a309f828a89a8246fdb66d36caf4c4fcbd5",
       "stock": 11,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788787726489xvrd0.jpg?v=1788787802061",
+          "path": "product-images/p_1788787726489xvrd0.jpg",
+          "sha": "bdee9a309f828a89a8246fdb66d36caf4c4fcbd5"
+        }
+      ]
     },
     {
       "id": "p_1788757924479oy27y",
@@ -204,11 +264,15 @@
       "accessoryCost": 5000,
       "marginW": null,
       "marginR": null,
-      "imageUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y.jpg?v=1788787681329",
-      "imagePath": "product-images/p_1788757924479oy27y.jpg",
-      "imageSha": "e21ddf732807566dc1a03483a0e9995322dee8b4",
       "stock": 11,
-      "category": "g_mtqsahf4t778"
+      "category": "g_mtqsahf4t778",
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y.jpg?v=1788787681329",
+          "path": "product-images/p_1788757924479oy27y.jpg",
+          "sha": "e21ddf732807566dc1a03483a0e9995322dee8b4"
+        }
+      ]
     }
   ]
 }
