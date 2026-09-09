@@ -185,11 +185,24 @@
 
   .photo-field{margin-bottom:20px;}
   .photo-row{display:flex; align-items:center; gap:14px;}
+  .photo-carousel{display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0;}
   .photo-preview{
+    position:relative;
     width:88px; height:88px; border-radius:18px; overflow:hidden; flex-shrink:0;
     background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
   }
   .photo-preview img{width:100%; height:100%; object-fit:cover; display:block;}
+  .carousel-nav{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:24px; height:24px; border-radius:50%; border:none;
+    background:rgba(0,0,0,.45); color:#fff; font-size:15px; line-height:1;
+    display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer;
+  }
+  .carousel-nav.prev{left:4px;}
+  .carousel-nav.next{right:4px;}
+  .carousel-dots{display:flex; gap:5px; justify-content:center;}
+  .carousel-dots .dot{width:5px; height:5px; border-radius:50%; background:var(--line);}
+  .carousel-dots .dot.active{background:var(--ink); width:12px; border-radius:3px;}
   .photo-actions{display:flex; flex-direction:column; gap:8px; flex:1;}
   .photo-btn{
     border:1.5px solid var(--line); background:var(--bg); color:var(--ink);
@@ -197,6 +210,7 @@
     font-family:'Vazirmatn',sans-serif; cursor:pointer; text-align:center;
   }
   .photo-btn.danger{color:var(--red); border-color:var(--red);}
+  .photo-limit-note{font-size:12px; color:var(--ink-soft); font-weight:600;}
   .photo-status{font-size:12px; font-weight:600; margin-top:8px;}
   .photo-status:empty{display:none;}
   .photo-status.uploading{color:var(--ink-soft);}
@@ -1121,6 +1135,7 @@ let orderItemProductId = null;
 let orderItemPickerQuery = '';
 let ordersFilter = 'all';
 let openProductId = null;
+let productCarouselIndex = {}; // شماره عکس فعلی هر محصول در کاروسل
 let salesFilter = 'all';
 let productSearchQuery = '';
 let productGroupFilter = 'all';
@@ -1299,7 +1314,7 @@ function loadState(){
   // پاک‌سازی یک‌باره‌ی محصول نمونه‌ای که قبلاً به‌صورت خودکار ساخته می‌شد
   // (اگه هنوز دست‌نخورده مونده و کاربر خودش عمداً همچین محصولی نساخته باشه)
   if(products.length){
-    products = products.filter(p => !(p.name==='مجسمه اژدها ۱۵ سانتی' && p.weight===85 && p.printHours===6 && p.manualHours===0.5 && p.paintHours===1 && !p.imageUrl && (p.stock||0)===0));
+    products = products.filter(p => !(p.name==='مجسمه اژدها ۱۵ سانتی' && p.weight===85 && p.printHours===6 && p.manualHours===0.5 && p.paintHours===1 && !p.imageUrl && !(p.images&&p.images.length) && (p.stock||0)===0));
   }
   ready = true;
   refreshAuthState();
@@ -1339,7 +1354,7 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
     name, weight, printHours, manualHours, paintHours,
     accessoryCost: 0,
     marginW: null, marginR: null, // null = use global default
-    imageUrl: null, imagePath: null, imageSha: null,
+    images: [],
     stock: 0
   };
 }
@@ -1908,7 +1923,19 @@ function calc(prod){
   return {filamentCost, elecCost, deprCost, laborCost, paintCost, accessoryCost, total, priceW, priceR};
 }
 
+function migrateProductImages(){
+  // محصولات قدیمی فقط یک عکس (imageUrl/imagePath/imageSha) داشتن؛
+  // اینجا به آرایه‌ی images (حداکثر ۵ عکس) تبدیل می‌شن.
+  products.forEach(p => {
+    if(!Array.isArray(p.images)){
+      p.images = p.imageUrl ? [{url: p.imageUrl, path: p.imagePath||null, sha: p.imageSha||null}] : [];
+      delete p.imageUrl; delete p.imagePath; delete p.imageSha;
+    }
+  });
+}
+
 function renderProducts(){
+  migrateProductImages();
   const list = document.getElementById('products-list');
   if(products.length === 0){
     list.innerHTML = `<div class="empty">
@@ -1976,7 +2003,7 @@ function renderProducts(){
             <span>موجودی: <b id="stockBadge_${prod.id}" style="${(prod.stock||0)<=0?'color:var(--red)':''}">${fa.format(prod.stock||0)}</b></span>
           </div>
         </div>
-        <div class="head-thumb" id="headThumb_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(32)}</div>
+        <div class="head-thumb" id="headThumb_${prod.id}">${(prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32)}</div>
       </div>
       <div class="product-body">
         <div class="product-body-inner">
@@ -1991,14 +2018,10 @@ function renderProducts(){
             </div>
           </div>
           <div class="photo-field">
-            <label>عکس محصول</label>
+            <label>عکس‌های محصول</label>
             <div class="photo-row">
-              <div class="photo-preview" id="photoPrev_${prod.id}">${prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(36)}</div>
-              <div class="photo-actions" id="photoActions_${prod.id}" ${lk?'style="display:none;"':''}>
-                <button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${prod.id}')">${prod.imageUrl?'تغییر عکس':'انتخاب عکس'}</button>
-                ${prod.imageUrl ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف عکس</button>` : ''}
-                <input type="file" accept="image/*" id="imgfile_${prod.id}" style="display:none" onclick="event.stopPropagation()" onchange="handleImageFile('${prod.id}', this)">
-              </div>
+              <div class="photo-carousel" id="photoCarousel_${prod.id}">${photoCarouselInnerHTML(prod)}</div>
+              <div class="photo-actions" id="photoActions_${prod.id}" ${lk?'style="display:none;"':''}>${photoActionsInnerHTML(prod, lk)}</div>
             </div>
             <div class="photo-status" id="photoStatus_${prod.id}"></div>
           </div>
@@ -2226,21 +2249,61 @@ function setPhotoStatus(id, text, kind){
   el.className = 'photo-status' + (kind ? ' '+kind : '');
 }
 
+const PRODUCT_MAX_IMAGES = 5;
+
+// بخش تصویری کاروسل (عکس فعلی + فلش‌های قبل/بعد + نقطه‌ها)
+function photoCarouselInnerHTML(prod){
+  const images = prod.images || [];
+  let idx = productCarouselIndex[prod.id] || 0;
+  if(idx > images.length - 1) idx = Math.max(images.length - 1, 0);
+  productCarouselIndex[prod.id] = idx;
+  const current = images[idx];
+  return `
+    <div class="photo-preview" id="photoPrev_${prod.id}">
+      ${current ? `<img src="${current.url}" alt="">` : cameraIconSVG(36)}
+      ${images.length > 1 ? `
+        <button type="button" class="carousel-nav prev" onclick="event.stopPropagation(); prodCarouselStep('${prod.id}', -1)" aria-label="عکس قبلی">‹</button>
+        <button type="button" class="carousel-nav next" onclick="event.stopPropagation(); prodCarouselStep('${prod.id}', 1)" aria-label="عکس بعدی">›</button>
+      ` : ''}
+    </div>
+    ${images.length > 1 ? `<div class="carousel-dots">${images.map((_,i)=>`<span class="dot${i===idx?' active':''}"></span>`).join('')}</div>` : ''}
+  `;
+}
+
+// دکمه‌های افزودن/حذف عکس
+function photoActionsInnerHTML(prod, lk){
+  const images = prod.images || [];
+  const hasImages = images.length > 0;
+  const remaining = PRODUCT_MAX_IMAGES - images.length;
+  return `
+    ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
+    ${remaining > 0
+      ? `<button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${prod.id}')">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</button>`
+      : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
+    <input type="file" accept="image/*" multiple id="imgfile_${prod.id}" style="display:none" onclick="event.stopPropagation()" onchange="handleImageFile('${prod.id}', this)">
+  `;
+}
+
+function prodCarouselStep(id, dir){
+  const prod = products.find(p=>p.id===id);
+  if(!prod || !prod.images || prod.images.length < 2) return;
+  const len = prod.images.length;
+  let idx = ((productCarouselIndex[id]||0) + dir) % len;
+  if(idx < 0) idx += len;
+  productCarouselIndex[id] = idx;
+  const carousel = document.getElementById('photoCarousel_'+id);
+  if(carousel) carousel.innerHTML = photoCarouselInnerHTML(prod);
+}
+
 function updateProductPhotoUI(id){
   const prod = products.find(p=>p.id===id);
   if(!prod) return;
   const headThumb = document.getElementById('headThumb_'+id);
-  if(headThumb) headThumb.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(32);
-  const preview = document.getElementById('photoPrev_'+id);
-  if(preview) preview.innerHTML = prod.imageUrl ? `<img src="${prod.imageUrl}" alt="">` : cameraIconSVG(36);
+  if(headThumb) headThumb.innerHTML = (prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32);
+  const carousel = document.getElementById('photoCarousel_'+id);
+  if(carousel) carousel.innerHTML = photoCarouselInnerHTML(prod);
   const actions = document.getElementById('photoActions_'+id);
-  if(actions){
-    actions.innerHTML = `
-      <button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${id}')">${prod.imageUrl?'تغییر عکس':'انتخاب عکس'}</button>
-      ${prod.imageUrl ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${id}')">حذف عکس</button>` : ''}
-      <input type="file" accept="image/*" id="imgfile_${id}" style="display:none" onclick="event.stopPropagation()" onchange="handleImageFile('${id}', this)">
-    `;
-  }
+  if(actions) actions.innerHTML = photoActionsInnerHTML(prod, !isAdmin);
 }
 
 function resizeImageToBase64(file, maxDim, quality){
@@ -2387,10 +2450,11 @@ function scheduleSync(){
 
 async function handleImageFile(id, inputEl){
   if(!isAdmin) return;
-  const file = inputEl.files && inputEl.files[0];
-  if(!file) return;
+  const files = inputEl.files ? Array.from(inputEl.files) : [];
+  if(!files.length) return;
   const prod = products.find(p=>p.id===id);
   if(!prod){ inputEl.value=''; return; }
+  if(!Array.isArray(prod.images)) prod.images = [];
 
   if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim()){
     setPhotoStatus(id, 'اول در تب تنظیمات، اطلاعات گیت‌هاب (کاربر، ریپو، توکن) رو کامل کن', 'error');
@@ -2398,70 +2462,86 @@ async function handleImageFile(id, inputEl){
     return;
   }
 
-  setPhotoStatus(id, 'در حال فشرده‌سازی و آپلود عکس...', 'uploading');
-  try{
-    const base64 = await resizeImageToBase64(file, 480, 0.82);
-    const branch = (settings.githubBranch || 'main').trim();
-    const folder = (settings.githubFolder || 'product-images').trim().replace(/^\/+|\/+$/g,'');
-    const path = `${folder}/${id}.jpg`;
-    const apiUrl = githubContentsUrl(path);
-
-    let sha = prod.imageSha || null;
-    if(!sha){
-      try{
-        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers: githubHeaders() });
-        if(getRes.ok){ const info = await getRes.json(); sha = info.sha; }
-      }catch(e){ /* file probably doesn't exist yet — fine */ }
-    }
-
-    const body = { message: (sha?'update':'add')+' product image '+id, content: base64, branch };
-    if(sha) body.sha = sha;
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {...githubHeaders(), 'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    });
-    const data = await putRes.json().catch(()=>({}));
-    if(!putRes.ok) throw new Error(data.message || ('خطای گیت‌هاب: '+putRes.status));
-
-    prod.imageUrl = data.content.download_url + (data.content.download_url.includes('?')?'&':'?') + 'v=' + Date.now();
-    prod.imagePath = path;
-    prod.imageSha = data.content.sha;
-    persist();
-    updateProductPhotoUI(id);
-    setPhotoStatus(id, 'عکس با موفقیت آپلود شد ✓', 'success');
-    setTimeout(()=>setPhotoStatus(id,'',''), 3000);
-  }catch(err){
-    console.error(err);
-    setPhotoStatus(id, 'آپلود ناموفق شد: ' + (err.message || 'خطای ناشناخته'), 'error');
+  const remaining = PRODUCT_MAX_IMAGES - prod.images.length;
+  if(remaining <= 0){
+    setPhotoStatus(id, 'حداکثر ۵ عکس برای هر محصول مجاز است.', 'error');
+    inputEl.value = '';
+    return;
   }
+  const toUpload = files.slice(0, remaining);
+  const skipped = files.length - toUpload.length;
+
+  const branch = (settings.githubBranch || 'main').trim();
+  const folder = (settings.githubFolder || 'product-images').trim().replace(/^\/+|\/+$/g,'');
+
+  let uploadedCount = 0;
+  for(let i=0; i<toUpload.length; i++){
+    const file = toUpload[i];
+    setPhotoStatus(id, toUpload.length>1 ? `در حال آپلود عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}...` : 'در حال فشرده‌سازی و آپلود عکس...', 'uploading');
+    try{
+      const base64 = await resizeImageToBase64(file, 480, 0.82);
+      const path = `${folder}/${id}_${Date.now()}_${i}.jpg`;
+      const apiUrl = githubContentsUrl(path);
+
+      const body = { message: 'add product image '+id, content: base64, branch };
+      const putRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {...githubHeaders(), 'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      const data = await putRes.json().catch(()=>({}));
+      if(!putRes.ok) throw new Error(data.message || ('خطای گیت‌هاب: '+putRes.status));
+
+      prod.images.push({
+        url: data.content.download_url + (data.content.download_url.includes('?')?'&':'?') + 'v=' + Date.now(),
+        path,
+        sha: data.content.sha
+      });
+      productCarouselIndex[id] = prod.images.length - 1;
+      persist();
+      updateProductPhotoUI(id);
+      uploadedCount++;
+    }catch(err){
+      console.error(err);
+      setPhotoStatus(id, 'آپلود عکس ' + toFaNum(i+1,0) + ' ناموفق شد: ' + (err.message || 'خطای ناشناخته'), 'error');
+      inputEl.value = '';
+      return;
+    }
+  }
+
+  let msg = uploadedCount > 1 ? `${toFaNum(uploadedCount,0)} عکس با موفقیت آپلود شد ✓` : 'عکس با موفقیت آپلود شد ✓';
+  if(skipped > 0) msg += ` (${toFaNum(skipped,0)} عکس دیگه به‌خاطر محدودیت ۵ تایی نادیده گرفته شد)`;
+  setPhotoStatus(id, msg, 'success');
+  setTimeout(()=>setPhotoStatus(id,'',''), 3500);
   inputEl.value = '';
 }
 
 function removeProductImage(id){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
-  if(!prod || !prod.imageUrl) return;
-  if(!confirm('عکس این محصول حذف بشه؟')) return;
+  if(!prod || !Array.isArray(prod.images) || !prod.images.length) return;
+  const idx = Math.min(productCarouselIndex[id]||0, prod.images.length-1);
+  const img = prod.images[idx];
+  if(!confirm('این عکس حذف بشه؟')) return;
 
   const cleanupLocal = () => {
-    prod.imageUrl = null; prod.imagePath = null; prod.imageSha = null;
+    prod.images.splice(idx, 1);
+    if((productCarouselIndex[id]||0) >= prod.images.length) productCarouselIndex[id] = Math.max(prod.images.length-1, 0);
     persist();
     updateProductPhotoUI(id);
   };
 
-  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !prod.imagePath || !prod.imageSha){
+  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path || !img.sha){
     cleanupLocal();
     return;
   }
 
   setPhotoStatus(id, 'در حال حذف از گیت‌هاب...', 'uploading');
   const branch = (settings.githubBranch || 'main').trim();
-  fetch(githubContentsUrl(prod.imagePath), {
+  fetch(githubContentsUrl(img.path), {
     method: 'DELETE',
     headers: {...githubHeaders(), 'Content-Type':'application/json'},
-    body: JSON.stringify({ message: 'remove product image '+id, sha: prod.imageSha, branch })
+    body: JSON.stringify({ message: 'remove product image '+id, sha: img.sha, branch })
   }).then(()=>{
     cleanupLocal();
     setPhotoStatus(id, 'عکس حذف شد', 'success');
@@ -2469,7 +2549,7 @@ function removeProductImage(id){
   }).catch(err=>{
     console.error(err);
     cleanupLocal();
-    setPhotoStatus(id, 'عکس از این محصول حذف شد ولی حذف کامل از گیت‌هاب با خطا مواجه شد', 'error');
+    setPhotoStatus(id, 'عکس حذف شد ولی حذف کامل از گیت‌هاب با خطا مواجه شد', 'error');
   });
 }
 
