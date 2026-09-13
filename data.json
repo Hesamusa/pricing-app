@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-13T17:19:16.286Z",
+  "updatedAt": "2026-09-13T17:19:20.919Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -37,7 +37,7 @@
     {
       "id": "p_1789318632241mto8f",
       "name": "سیلوستر سایز 30 سانت",
-      "weight": 50,
+      "weight": 1100,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
