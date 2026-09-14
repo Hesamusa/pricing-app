@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-14T02:42:55.513Z",
+  "updatedAt": "2026-09-14T18:21:42.090Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -38,6 +38,19 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_178941010031173kks",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0
+    },
     {
       "id": "p_1789353746923bh4pe",
       "name": "سگ طرح بافتنی",
