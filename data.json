@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-14T02:40:12.133Z",
+  "updatedAt": "2026-09-14T02:40:26.844Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -36,7 +36,7 @@
   "products": [
     {
       "id": "p_17893536103524v8zn",
-      "name": "محصول جدید",
+      "name": "گربه طرح بافتنی",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
