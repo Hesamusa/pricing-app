@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-14T18:28:19.219Z",
+  "updatedAt": "2026-09-14T18:29:42.087Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -118,7 +118,7 @@
     },
     {
       "id": "p_17887965710100v1nz",
-      "name": "تیرکس رباتی",
+      "name": "تیرکس ممان",
       "weight": 90,
       "printHours": 8,
       "manualHours": 0,
