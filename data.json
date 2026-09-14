@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-14T02:40:26.844Z",
+  "updatedAt": "2026-09-14T02:40:37.637Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -19,6 +19,10 @@
       {
         "id": "g_mtreb2q5k4dk",
         "name": "فیگور"
+      },
+      {
+        "id": "g_mu0mydrdz7a1",
+        "name": "جاسوییچی"
       }
     ],
     "githubOwner": "Hesamusa",
@@ -45,7 +49,8 @@
       "marginW": null,
       "marginR": null,
       "images": [],
-      "stock": 0
+      "stock": 0,
+      "category": "g_mu0mydrdz7a1"
     },
     {
       "id": "p_1789318632241mto8f",
