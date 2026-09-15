@@ -592,6 +592,51 @@
     font-family:'Vazirmatn',sans-serif; cursor:pointer; min-height:40px;
   }
   .order-status-btn.done{border-color:var(--green); color:var(--green);}
+
+  /* ————— واگذاری امانی: کارت فروشگاه، جدول اقلام و مودال تعداد ————— */
+  .consign-tag{padding:3px 10px; border-radius:8px; font-size:12.5px; font-weight:700;}
+  .consign-tag.stand{background:var(--blue-soft); color:var(--blue);}
+  .consign-tag.nostand{background:var(--bg); color:var(--ink-soft);}
+  .consign-tag.need{background:var(--orange-soft); color:var(--orange);}
+  .consign-tag.closed{background:var(--bg); color:var(--ink-soft);}
+  .consign-tag.debt{background:var(--orange-soft); color:var(--red);}
+
+  .consign-table{margin-top:8px; border-top:1px solid var(--line); padding-top:8px;}
+  .consign-th, .consign-tr{display:grid; grid-template-columns:1fr 54px 54px 58px; gap:4px; align-items:center;}
+  .consign-th{font-size:11.5px; font-weight:700; color:var(--ink-soft); padding:0 2px 4px;}
+  .consign-tr{font-size:13.5px; font-weight:600; padding:8px 2px; border-top:1px solid var(--line);}
+  .consign-th span+span, .consign-tr span+span{text-align:center;}
+  .consign-tr .cname{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .consign-tr .cnum{font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr;}
+  .consign-tr .is-need{color:var(--orange); font-weight:800;}
+  .consign-tr .is-zero{color:var(--ink-soft);}
+  .consign-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .consign-actions .order-status-btn{flex:1 1 44%; min-width:130px;}
+
+  .consign-modal{
+    display:none; position:fixed; inset:0; z-index:420;
+    background:rgba(0,0,0,0.5); align-items:flex-end; justify-content:center;
+    padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  .consign-modal.show{display:flex;}
+  .consign-modal-box{
+    width:100%; max-width:440px; background:var(--card); border-radius:22px;
+    padding:20px 18px 14px; box-shadow:0 -10px 40px rgba(0,0,0,0.3);
+    display:flex; flex-direction:column; gap:12px; max-height:84vh;
+  }
+  .consign-modal-title{font-size:17px; font-weight:800; color:var(--ink);}
+  .consign-modal-sub{font-size:13px; font-weight:600; color:var(--ink-soft); line-height:1.8; margin:-4px 0 0;}
+  .consign-modal-list{overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px 0;}
+  .consign-qty-row{display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:14px; padding:10px 12px;}
+  .consign-qty-row .qname{flex:1; min-width:0; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .consign-qty-row .qhint{font-size:11.5px; font-weight:600; color:var(--ink-soft); flex-shrink:0; white-space:nowrap;}
+  .consign-qty-row input{
+    width:88px; flex-shrink:0; border:1.5px solid var(--line); background:var(--card);
+    border-radius:12px; padding:9px 6px; text-align:center; color:var(--ink);
+    font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:16px !important; direction:ltr;
+  }
+  .consign-qty-row input:focus{outline:2px solid var(--orange); outline-offset:0;}
+
   .cust-name-input{
     font-size:16px; font-weight:700; color:var(--ink); border:none; background:transparent;
     padding:2px 0; min-width:0; flex:1; font-family:'Vazirmatn',sans-serif; text-align:right;
@@ -1147,6 +1192,131 @@
     </div><!-- /orders-authed-content -->
   </div>
 
+  <!-- CONSIGN TAB — واگذاری امانی محصولات به فروشگاه‌ها (با استند یا بدون استند) -->
+  <div id="tab-consign" class="tab-panel">
+    <div id="consign-login-gate" style="display:none;">
+      <div class="card" style="text-align:center; padding:36px 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px; display:block;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p style="margin:0 0 20px; font-weight:700;">برای ثبت و دیدن واگذاری‌های امانی اول وارد شو</p>
+        <button class="add-btn" style="margin-top:0;" onclick="switchTab('sales')">رفتن به صفحه ورود</button>
+      </div>
+    </div>
+
+    <div id="consign-authed-content" style="display:none;">
+    <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:14px; gap:8px;">
+      <span id="consign-user-email" class="hint" style="direction:ltr; text-align:right; margin:0;"></span>
+    </div>
+
+    <div class="section-title">ثبت واگذاری امانی جدید</div>
+    <div class="card" id="consign-form-wrap">
+      <div class="field">
+        <label>نام فروشگاه *</label>
+        <input type="text" class="gh-field" id="consign_store_name" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً گالری آرتا">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>نام تحویل‌گیرنده *</label>
+          <input type="text" class="gh-field" id="consign_contact_name" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="نام و نام خانوادگی">
+        </div>
+        <div class="field">
+          <label>شماره تماس *</label>
+          <input type="text" class="gh-field" id="consign_contact_phone" inputmode="numeric" maxlength="11" oninput="sanitizePhoneInput(this)" onblur="markPhoneValidity(this,'consign_contact_phone_hint')" style="direction:ltr; text-align:left; font-family:'IBM Plex Mono','Vazirmatn',monospace;" placeholder="09121234567">
+          <div class="hint" id="consign_contact_phone_hint"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>آدرس فروشگاه (اختیاری)</label>
+        <input type="text" class="gh-field" id="consign_address" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="آدرس یا محدوده">
+      </div>
+      <div class="field">
+        <label>نوع واگذاری</label>
+        <div class="sale-type-row" id="consign-type-row">
+          <button type="button" class="sale-type-chip active" data-stand="1" onclick="setConsignType(true)">با استند</button>
+          <button type="button" class="sale-type-chip" data-stand="0" onclick="setConsignType(false)">بدون استند</button>
+        </div>
+      </div>
+      <div class="field" id="consign-stand-code-field">
+        <label>کد یا شماره استند (اختیاری)</label>
+        <input type="text" class="gh-field" id="consign_stand_code" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً استند شماره ۳">
+      </div>
+
+      <div class="section-title" style="margin:18px 6px 6px; font-size:14px;">اقلام واگذارشده</div>
+      <div class="field">
+        <label>انتخاب محصول</label>
+        <div class="product-picker" id="consign_item_picker">
+          <button type="button" class="product-picker-btn" onclick="toggleConsignItemPicker()">
+            <span id="consign_item_picker_label">— انتخاب محصول —</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="product-picker-panel" id="consign_item_picker_panel">
+            <div class="search-box" style="margin:8px;">
+              <input type="text" id="consign_item_picker_search" placeholder="جستجوی محصول…" oninput="onConsignItemPickerSearch(this.value)" onclick="event.stopPropagation()" style="direction:rtl; text-align:right;">
+              <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <div class="product-picker-list" id="consign_item_picker_list"></div>
+          </div>
+        </div>
+        <div class="hint" id="consign_item_stock_hint"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>تعداد تحویلی</label>
+          <input type="text" class="num-input" id="consign_item_qty" inputmode="numeric" value="۱" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+        </div>
+        <div class="field">
+          <label>ظرفیت مطلوب (برای شارژ)</label>
+          <input type="text" class="num-input" id="consign_item_target" inputmode="numeric" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+        </div>
+      </div>
+      <div class="field">
+        <label>قیمت واحد تسویه با فروشگاه — تومان</label>
+        <div class="input-row">
+          <input type="text" class="num-input" id="consign_item_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
+          <span class="unit">تومان</span>
+        </div>
+        <div class="hint" id="consign_item_price_hint"></div>
+      </div>
+      <button type="button" class="add-btn" style="background:var(--blue);" onclick="addItemToConsign()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        افزودن به لیست امانی
+      </button>
+      <div id="consign-items-list" style="margin:10px 0 6px;"></div>
+
+      <div class="field">
+        <label>یادداشت (اختیاری)</label>
+        <input type="text" class="gh-field" id="consign_notes" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً شرایط تسویه یا توضیح استند">
+      </div>
+      <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+        با ثبت واگذاری، تعداد تحویلی از موجودی انبار همان محصول کم می‌شه. «ظرفیت مطلوب» یعنی دوست داری همیشه چند عدد از این محصول توی اون فروشگاه باشه؛ بر همین اساس مقدار شارژ مجدد حساب می‌شه.
+      </div>
+      <button class="add-btn" onclick="submitConsignment()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        ثبت واگذاری امانی
+      </button>
+    </div>
+    <div class="empty" id="consign-empty-hint" style="display:none;">
+      <p>اول از تب «محصولات» یک محصول اضافه کن، بعد واگذاری امانی‌اش رو اینجا ثبت کن.</p>
+    </div>
+
+    <div class="section-title"><span class="bar"></span>فروشگاه‌های امانی</div>
+    <div class="search-box" id="consign-search-box">
+      <input type="text" id="consign_search" placeholder="جستجوی نام فروشگاه، تحویل‌گیرنده یا شماره…" oninput="onConsignSearch(this.value)" style="direction:rtl; text-align:right;">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <button type="button" class="search-clear" onclick="clearConsignSearch()">✕</button>
+    </div>
+    <div class="filter-row">
+      <button type="button" class="filter-chip active" data-consign-filter="all" onclick="setConsignFilter('all')">همه</button>
+      <button type="button" class="filter-chip" data-consign-filter="stand" onclick="setConsignFilter('stand')">با استند</button>
+      <button type="button" class="filter-chip" data-consign-filter="nostand" onclick="setConsignFilter('nostand')">بدون استند</button>
+      <button type="button" class="filter-chip stock-chip" data-consign-filter="need" onclick="setConsignFilter('need')">⚠ نیاز به شارژ</button>
+      <button type="button" class="filter-chip" data-consign-filter="debt" onclick="setConsignFilter('debt')">بدهکار</button>
+      <button type="button" class="filter-chip" data-consign-filter="closed" onclick="setConsignFilter('closed')">بسته‌شده</button>
+    </div>
+    <div id="consign-stats"></div>
+    <div id="consign-list" style="margin-top:14px;"></div>
+    </div><!-- /consign-authed-content -->
+  </div>
+
   <!-- CUSTOMERS TAB -->
   <div id="tab-customers" class="tab-panel">
     <div class="search-box" id="customer-search-box">
@@ -1195,6 +1365,12 @@
     <div id="accounting-overview" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;"></div>
     <div class="section-title" style="font-size:14px; margin:0 6px 10px;">وضعیت مشتریان</div>
     <div id="accounting-customers"></div>
+
+    <div class="section-title" style="margin-top:26px;"><span class="bar"></span>امانی نزد فروشگاه‌ها</div>
+    <div class="hint" style="margin:0 6px 14px; line-height:1.7;">
+      این اعداد از تب «امانی» می‌آن: اقلامی که دست فروشگاه‌هاست، مقداری که باید شارژ بشه و طلبی که از بابت فروش‌های امانی داری.
+    </div>
+    <div id="consign-summary-overview" style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;"></div>
   </div>
 
   <!-- SELLERS TAB (فقط مدیر — هم دکمه‌ی منو و هم خودِ تب فقط برای مدیر نمایش داده می‌شه) -->
@@ -1237,6 +1413,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span>مشتریان</span>
       </button>
+      <button id="nav-consign" onclick="switchTab('consign')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11a2 2 0 0 1-2 1.8H6.5a2 2 0 0 1-2-1.8z"/><path d="M3 9l2.2-4.4A2 2 0 0 1 7 3.5h10a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3.5V9"/></svg>
+        <span>امانی</span>
+      </button>
       <button id="nav-sellers" onclick="switchTab('sellers')" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span>فروشنده‌ها</span>
@@ -1261,6 +1441,19 @@
     <div class="confirm-actions" id="confirm-actions">
       <button class="confirm-cancel" id="confirm-cancel-btn" type="button">انصراف</button>
       <button class="confirm-ok" id="confirm-ok-btn" type="button">تأیید</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال چندتایی امانی: ثبت فروش فروشگاه، شارژ مجدد، مرجوعی، ظرفیت و قیمت -->
+<div class="consign-modal" id="consign-modal">
+  <div class="consign-modal-box">
+    <div class="consign-modal-title" id="consign-modal-title"></div>
+    <div class="consign-modal-sub" id="consign-modal-sub"></div>
+    <div class="consign-modal-list" id="consign-modal-list"></div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="consign-modal-cancel" type="button">انصراف</button>
+      <button class="confirm-ok info-ok" id="consign-modal-ok" type="button">تأیید</button>
     </div>
   </div>
 </div>
@@ -1311,6 +1504,14 @@ let products = [];
 let sales = [];
 let customers = [];
 let orders = [];
+let consignments = [];
+let currentConsignItems = [];
+let consignItemProductId = null;
+let consignItemPickerQuery = '';
+let consignFilter = 'all';
+let consignSearchQuery = '';
+let consignFormHasStand = true;
+let consignTableMissing = false;
 let currentOrderItems = [];
 let orderItemProductId = null;
 let orderItemPickerQuery = '';
@@ -1657,11 +1858,12 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   const moreBtn = document.getElementById('nav-more');
-  if(moreBtn) moreBtn.classList.toggle('active', ['customers','settings','sellers'].includes(name));
+  if(moreBtn) moreBtn.classList.toggle('active', ['customers','settings','sellers','consign'].includes(name));
   if(name==='summary'){ renderSummary(); updateSummaryVisibility(); }
   if(name==='sellers') renderStaffPerformance();
   if(name==='sales') updateSalesAuthUI();
   if(name==='orders') updateOrdersAuthUI();
+  if(name==='consign') updateConsignAuthUI();
   if(name==='customers') updateCustomersAuthUI();
   if(name==='settings') applySettingsLock();
 }
@@ -1744,6 +1946,7 @@ async function refreshAuthState(){
   applySettingsLock();
   await updateSalesAuthUI();
   await updateOrdersAuthUI();
+  await updateConsignAuthUI();
 }
 
 // گیت سراسری: تا لاگین نشده، نه main دیده می‌شه نه nav — هیچ تبی (حتی محصولات/مشتریان/خلاصه).
@@ -3349,6 +3552,7 @@ function renderAccounting(){
   const overviewEl = document.getElementById('accounting-overview');
   const customersEl = document.getElementById('accounting-customers');
   if(!overviewEl || !customersEl) return;
+  renderConsignSummaryBlock();
   const acc = computeAccounting();
   overviewEl.innerHTML = `
     <div class="stat-card"><span class="stat-label">جمع فروش نقدی (تب فروش)</span><span class="stat-value">${fmt(acc.totalSales)}</span></div>
@@ -4526,6 +4730,902 @@ function renderOrderAccountingBlock(o){
     ${paymentsHistory}`;
 }
 
+// ═══════════════ واگذاری امانی به فروشگاه‌ها (با استند / بدون استند) ═══════════════
+// هر واگذاری = یک فروشگاه + مشخصات تحویل‌گیرنده + لیست اقلامی که امانی پیشش مونده.
+// دقیقاً مثل sales/orders/customers روی Supabase توی جدول consignments ذخیره می‌شه
+// (ستون‌های: id، owner_id، data به‌صورت jsonb، created_at) تا با RLS هر کاربر فقط
+// واگذاری‌های خودش رو ببینه و مدیر همه رو.
+//
+// برای هر قلم امانی سه عدد نگه می‌داریم و بقیه‌ی چیزها ازشون حساب می‌شه:
+//   deliveredQty = جمع همه‌ی تحویل‌ها (واگذاری اولیه + شارژهای بعدی)
+//   soldQty      = جمع فروش‌هایی که فروشگاه گزارش کرده
+//   returnedQty  = جمع مرجوعی‌هایی که به انبار برگشته
+//   موجودی فعلی نزد فروشگاه = delivered − sold − returned
+//   نیاز به شارژ = ظرفیت مطلوب − موجودی فعلی
+
+function makeConsignItem(prod, qty, unitPrice, targetQty){
+  const c = calc(prod);
+  return {
+    productId: prod.id,
+    productName: prod.name,
+    deliveredQty: Math.max(0, Math.round(qty) || 0),
+    soldQty: 0,
+    returnedQty: 0,
+    unitPrice: Math.max(0, Math.round(unitPrice) || 0),
+    costPerUnit: c.total, // قیمت تمام‌شده در لحظه‌ی واگذاری، برای محاسبه‌ی سود
+    targetQty: Math.max(0, Math.round(targetQty) || 0)
+  };
+}
+
+function makeConsignment(storeName, contactName, contactPhone, address, hasStand, standCode, items, notes){
+  const today = new Date().toISOString().slice(0,10);
+  return {
+    id: 'cg_' + Date.now() + Math.random().toString(36).slice(2,7),
+    storeName: (storeName||'').trim(),
+    contactName: (contactName||'').trim(),
+    contactPhone: normalizeDigits(contactPhone||''),
+    address: (address||'').trim(),
+    hasStand: !!hasStand,
+    standCode: (standCode||'').trim(),
+    items: items || [],
+    deliveries: [{ id: 'dl_'+Date.now(), date: today, items: (items||[]).map(it => ({productId: it.productId, qty: it.deliveredQty})), note: 'واگذاری اولیه' }],
+    saleLogs: [], // {id, date, items:[{productId, qty, unitPrice}], total}
+    payments: [], // {id, amount, date, note}
+    status: 'active', // 'active' | 'closed'
+    notes: (notes||'').trim(),
+    createdAt: new Date().toISOString()
+  };
+}
+
+// ————— محاسبه‌های کمکی —————
+function consignRemaining(it){
+  return Math.max(0, (it.deliveredQty||0) - (it.soldQty||0) - (it.returnedQty||0));
+}
+function consignRestockQty(it){
+  const target = it.targetQty || 0;
+  if(target <= 0) return 0;
+  return Math.max(0, target - consignRemaining(it));
+}
+function consignSoldValue(c){
+  return (c.items||[]).reduce((sum,it)=> sum + (it.soldQty||0)*(it.unitPrice||0), 0);
+}
+function consignProfit(c){
+  return (c.items||[]).reduce((sum,it)=> sum + (it.soldQty||0)*((it.unitPrice||0)-(it.costPerUnit||0)), 0);
+}
+function consignPaidTotal(c){
+  return (c.payments||[]).reduce((sum,p)=> sum + (p.amount||0), 0);
+}
+function consignDebt(c){
+  return Math.max(0, consignSoldValue(c) - consignPaidTotal(c));
+}
+function consignStockAtStore(c){
+  return (c.items||[]).reduce((sum,it)=> sum + consignRemaining(it), 0);
+}
+function consignNeedsRestock(c){
+  return c.status !== 'closed' && (c.items||[]).some(it => consignRestockQty(it) > 0);
+}
+
+// ————— Supabase —————
+async function loadConsignmentsFromSupabase(){
+  if(!currentUser){ consignments = []; return; }
+  try{
+    const { data, error } = await sb.from('consignments').select('id, owner_id, data, created_at').order('created_at', { ascending:false });
+    if(error){
+      console.error('خطا در دریافت واگذاری‌های امانی از Supabase', error);
+      consignments = [];
+      consignTableMissing = true;
+      return;
+    }
+    consignTableMissing = false;
+    consignments = (data||[]).map(row => ({ ...(row.data||{}), id: row.id, ownerId: row.owner_id }));
+  }catch(e){ console.error(e); consignments = []; }
+}
+
+async function syncConsignmentToSupabase(c){
+  const { id, ownerId, ...rest } = c;
+  try{
+    const { error } = await sb.from('consignments').update({ data: rest }).eq('id', id);
+    if(error){ await customAlert('به‌روزرسانی واگذاری روی سرور ناموفق بود: ' + error.message); return false; }
+    return true;
+  }catch(e){ await customAlert('به‌روزرسانی واگذاری ناموفق بود؛ اتصال رو چک کن.'); return false; }
+}
+
+async function updateConsignAuthUI(){
+  const gate = document.getElementById('consign-login-gate');
+  const content = document.getElementById('consign-authed-content');
+  const emailLabel = document.getElementById('consign-user-email');
+  if(!gate || !content) return;
+  if(currentUser){
+    gate.style.display = 'none';
+    content.style.display = '';
+    if(emailLabel) emailLabel.textContent = currentUser.name || currentUser.email;
+    await loadConsignmentsFromSupabase();
+    renderConsignTab();
+  }else{
+    gate.style.display = '';
+    content.style.display = 'none';
+    consignments = [];
+  }
+}
+
+// ————— فرم ثبت واگذاری جدید —————
+function setConsignType(hasStand){
+  consignFormHasStand = !!hasStand;
+  document.querySelectorAll('#consign-type-row .sale-type-chip').forEach(b => {
+    b.classList.toggle('active', (b.dataset.stand === '1') === consignFormHasStand);
+  });
+  const codeField = document.getElementById('consign-stand-code-field');
+  if(codeField) codeField.style.display = consignFormHasStand ? '' : 'none';
+}
+
+function toggleConsignItemPicker(){
+  const picker = document.getElementById('consign_item_picker');
+  if(!picker) return;
+  if(picker.classList.contains('open')) closeConsignItemPicker();
+  else openConsignItemPicker();
+}
+function openConsignItemPicker(){
+  const picker = document.getElementById('consign_item_picker');
+  if(!picker || !products.length) return;
+  picker.classList.add('open');
+  consignItemPickerQuery = '';
+  const search = document.getElementById('consign_item_picker_search');
+  if(search) search.value = '';
+  renderConsignItemPickerList();
+  setTimeout(() => { if(search) search.focus(); }, 30);
+}
+function closeConsignItemPicker(){
+  const picker = document.getElementById('consign_item_picker');
+  if(picker) picker.classList.remove('open');
+}
+function onConsignItemPickerSearch(v){
+  consignItemPickerQuery = v;
+  renderConsignItemPickerList();
+}
+function renderConsignItemPickerList(){
+  const listEl = document.getElementById('consign_item_picker_list');
+  if(!listEl) return;
+  const q = normalizeFaText(consignItemPickerQuery);
+  const filtered = q ? products.filter(p => normalizeFaText(p.name).includes(q)) : products;
+  if(filtered.length === 0){
+    listEl.innerHTML = `<div class="empty" style="padding:16px 8px;"><p>نتیجه‌ای پیدا نشد.</p></div>`;
+    return;
+  }
+  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===consignItemProductId?'active':''}" onclick="selectConsignItemProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
+}
+function selectConsignItemProduct(id){
+  consignItemProductId = id;
+  updateConsignItemPickerLabel();
+  closeConsignItemPicker();
+  // قیمت پیشنهادی عمده رو به‌عنوان پیش‌فرض قیمت تسویه با فروشگاه می‌ذاریم
+  const prod = products.find(p => p.id === id);
+  const priceEl = document.getElementById('consign_item_price');
+  if(prod && priceEl && !priceEl.value.trim()){
+    priceEl.value = toFaNum(calc(prod).priceW, 0);
+  }
+  updateConsignItemHints();
+}
+function updateConsignItemPickerLabel(){
+  const label = document.getElementById('consign_item_picker_label');
+  if(!label) return;
+  const prod = products.find(p => p.id === consignItemProductId);
+  label.textContent = prod ? prod.name : (products.length ? '— انتخاب محصول —' : 'ابتدا یک محصول اضافه کن');
+}
+function updateConsignItemHints(){
+  const stockHint = document.getElementById('consign_item_stock_hint');
+  const priceHint = document.getElementById('consign_item_price_hint');
+  const prod = products.find(p => p.id === consignItemProductId);
+  if(stockHint) stockHint.textContent = prod ? ('موجودی انبار: ' + fa.format(prod.stock||0) + ' عدد') : '';
+  if(priceHint){
+    if(prod){
+      const c = calc(prod);
+      priceHint.textContent = 'قیمت تمام‌شده: ' + fmt(c.total) + ' — پیشنهادی عمده: ' + fmt(c.priceW) + ' — خرده: ' + fmt(c.priceR);
+    }else{
+      priceHint.textContent = '';
+    }
+  }
+}
+
+async function addItemToConsign(){
+  if(!consignItemProductId && products.length){
+    consignItemProductId = products[0].id;
+    updateConsignItemPickerLabel();
+  }
+  const prod = products.find(p => p.id === consignItemProductId);
+  if(!prod){ await customAlert('اول یک محصول رو انتخاب کن.'); return; }
+  const qtyEl = document.getElementById('consign_item_qty');
+  const priceEl = document.getElementById('consign_item_price');
+  const targetEl = document.getElementById('consign_item_target');
+  const qty = Math.max(1, Math.round(parseNum(qtyEl.value)) || 1);
+  const price = Math.max(0, Math.round(parseNum(priceEl.value)) || 0);
+  if(price <= 0){ await customAlert('قیمت واحد تسویه با فروشگاه رو وارد کن.'); priceEl.focus(); return; }
+  const target = Math.max(0, Math.round(parseNum(targetEl.value)) || 0);
+  const existing = currentConsignItems.find(it => it.productId === prod.id);
+  if(existing){
+    existing.deliveredQty += qty;
+    existing.unitPrice = price;
+    if(target > 0) existing.targetQty = target;
+  }else{
+    currentConsignItems.push(makeConsignItem(prod, qty, price, target > 0 ? target : qty));
+  }
+  qtyEl.value = '۱';
+  priceEl.value = '';
+  targetEl.value = '';
+  renderConsignItemsList();
+}
+function removeConsignFormItem(index){
+  currentConsignItems.splice(index, 1);
+  renderConsignItemsList();
+}
+function renderConsignItemsList(){
+  const el = document.getElementById('consign-items-list');
+  if(!el) return;
+  if(!currentConsignItems.length){
+    el.innerHTML = `<div class="hint" style="margin:0 6px 10px;">هنوز محصولی به این واگذاری اضافه نشده.</div>`;
+    return;
+  }
+  el.innerHTML = currentConsignItems.map((it, i) => `
+    <div class="order-item-row">
+      <span class="order-item-row-name">${escapeHtml(it.productName)}</span>
+      <span class="order-item-row-qty mono">× ${fa.format(it.deliveredQty)} — ${fmt(it.unitPrice)}</span>
+      <button type="button" class="order-item-row-del" onclick="removeConsignFormItem(${i})">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+      </button>
+    </div>`).join('');
+}
+function resetConsignForm(){
+  currentConsignItems = [];
+  consignItemProductId = null;
+  updateConsignItemPickerLabel();
+  closeConsignItemPicker();
+  renderConsignItemsList();
+  updateConsignItemHints();
+  ['consign_store_name','consign_contact_name','consign_contact_phone','consign_address','consign_stand_code','consign_notes','consign_item_price','consign_item_target'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  const qtyEl = document.getElementById('consign_item_qty');
+  if(qtyEl) qtyEl.value = '۱';
+  const phoneHint = document.getElementById('consign_contact_phone_hint');
+  if(phoneHint) phoneHint.textContent = '';
+  setConsignType(true);
+}
+
+async function submitConsignment(){
+  if(!currentUser){ await customAlert('اول باید وارد بشی.'); return; }
+  if(!currentConsignItems.length){ await customAlert('اول حداقل یک محصول به لیست امانی اضافه کن.'); return; }
+  const storeEl = document.getElementById('consign_store_name');
+  const store = storeEl.value.trim();
+  if(!store){ await customAlert('نام فروشگاه رو وارد کن.'); storeEl.focus(); return; }
+  const nameEl = document.getElementById('consign_contact_name');
+  const contactName = nameEl.value.trim();
+  if(!contactName){ await customAlert('نام تحویل‌گیرنده رو وارد کن.'); nameEl.focus(); return; }
+  const phoneEl = document.getElementById('consign_contact_phone');
+  const phone = normalizeDigits(phoneEl.value);
+  if(!phone){ await customAlert('شماره تماس تحویل‌گیرنده رو وارد کن.'); phoneEl.focus(); return; }
+  if(!markPhoneValidity(phoneEl, 'consign_contact_phone_hint')){
+    await customAlert('شماره تماس نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه.');
+    phoneEl.focus();
+    return;
+  }
+
+  // هشدار کمبود موجودی انبار، دقیقاً مثل ثبت فروش
+  const shortages = currentConsignItems.filter(it => {
+    const prod = products.find(p => p.id === it.productId);
+    return prod && it.deliveredQty > (prod.stock||0);
+  });
+  if(shortages.length){
+    const lines = shortages.map(it => {
+      const prod = products.find(p => p.id === it.productId);
+      return '• ' + it.productName + ': موجودی ' + fa.format(prod.stock||0) + ' — تحویلی ' + fa.format(it.deliveredQty);
+    }).join('\n');
+    const ok = await customConfirm('موجودی انبار این محصول‌ها کمتر از تعداد تحویلیه و بعد از ثبت منفی می‌شه:\n' + lines + '\nادامه بدم؟');
+    if(!ok) return;
+  }
+
+  const data = makeConsignment(
+    store, contactName, phone,
+    document.getElementById('consign_address').value,
+    consignFormHasStand,
+    document.getElementById('consign_stand_code').value,
+    currentConsignItems.slice(),
+    document.getElementById('consign_notes').value
+  );
+  data.creatorEmail = currentUser.email;
+  data.creatorName = currentUser.name || currentUser.email;
+
+  let insertedRow;
+  try{
+    const { data: row, error } = await sb.from('consignments').insert({ owner_id: currentUser.id, data }).select().single();
+    if(error){ await customAlert('ثبت واگذاری روی سرور ناموفق بود: ' + error.message + '\n(اگه جدول consignments روی Supabase ساخته نشده، اول اون رو بساز.)'); return; }
+    insertedRow = row;
+  }catch(e){ await customAlert('ثبت واگذاری ناموفق بود؛ اتصال رو چک کن.'); return; }
+
+  consignments.unshift({ ...data, id: insertedRow.id, ownerId: currentUser.id });
+  // کم کردن از موجودی انبار
+  data.items.forEach(it => {
+    const prod = products.find(p => p.id === it.productId);
+    if(prod){ prod.stock = (prod.stock||0) - it.deliveredQty; updateProductDisplay(prod.id); }
+  });
+  persist();
+  await upsertCustomer(contactName, phone);
+  renderCustomersTab();
+  resetConsignForm();
+  renderConsignTab();
+  renderSummary();
+  showToast('واگذاری امانی ثبت شد ✓', 'success');
+}
+
+// ————— مودال ورود تعداد/مبلغ برای چند قلم به‌صورت یکجا —————
+// rows: [{key, name, hint, value}] — خروجی: null (انصراف) یا {key: عدد}
+function openConsignQtyModal(opts){
+  return new Promise(resolve => {
+    const overlay = document.getElementById('consign-modal');
+    const titleEl = document.getElementById('consign-modal-title');
+    const subEl = document.getElementById('consign-modal-sub');
+    const listEl = document.getElementById('consign-modal-list');
+    const okBtn = document.getElementById('consign-modal-ok');
+    const cancelBtn = document.getElementById('consign-modal-cancel');
+    if(!overlay || !listEl){ resolve(null); return; }
+    titleEl.textContent = opts.title || '';
+    subEl.textContent = opts.sub || '';
+    subEl.style.display = opts.sub ? '' : 'none';
+    okBtn.textContent = opts.okLabel || 'تأیید';
+    listEl.innerHTML = (opts.rows||[]).map(r => `
+      <div class="consign-qty-row">
+        <span class="qname">${escapeHtml(r.name)}</span>
+        ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
+        <input type="text" inputmode="numeric" data-key="${escapeHtml(r.key)}" value="${r.value ? toFaNum(r.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
+      </div>`).join('');
+    overlay.classList.add('show');
+    const cleanup = (result) => {
+      overlay.classList.remove('show');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve(result);
+    };
+    const onOk = () => {
+      const out = {};
+      listEl.querySelectorAll('input[data-key]').forEach(inp => {
+        out[inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0);
+      });
+      cleanup(out);
+    };
+    const onCancel = () => cleanup(null);
+    const onBackdrop = (e) => { if(e.target === overlay) cleanup(null); };
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+  });
+}
+
+// ————— عملیات روی یک واگذاری —————
+// ۱) ثبت فروش فروشگاه: از «موجودی نزد فروشگاه» کم و به «فروش‌رفته» اضافه می‌شه.
+async function recordConsignSale(id){
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
+    key: it.productId,
+    name: it.productName,
+    hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
+    value: 0
+  }));
+  if(!rows.length){ await customAlert('الان هیچ قلمی نزد این فروشگاه نمونده که فروش بره.'); return; }
+  const res = await openConsignQtyModal({
+    title: 'ثبت فروش فروشگاه',
+    sub: 'تعدادی که ' + (c.storeName || 'این فروشگاه') + ' از هر محصول فروخته رو وارد کن. مبلغش به حساب طلب شما از این فروشگاه اضافه می‌شه.',
+    rows, okLabel: 'ثبت فروش'
+  });
+  if(!res) return;
+  const entries = Object.entries(res).filter(([,q]) => q > 0);
+  if(!entries.length){ return; }
+  const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
+  const logItems = [];
+  for(const [pid, qty] of entries){
+    const it = (c.items||[]).find(x => x.productId === pid);
+    if(!it) continue;
+    const avail = consignRemaining(it);
+    const q = Math.min(qty, avail);
+    if(q <= 0) continue;
+    if(qty > avail){
+      await customAlert('برای «' + it.productName + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود؛ همون مقدار ثبت شد.');
+    }
+    it.soldQty = (it.soldQty||0) + q;
+    logItems.push({productId: pid, productName: it.productName, qty: q, unitPrice: it.unitPrice||0});
+  }
+  if(!logItems.length) return;
+  if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
+  c.saleLogs.unshift({
+    id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
+    date: new Date().toISOString().slice(0,10),
+    items: logItems,
+    total: logItems.reduce((s,l)=> s + l.qty*l.unitPrice, 0)
+  });
+  renderConsignTab();
+  renderSummary();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot.items; c.saleLogs = snapshot.saleLogs; renderConsignTab(); renderSummary(); }
+  else showToast('فروش فروشگاه ثبت شد ✓', 'success');
+}
+
+// ۲) شارژ مجدد: تعداد پیشنهادی از روی «ظرفیت مطلوب − موجودی فعلی» پر می‌شه.
+async function restockConsign(id){
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  if(!(c.items||[]).length){ await customAlert('این واگذاری قلمی نداره.'); return; }
+  const rows = (c.items||[]).map(it => {
+    const prod = products.find(p => p.id === it.productId);
+    return {
+      key: it.productId,
+      name: it.productName,
+      hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | انبار: ' + fa.format(prod ? (prod.stock||0) : 0),
+      value: consignRestockQty(it)
+    };
+  });
+  const res = await openConsignQtyModal({
+    title: 'شارژ مجدد اقلام',
+    sub: 'عددهای پیشنهادی بر اساس ظرفیت مطلوب هر قلم پر شده‌اند. هر عددی رو می‌تونی تغییر بدی؛ همین تعداد از انبار کم و به فروشگاه اضافه می‌شه.',
+    rows, okLabel: 'ثبت شارژ'
+  });
+  if(!res) return;
+  const entries = Object.entries(res).filter(([,q]) => q > 0);
+  if(!entries.length) return;
+
+  // هشدار کمبود انبار
+  const shortages = entries.filter(([pid, q]) => {
+    const prod = products.find(p => p.id === pid);
+    return prod && q > (prod.stock||0);
+  });
+  if(shortages.length){
+    const lines = shortages.map(([pid,q]) => {
+      const prod = products.find(p => p.id === pid);
+      return '• ' + prod.name + ': موجودی ' + fa.format(prod.stock||0) + ' — شارژ ' + fa.format(q);
+    }).join('\n');
+    const ok = await customConfirm('موجودی انبار این محصول‌ها بعد از شارژ منفی می‌شه:\n' + lines + '\nادامه بدم؟');
+    if(!ok) return;
+  }
+
+  const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
+  const delivered = [];
+  entries.forEach(([pid, qty]) => {
+    const it = (c.items||[]).find(x => x.productId === pid);
+    if(!it) return;
+    it.deliveredQty = (it.deliveredQty||0) + qty;
+    delivered.push({productId: pid, productName: it.productName, qty});
+  });
+  if(!delivered.length) return;
+  if(!Array.isArray(c.deliveries)) c.deliveries = [];
+  c.deliveries.unshift({
+    id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
+    date: new Date().toISOString().slice(0,10),
+    items: delivered,
+    note: 'شارژ مجدد'
+  });
+  renderConsignTab();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
+  delivered.forEach(d => {
+    const prod = products.find(p => p.id === d.productId);
+    if(prod){ prod.stock = (prod.stock||0) - d.qty; updateProductDisplay(prod.id); }
+  });
+  persist();
+  renderConsignTab();
+  renderSummary();
+  showToast('شارژ مجدد ثبت شد ✓', 'success');
+}
+
+// ۳) مرجوعی: از فروشگاه برمی‌گرده و دوباره به موجودی انبار اضافه می‌شه.
+async function returnConsign(id){
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
+    key: it.productId,
+    name: it.productName,
+    hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
+    value: 0
+  }));
+  if(!rows.length){ await customAlert('قلمی نزد این فروشگاه نمونده که مرجوع بشه.'); return; }
+  const res = await openConsignQtyModal({
+    title: 'ثبت مرجوعی',
+    sub: 'تعدادی که از فروشگاه پس گرفتی رو وارد کن؛ همین تعداد به موجودی انبار برمی‌گرده.',
+    rows, okLabel: 'ثبت مرجوعی'
+  });
+  if(!res) return;
+  const entries = Object.entries(res).filter(([,q]) => q > 0);
+  if(!entries.length) return;
+  const snapshot = JSON.parse(JSON.stringify(c.items));
+  const returned = [];
+  for(const [pid, qty] of entries){
+    const it = (c.items||[]).find(x => x.productId === pid);
+    if(!it) continue;
+    const q = Math.min(qty, consignRemaining(it));
+    if(q <= 0) continue;
+    it.returnedQty = (it.returnedQty||0) + q;
+    returned.push({productId: pid, qty});
+  }
+  if(!returned.length) return;
+  renderConsignTab();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot; renderConsignTab(); return; }
+  returned.forEach(r => {
+    const prod = products.find(p => p.id === r.productId);
+    if(prod){ prod.stock = (prod.stock||0) + r.qty; updateProductDisplay(prod.id); }
+  });
+  persist();
+  renderConsignTab();
+  renderSummary();
+  showToast('مرجوعی ثبت و به انبار برگشت ✓', 'success');
+}
+
+// ۴) ظرفیت مطلوب هر قلم (مبنای محاسبه‌ی شارژ مجدد)
+async function editConsignTargets(id){
+  const c = consignments.find(x => x.id === id);
+  if(!c || !(c.items||[]).length) return;
+  const rows = c.items.map(it => ({
+    key: it.productId,
+    name: it.productName,
+    hint: 'فعلی: ' + fa.format(it.targetQty||0),
+    value: it.targetQty||0
+  }));
+  const res = await openConsignQtyModal({
+    title: 'ظرفیت مطلوب هر قلم',
+    sub: 'یعنی دوست داری همیشه چند عدد از هر محصول توی این فروشگاه باشه. صفر یعنی برای این قلم پیشنهاد شارژ داده نشه.',
+    rows, okLabel: 'ذخیره'
+  });
+  if(!res) return;
+  const snapshot = JSON.parse(JSON.stringify(c.items));
+  c.items.forEach(it => {
+    if(res[it.productId] !== undefined) it.targetQty = res[it.productId];
+  });
+  renderConsignTab();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot; renderConsignTab(); }
+}
+
+// ۵) قیمت واحد تسویه‌ی هر قلم (فقط مدیر)
+async function editConsignPrices(id){
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه قیمت تسویه رو تغییر بده.'); return; }
+  const c = consignments.find(x => x.id === id);
+  if(!c || !(c.items||[]).length) return;
+  const rows = c.items.map(it => ({
+    key: it.productId,
+    name: it.productName,
+    hint: 'تومان',
+    value: it.unitPrice||0
+  }));
+  const res = await openConsignQtyModal({
+    title: 'قیمت واحد تسویه با فروشگاه',
+    sub: 'تغییر قیمت روی ارزش فروش‌های قبلی این فروشگاه هم اثر می‌ذاره، چون جمع بدهی از روی همین قیمت‌ها حساب می‌شه.',
+    rows, okLabel: 'ذخیره'
+  });
+  if(!res) return;
+  const snapshot = JSON.parse(JSON.stringify(c.items));
+  c.items.forEach(it => {
+    if(res[it.productId] !== undefined) it.unitPrice = res[it.productId];
+  });
+  renderConsignTab();
+  renderSummary();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot; renderConsignTab(); renderSummary(); }
+}
+
+// ۶) افزودن محصول جدید به یک فروشگاهِ ازقبل‌ثبت‌شده
+async function addProductsToConsign(id){
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  const existingIds = new Set((c.items||[]).map(it => it.productId));
+  const candidates = products.filter(p => !existingIds.has(p.id));
+  if(!candidates.length){ await customAlert('همه‌ی محصول‌ها از قبل توی لیست این فروشگاه هستن. برای اضافه‌کردن تعداد، از «شارژ مجدد» استفاده کن.'); return; }
+  const rows = candidates.map(p => ({
+    key: p.id,
+    name: p.name,
+    hint: 'انبار: ' + fa.format(p.stock||0),
+    value: 0
+  }));
+  const res = await openConsignQtyModal({
+    title: 'افزودن محصول به این فروشگاه',
+    sub: 'تعداد تحویلی هر محصول رو وارد کن. قیمت تسویه اولش برابر قیمت پیشنهادی عمده گذاشته می‌شه و ظرفیت مطلوب هم برابر همین تعداد؛ بعداً می‌تونی تغییرشون بدی.',
+    rows, okLabel: 'افزودن'
+  });
+  if(!res) return;
+  const entries = Object.entries(res).filter(([,q]) => q > 0);
+  if(!entries.length) return;
+
+  const shortages = entries.filter(([pid,q]) => {
+    const prod = products.find(p => p.id === pid);
+    return prod && q > (prod.stock||0);
+  });
+  if(shortages.length){
+    const ok = await customConfirm('موجودی انبار بعضی از این محصول‌ها کمتر از تعداد تحویلیه و منفی می‌شه. ادامه بدم؟');
+    if(!ok) return;
+  }
+
+  const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
+  const added = [];
+  entries.forEach(([pid, qty]) => {
+    const prod = products.find(p => p.id === pid);
+    if(!prod) return;
+    c.items.push(makeConsignItem(prod, qty, calc(prod).priceW, qty));
+    added.push({productId: pid, productName: prod.name, qty});
+  });
+  if(!added.length) return;
+  if(!Array.isArray(c.deliveries)) c.deliveries = [];
+  c.deliveries.unshift({
+    id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
+    date: new Date().toISOString().slice(0,10),
+    items: added,
+    note: 'افزودن محصول جدید'
+  });
+  renderConsignTab();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
+  added.forEach(a => {
+    const prod = products.find(p => p.id === a.productId);
+    if(prod){ prod.stock = (prod.stock||0) - a.qty; updateProductDisplay(prod.id); }
+  });
+  persist();
+  renderConsignTab();
+  renderSummary();
+}
+
+// ۷) تسویه‌ی مالی فروشگاه
+async function addConsignPayment(id){
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  const debt = consignDebt(c);
+  const res = await openConsignQtyModal({
+    title: 'ثبت تسویه فروشگاه',
+    sub: 'مانده بدهی این فروشگاه: ' + fmt(debt) + ' تومان',
+    rows: [{key:'amount', name:'مبلغ دریافتی', hint:'تومان', value: debt}],
+    okLabel: 'ثبت پرداخت'
+  });
+  if(!res) return;
+  const amount = res.amount || 0;
+  if(amount <= 0){ await customAlert('مبلغ نامعتبره.'); return; }
+  if(!Array.isArray(c.payments)) c.payments = [];
+  const payment = { id: 'cp_' + Date.now() + Math.random().toString(36).slice(2,5), amount, date: new Date().toISOString().slice(0,10), note: '' };
+  c.payments.unshift(payment);
+  renderConsignTab();
+  renderSummary();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.payments = c.payments.filter(p => p.id !== payment.id); renderConsignTab(); renderSummary(); }
+  else showToast('تسویه ثبت شد ✓', 'success');
+}
+
+async function deleteConsignPayment(consignId, paymentId){
+  if(!isAdmin) return;
+  const c = consignments.find(x => x.id === consignId);
+  if(!c) return;
+  if(!await customConfirm('این پرداخت حذف بشه؟')) return;
+  const prev = c.payments;
+  c.payments = (c.payments||[]).filter(p => p.id !== paymentId);
+  renderConsignTab();
+  renderSummary();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.payments = prev; renderConsignTab(); renderSummary(); }
+}
+
+async function setConsignStatus(id, status){
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  if(status === 'closed'){
+    const left = consignStockAtStore(c);
+    if(left > 0){
+      const ok = await customConfirm('هنوز ' + fa.format(left) + ' قلم امانی نزد این فروشگاهه. اگه پسشون گرفتی، اول «مرجوعی» رو ثبت کن تا به انبار برگرده.\nبا این حال این واگذاری بسته بشه؟');
+      if(!ok) return;
+    }
+  }
+  const prev = c.status;
+  c.status = status;
+  renderConsignTab();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.status = prev; renderConsignTab(); }
+}
+
+async function deleteConsignment(id){
+  if(!isAdmin) return;
+  const c = consignments.find(x => x.id === id);
+  if(!c) return;
+  const left = consignStockAtStore(c);
+  const msg = left > 0
+    ? 'این واگذاری حذف بشه؟\nتوجه: ' + fa.format(left) + ' قلم امانی که هنوز نزد این فروشگاه ثبت شده، خودکار به انبار برنمی‌گرده.'
+    : 'این واگذاری حذف بشه؟';
+  if(!await customConfirm(msg)) return;
+  try{
+    const { error } = await sb.from('consignments').delete().eq('id', id);
+    if(error){ await customAlert('حذف واگذاری روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ await customAlert('حذف واگذاری ناموفق بود؛ اتصال رو چک کن.'); return; }
+  consignments = consignments.filter(x => x.id !== id);
+  renderConsignTab();
+  renderSummary();
+}
+
+// ————— فیلتر و جستجو —————
+function setConsignFilter(f){
+  consignFilter = f;
+  document.querySelectorAll('#tab-consign .filter-chip').forEach(b => b.classList.toggle('active', b.dataset.consignFilter === f));
+  renderConsignTab();
+}
+function onConsignSearch(v){
+  consignSearchQuery = v;
+  const box = document.getElementById('consign-search-box');
+  if(box) box.classList.toggle('has-value', !!v);
+  renderConsignTab();
+}
+function clearConsignSearch(){
+  consignSearchQuery = '';
+  const input = document.getElementById('consign_search');
+  if(input) input.value = '';
+  const box = document.getElementById('consign-search-box');
+  if(box) box.classList.remove('has-value');
+  renderConsignTab();
+}
+function filteredConsignments(){
+  let list = consignments.slice();
+  if(consignFilter === 'stand') list = list.filter(c => c.hasStand && c.status !== 'closed');
+  else if(consignFilter === 'nostand') list = list.filter(c => !c.hasStand && c.status !== 'closed');
+  else if(consignFilter === 'need') list = list.filter(consignNeedsRestock);
+  else if(consignFilter === 'debt') list = list.filter(c => consignDebt(c) > 0);
+  else if(consignFilter === 'closed') list = list.filter(c => c.status === 'closed');
+  else list = list.filter(c => c.status !== 'closed');
+  const q = normalizeFaText(consignSearchQuery);
+  if(q){
+    list = list.filter(c =>
+      normalizeFaText(c.storeName||'').includes(q) ||
+      normalizeFaText(c.contactName||'').includes(q) ||
+      normalizeDigits(c.contactPhone||'').includes(normalizeDigits(consignSearchQuery)) ||
+      normalizeFaText(c.standCode||'').includes(q)
+    );
+  }
+  return list;
+}
+
+// ————— رندر تب امانی —————
+function renderConsignTab(){
+  const formWrap = document.getElementById('consign-form-wrap');
+  const emptyHint = document.getElementById('consign-empty-hint');
+  if(!formWrap || !emptyHint) return;
+  formWrap.style.display = products.length ? 'block' : 'none';
+  emptyHint.style.display = products.length ? 'none' : 'block';
+  updateConsignItemPickerLabel();
+  closeConsignItemPicker();
+  renderConsignItemsList();
+  updateConsignItemHints();
+  setConsignType(consignFormHasStand);
+
+  const statsEl = document.getElementById('consign-stats');
+  const listEl = document.getElementById('consign-list');
+  if(!statsEl || !listEl) return;
+
+  const active = consignments.filter(c => c.status !== 'closed');
+  const totalAtStores = active.reduce((s,c)=> s + consignStockAtStore(c), 0);
+  const totalRestock = active.reduce((s,c)=> s + (c.items||[]).reduce((n,it)=> n + consignRestockQty(it), 0), 0);
+  const totalDebt = consignments.reduce((s,c)=> s + consignDebt(c), 0);
+  statsEl.innerHTML = `
+    <div class="stat-card"><span class="stat-label">فروشگاه‌های فعال</span><span class="stat-value">${fa.format(active.length)}</span></div>
+    <div class="stat-card"><span class="stat-label">اقلام امانی نزد فروشگاه‌ها</span><span class="stat-value">${fa.format(totalAtStores)}</span></div>
+    <div class="stat-card" style="${totalRestock>0?'background:var(--orange-soft);':''}"><span class="stat-label">نیاز به شارژ مجدد (عدد)</span><span class="stat-value" style="${totalRestock>0?'color:var(--orange);':''}">${fa.format(totalRestock)}</span></div>
+    <div class="stat-card" style="${totalDebt>0?'background:var(--orange-soft);':''}"><span class="stat-label">مانده طلب از فروشگاه‌ها</span><span class="stat-value" style="${totalDebt>0?'color:var(--red);':''}">${fmt(totalDebt)}</span></div>
+  `;
+
+  const list = filteredConsignments();
+  if(list.length === 0){
+    let msg = 'هنوز واگذاری امانی‌ای در این بخش ثبت نشده.';
+    if(consignSearchQuery) msg = `نتیجه‌ای برای «${escapeHtml(consignSearchQuery)}» پیدا نشد.`;
+    else if(consignTableMissing) msg = 'جدول «consignments» روی Supabase پیدا نشد. اول اون رو بساز تا این بخش کار کنه.';
+    listEl.innerHTML = `<div class="empty"><p>${msg}</p></div>`;
+    return;
+  }
+  listEl.innerHTML = list.map(c => renderConsignCard(c)).join('');
+}
+
+function renderConsignCard(c){
+  const items = c.items || [];
+  const soldValue = consignSoldValue(c);
+  const paid = consignPaidTotal(c);
+  const debt = consignDebt(c);
+  const profit = consignProfit(c);
+  const needs = consignNeedsRestock(c);
+  const rows = items.map(it => {
+    const remain = consignRemaining(it);
+    const restock = consignRestockQty(it);
+    return `
+      <div class="consign-tr">
+        <span class="cname">${escapeHtml(it.productName)}</span>
+        <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
+        <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
+        <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
+      </div>`;
+  }).join('');
+
+  const paymentsHistory = (c.payments||[]).length
+    ? `<div class="sale-item-note">تسویه‌ها: ${(c.payments||[]).map(p => `
+        <span style="display:inline-flex; align-items:center; gap:6px; margin-left:10px;">
+          ${fmt(p.amount)} تومان (${formatDateFa(p.date)})
+          ${isAdmin ? `<button type="button" onclick="deleteConsignPayment('${c.id}','${p.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این پرداخت">✕</button>` : ''}
+        </span>`).join('')}</div>`
+    : '';
+
+  const lastSale = (c.saleLogs||[])[0];
+  const lastDelivery = (c.deliveries||[])[0];
+
+  return `
+  <div class="sale-item">
+    <div class="sale-item-top">
+      <span class="sale-item-name">${escapeHtml(c.storeName || 'بدون نام')}</span>
+      <button class="sale-del${isAdmin?'':' is-disabled'}" ${isAdmin ? `onclick="deleteConsignment('${c.id}')"` : 'disabled title="فقط مدیر می‌تونه واگذاری حذف کنه"'}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+      </button>
+    </div>
+    <div class="sale-item-meta">
+      <span class="consign-tag ${c.hasStand?'stand':'nostand'}">${c.hasStand ? ('با استند' + (c.standCode ? ' — ' + escapeHtml(c.standCode) : '')) : 'بدون استند'}</span>
+      ${c.status === 'closed' ? `<span class="consign-tag closed">بسته‌شده</span>` : ''}
+      ${needs ? `<span class="consign-tag need">نیاز به شارژ</span>` : ''}
+      ${debt > 0 ? `<span class="consign-tag debt">بدهکار</span>` : ''}
+      ${c.contactName ? `<span>${escapeHtml(c.contactName)}</span>` : ''}
+      ${c.contactPhone ? `<span class="mono">${c.contactPhone}</span>` : ''}
+      ${isAdmin && (c.creatorName || c.creatorEmail) ? `<span class="tag pending">ثبت‌کننده: ${escapeHtml(c.creatorName || c.creatorEmail)}</span>` : ''}
+    </div>
+    ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
+
+    <div class="consign-table">
+      <div class="consign-th">
+        <span>محصول</span><span>نزد فروشگاه</span><span>فروش‌رفته</span><span>شارژ</span>
+      </div>
+      ${rows || '<div class="hint" style="margin:8px 2px;">قلمی ثبت نشده.</div>'}
+    </div>
+
+    <div class="sale-item-bottom" style="margin-top:6px;">
+      <span>ارزش فروش: <b>${fmt(soldValue)}</b></span>
+      <span class="${profit>=0?'profit-pos':'profit-neg'}">سود: <b>${fmt(profit)}</b></span>
+    </div>
+    <div class="sale-item-bottom">
+      <span class="profit-pos">تسویه‌شده: <b>${fmt(paid)}</b></span>
+      <span class="${debt>0?'profit-neg':'profit-pos'}">${debt>0 ? 'مانده طلب' : 'تسویه کامل'}: <b>${fmt(debt)}</b></span>
+    </div>
+    ${lastSale ? `<div class="sale-item-note">آخرین فروش گزارش‌شده: ${formatDateFa(lastSale.date)} — ${escapeHtml(lastSale.items.map(l => l.productName + ' × ' + fa.format(l.qty)).join('، '))}</div>` : ''}
+    ${lastDelivery ? `<div class="sale-item-note">آخرین تحویل: ${formatDateFa(lastDelivery.date)}${lastDelivery.note ? ' — ' + escapeHtml(lastDelivery.note) : ''}</div>` : ''}
+    ${c.notes ? `<div class="sale-item-note">${escapeHtml(c.notes)}</div>` : ''}
+    ${paymentsHistory}
+
+    <div class="consign-actions">
+      <button type="button" class="order-status-btn done" onclick="recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
+      <button type="button" class="order-status-btn" onclick="restockConsign('${c.id}')">شارژ مجدد</button>
+      <button type="button" class="order-status-btn" onclick="addConsignPayment('${c.id}')">ثبت تسویه</button>
+      <button type="button" class="order-status-btn" onclick="returnConsign('${c.id}')">مرجوعی</button>
+      <button type="button" class="order-status-btn" onclick="addProductsToConsign('${c.id}')">افزودن محصول</button>
+      <button type="button" class="order-status-btn" onclick="editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
+      ${isAdmin ? `<button type="button" class="order-status-btn" onclick="editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
+      ${c.status === 'closed'
+        ? `<button type="button" class="order-status-btn" onclick="setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
+        : `<button type="button" class="order-status-btn" onclick="setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`}
+    </div>
+  </div>`;
+}
+
+// خلاصه‌ی امانی برای تب «خلاصه»
+function renderConsignSummaryBlock(){
+  const el = document.getElementById('consign-summary-overview');
+  if(!el) return;
+  const active = consignments.filter(c => c.status !== 'closed');
+  const totalAtStores = active.reduce((s,c)=> s + consignStockAtStore(c), 0);
+  const totalRestock = active.reduce((s,c)=> s + (c.items||[]).reduce((n,it)=> n + consignRestockQty(it), 0), 0);
+  const soldValue = consignments.reduce((s,c)=> s + consignSoldValue(c), 0);
+  const paid = consignments.reduce((s,c)=> s + consignPaidTotal(c), 0);
+  const debt = consignments.reduce((s,c)=> s + consignDebt(c), 0);
+  const stockValue = active.reduce((s,c)=> s + (c.items||[]).reduce((n,it)=> n + consignRemaining(it)*(it.unitPrice||0), 0), 0);
+  el.innerHTML = `
+    <div class="stat-card"><span class="stat-label">فروشگاه‌های امانی فعال</span><span class="stat-value">${fa.format(active.length)}</span></div>
+    <div class="stat-card"><span class="stat-label">اقلام امانی نزد فروشگاه‌ها (عدد)</span><span class="stat-value">${fa.format(totalAtStores)}</span></div>
+    <div class="stat-card"><span class="stat-label">ارزش اقلام امانی (قیمت تسویه)</span><span class="stat-value">${fmt(stockValue)}</span></div>
+    <div class="stat-card" style="${totalRestock>0?'background:var(--orange-soft);':''}"><span class="stat-label">نیاز به شارژ مجدد (عدد)</span><span class="stat-value" style="${totalRestock>0?'color:var(--orange);':''}">${fa.format(totalRestock)}</span></div>
+    <div class="stat-card"><span class="stat-label">جمع فروش فروشگاه‌های امانی</span><span class="stat-value">${fmt(soldValue)}</span></div>
+    <div class="stat-card highlight"><span class="stat-label">دریافتی از فروشگاه‌ها</span><span class="stat-value">${fmt(paid)}</span></div>
+    <div class="stat-card" style="${debt>0?'background:var(--orange-soft);':''}"><span class="stat-label">مانده طلب از فروشگاه‌ها</span><span class="stat-value" style="${debt>0?'color:var(--red);':''}">${fmt(debt)}</span></div>
+  `;
+}
+
 async function exportData(){
   const statusEl = document.getElementById('import-status');
   if(statusEl){ statusEl.style.color = 'var(--ink-soft)'; statusEl.textContent = 'در حال دریافت آخرین نسخه از سرور...'; }
@@ -4533,16 +5633,18 @@ async function exportData(){
   // به‌جای تکیه به sales/orders/customers توی حافظه (که ممکنه هنوز از تب‌های
   // مربوطه لود نشده باشن)، همین الان نسخه‌ی کامل و تازه رو از Supabase می‌گیریم
   // تا فایل پشتیبان واقعاً کامل باشه. برای مدیر، RLS همه‌ی ردیف‌ها رو برمی‌گردونه.
-  let liveSales = sales, liveOrders = orders, liveCustomers = customers;
+  let liveSales = sales, liveOrders = orders, liveCustomers = customers, liveConsignments = consignments;
   try{
-    const [salesRes, ordersRes, customersRes] = await Promise.all([
+    const [salesRes, ordersRes, customersRes, consignRes] = await Promise.all([
       sb.from('sales').select('id, seller_id, data, created_at').order('created_at', { ascending:false }),
       sb.from('orders').select('id, creator_id, data, created_at').order('created_at', { ascending:false }),
-      sb.from('customers').select('id, owner_id, data, created_at').order('created_at', { ascending:false })
+      sb.from('customers').select('id, owner_id, data, created_at').order('created_at', { ascending:false }),
+      sb.from('consignments').select('id, owner_id, data, created_at').order('created_at', { ascending:false })
     ]);
     if(!salesRes.error) liveSales = (salesRes.data||[]).map(row => ({ ...(row.data||{}), id: row.id, sellerId: row.seller_id }));
     if(!ordersRes.error) liveOrders = (ordersRes.data||[]).map(row => ({ ...(row.data||{}), id: row.id, creatorId: row.creator_id }));
     if(!customersRes.error) liveCustomers = (customersRes.data||[]).map(row => ({ ...(row.data||{}), id: row.id, ownerId: row.owner_id }));
+    if(!consignRes.error) liveConsignments = (consignRes.data||[]).map(row => ({ ...(row.data||{}), id: row.id, ownerId: row.owner_id }));
   }catch(e){
     console.error('دریافت نسخه‌ی کامل از سرور ناموفق بود؛ فایل پشتیبان با آخرین داده‌ی نمایش‌داده‌شده روی همین صفحه ساخته می‌شه.', e);
   }
@@ -4553,7 +5655,8 @@ async function exportData(){
     products: products,
     sales: liveSales,
     customers: liveCustomers,
-    orders: liveOrders
+    orders: liveOrders,
+    consignments: liveConsignments
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -4582,6 +5685,7 @@ function importData(event){
       sales = Array.isArray(data.sales) ? data.sales : [];
       customers = Array.isArray(data.customers) ? data.customers : [];
       orders = Array.isArray(data.orders) ? data.orders : [];
+      consignments = Array.isArray(data.consignments) ? data.consignments : [];
       openProductId = null;
       renderSettings();
       renderProducts();
@@ -4589,6 +5693,7 @@ function importData(event){
       renderSalesTab();
       renderCustomersTab();
       renderOrdersTab();
+      renderConsignTab();
       persist();
       statusEl.style.color = 'var(--green)';
       statusEl.textContent = 'تنظیمات و محصولات بازگردانی شد ✓ (فروش/سفارش/مشتری فقط برای مشاهده نمایش داده شدن؛ روی سرور تغییری نکردن)';
