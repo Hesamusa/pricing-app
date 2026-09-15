@@ -2635,12 +2635,51 @@ function onLightboxTouchEnd(e){
   }
 }
 
-function resizeImageToBase64(file, maxDim, quality){
+let _logoImgCache = null;
+let _logoImgCacheUrl = null;
+function loadLogoImage(url){
+  return new Promise((resolve)=>{
+    if(!url){ resolve(null); return; }
+    if(_logoImgCache && _logoImgCacheUrl === url){ resolve(_logoImgCache); return; }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => { _logoImgCache = img; _logoImgCacheUrl = url; resolve(img); };
+    img.onerror = () => resolve(null); // لوگو لود نشد (مثلاً به‌خاطر شبکه)؛ بدون واترمارک ادامه بده
+    img.src = url;
+  });
+}
+
+function drawLogoWatermark(ctx, w, h, logoImg){
+  if(!logoImg || !logoImg.width || !logoImg.height) return;
+  const margin = Math.max(6, Math.round(Math.min(w,h) * 0.035));
+  const size = Math.max(28, Math.round(Math.min(w,h) * 0.17));
+  const ratio = logoImg.width / logoImg.height;
+  let lw = size, lh = size;
+  if(ratio > 1) lh = size / ratio; else lw = size * ratio;
+  const x = w - margin - lw;
+  const y = margin;
+  const pad = Math.round(size * 0.14);
+  const rx = x - pad, ry = y - pad, rw = lw + pad*2, rh = lh + pad*2, rr = Math.min(rw,rh)/2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(rx+rr, ry);
+  ctx.arcTo(rx+rw, ry, rx+rw, ry+rh, rr);
+  ctx.arcTo(rx+rw, ry+rh, rx, ry+rh, rr);
+  ctx.arcTo(rx, ry+rh, rx, ry, rr);
+  ctx.arcTo(rx, ry, rx+rw, ry, rr);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fill();
+  ctx.restore();
+  ctx.drawImage(logoImg, x, y, lw, lh);
+}
+
+function resizeImageToBase64(file, maxDim, quality, withWatermark){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         let w = img.width, h = img.height;
         if(w >= h){ if(w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
         else{ if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
@@ -2650,7 +2689,24 @@ function resizeImageToBase64(file, maxDim, quality){
         ctx.fillStyle = '#fff';
         ctx.fillRect(0,0,w,h);
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+        if(withWatermark && settings.logoUrl){
+          try{
+            const logoImg = await loadLogoImage(settings.logoUrl);
+            drawLogoWatermark(ctx, w, h, logoImg);
+          }catch(err){ /* واترمارک اختیاریه؛ اگه نشد، عکس بدون لوگو آپلود می‌شه */ }
+        }
+        let dataUrl;
+        try{
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }catch(err){
+          // اگه لوگو باعث "آلوده" شدن کنواس شد (مشکل CORS)، بدون واترمارک دوباره export کن
+          ctx.clearRect(0,0,w,h);
+          ctx.fillStyle = '#fff';
+          ctx.fillRect(0,0,w,h);
+          ctx.drawImage(img, 0, 0, w, h);
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        resolve(dataUrl.split(',')[1]);
       };
       img.onerror = () => reject(new Error('فایل عکس قابل خواندن نبود'));
       img.src = e.target.result;
@@ -2808,7 +2864,7 @@ async function handleImageFile(id, inputEl){
     const file = toUpload[i];
     setPhotoStatus(id, toUpload.length>1 ? `در حال آپلود عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}...` : 'در حال فشرده‌سازی و آپلود عکس...', 'uploading');
     try{
-      const base64 = await resizeImageToBase64(file, 480, 0.82);
+      const base64 = await resizeImageToBase64(file, 480, 0.82, true);
       const path = `${folder}/${id}_${Date.now()}_${i}.jpg`;
       const apiUrl = githubContentsUrl(path);
 
