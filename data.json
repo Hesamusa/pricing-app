@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T11:53:15.664Z",
+  "updatedAt": "2026-09-15T11:53:21.727Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -245,7 +245,7 @@
       "paintHours": 0.5,
       "accessoryCost": 50000,
       "marginW": null,
-      "marginR": null,
+      "marginR": 75,
       "stock": 1,
       "category": "g_mtqsahf4t778",
       "images": [
