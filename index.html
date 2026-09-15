@@ -4757,7 +4757,8 @@ function makeConsignItem(prod, qty, unitPrice, targetQty){
   return {
     productId: prod.id,
     productName: prod.name,
-    deliveredQty: Math.max(0, Math.round(qty) || 0),
+    deliveredQty: Math.max(0, Math.round(qty) || 0), // جمع کل تحویلی (واگذاری اولیه + شارژهای بعدی) — مبنای محاسبه‌ی «نزد فروشگاه»
+    rechargedQty: 0, // فقط جمع شارژهای بعدیه، نه واگذاری اولیه؛ همیشه از صفر شروع می‌شه
     soldQty: 0,
     returnedQty: 0,
     unitPrice: Math.max(0, Math.round(unitPrice) || 0),
@@ -5281,6 +5282,7 @@ async function restockConsign(id){
     const it = (c.items||[]).find(x => x.productId === pid);
     if(!it) return;
     it.deliveredQty = (it.deliveredQty||0) + qty;
+    it.rechargedQty = (it.rechargedQty||0) + qty;
     deliveredItems.push({productId: pid, productName: it.productName, qty});
   });
   if(!soldLogItems.length && !deliveredItems.length) return;
@@ -5300,7 +5302,8 @@ async function restockConsign(id){
       id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
       date: new Date().toISOString().slice(0,10),
       items: deliveredItems,
-      note: 'شارژ مجدد'
+      note: 'شارژ مجدد',
+      isRecharge: true
     });
   }
   renderConsignTab();
@@ -5544,7 +5547,10 @@ async function deleteConsignDelivery(consignId, deliveryId){
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
   (delivery.items||[]).forEach(it => {
     const item = (c.items||[]).find(x => x.productId === it.productId);
-    if(item) item.deliveredQty = Math.max(0, (item.deliveredQty||0) - it.qty);
+    if(item){
+      item.deliveredQty = Math.max(0, (item.deliveredQty||0) - it.qty);
+      if(delivery.isRecharge) item.rechargedQty = Math.max(0, (item.rechargedQty||0) - it.qty);
+    }
   });
   c.deliveries = (c.deliveries||[]).filter(d => d.id !== deliveryId);
   renderConsignTab();
@@ -5625,7 +5631,10 @@ async function editConsignDelivery(consignId, deliveryId){
     const delta = newQty - it.qty;
     if(delta === 0) return;
     const item = (c.items||[]).find(x => x.productId === it.productId);
-    if(item) item.deliveredQty = Math.max(0, (item.deliveredQty||0) + delta);
+    if(item){
+      item.deliveredQty = Math.max(0, (item.deliveredQty||0) + delta);
+      if(delivery.isRecharge) item.rechargedQty = Math.max(0, (item.rechargedQty||0) + delta);
+    }
     stockDeltas.push({ productId: it.productId, delta });
     it.qty = newQty;
   });
@@ -5655,14 +5664,14 @@ async function editConsignItemTotals(id){
     name: it.productName,
     hint: 'نزد فروشگاه فعلی: ' + fa.format(consignRemaining(it)),
     fields: [
-      { role:'delivered', label:'شارژ کل', value: it.deliveredQty||0 },
+      { role:'recharged', label:'شارژ شده', value: it.rechargedQty||0 },
       { role:'sold', label:'فروش کل', value: it.soldQty||0 },
       { role:'returned', label:'مرجوعی کل', value: it.returnedQty||0 }
     ]
   }));
   const res = await openConsignMultiFieldModal({
     title: 'ویرایش جدول اقلام',
-    sub: 'این سه عدد، جمع کل از ابتدای واگذاری‌ان. با تغییرشون، یک ردیف «اصلاح دستی» به گزارش‌ها اضافه می‌شه و اگه شارژ یا مرجوعی عوض بشه، موجودی انبار هم به همون اندازه تنظیم می‌شه.',
+    sub: 'این سه عدد، جمع کل از ابتدای واگذاری‌ان (واگذاری اولیه جزو «شارژ شده» حساب نمی‌شه). با تغییرشون، یک ردیف «اصلاح دستی» به گزارش‌ها اضافه می‌شه و اگه شارژ یا مرجوعی عوض بشه، موجودی انبار هم به همون اندازه تنظیم می‌شه.',
     rows, okLabel: 'ذخیره'
   });
   if(!res) return;
@@ -5671,20 +5680,23 @@ async function editConsignItemTotals(id){
   const deliveryFixItems = [];
   const stockDeltas = [];
   c.items.forEach(it => {
-    const newDelivered = res.delivered ? res.delivered[it.productId] : undefined;
+    const newRecharged = res.recharged ? res.recharged[it.productId] : undefined;
     const newSold = res.sold ? res.sold[it.productId] : undefined;
     const newReturned = res.returned ? res.returned[it.productId] : undefined;
-    const oldDelivered = it.deliveredQty||0, oldSold = it.soldQty||0, oldReturned = it.returnedQty||0;
-    const dDelivered = newDelivered !== undefined ? newDelivered - oldDelivered : 0;
+    const oldRecharged = it.rechargedQty||0, oldSold = it.soldQty||0, oldReturned = it.returnedQty||0;
+    const dRecharged = newRecharged !== undefined ? newRecharged - oldRecharged : 0;
     const dSold = newSold !== undefined ? newSold - oldSold : 0;
     const dReturned = newReturned !== undefined ? newReturned - oldReturned : 0;
-    if(dDelivered === 0 && dSold === 0 && dReturned === 0) return;
-    if(newDelivered !== undefined) it.deliveredQty = Math.max(0, newDelivered);
+    if(dRecharged === 0 && dSold === 0 && dReturned === 0) return;
+    if(newRecharged !== undefined){
+      it.rechargedQty = Math.max(0, newRecharged);
+      it.deliveredQty = Math.max(0, (it.deliveredQty||0) + dRecharged); // شارژ همیشه به جمع کل تحویلی هم اضافه می‌شه
+    }
     if(newSold !== undefined) it.soldQty = Math.max(0, newSold);
     if(newReturned !== undefined) it.returnedQty = Math.max(0, newReturned);
     if(dSold !== 0) saleFixItems.push({productId: it.productId, productName: it.productName, qty: dSold, unitPrice: it.unitPrice||0});
-    if(dDelivered !== 0) deliveryFixItems.push({productId: it.productId, productName: it.productName, qty: dDelivered});
-    const stockDelta = dReturned - dDelivered; // شارژ بیشتر یعنی انبار کمتر؛ مرجوعی بیشتر یعنی انبار بیشتر
+    if(dRecharged !== 0) deliveryFixItems.push({productId: it.productId, productName: it.productName, qty: dRecharged});
+    const stockDelta = dReturned - dRecharged; // شارژ بیشتر یعنی انبار کمتر؛ مرجوعی بیشتر یعنی انبار بیشتر
     if(stockDelta !== 0) stockDeltas.push({productId: it.productId, delta: stockDelta});
   });
   if(!saleFixItems.length && !deliveryFixItems.length){ return; }
@@ -5704,7 +5716,8 @@ async function editConsignItemTotals(id){
       id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
       date: new Date().toISOString().slice(0,10),
       items: deliveryFixItems,
-      note: 'اصلاح دستی'
+      note: 'اصلاح دستی',
+      isRecharge: true
     });
   }
   renderConsignTab();
@@ -5846,7 +5859,7 @@ function renderConsignCard(c){
   const rows = items.map(it => {
     const remain = consignRemaining(it);
     const restock = consignRestockQty(it);
-    const charged = it.deliveredQty||0;
+    const charged = it.rechargedQty||0;
     totalRemain += remain;
     totalSold += (it.soldQty||0);
     totalCharged += charged;
