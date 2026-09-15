@@ -154,8 +154,11 @@
   }
   .product-head-top{display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .product-head .name-wrap{flex:1; min-width:0;}
-  .product-head input[type=text]{border:none; background:transparent; padding:0; font-size:17px; font-weight:700; height:auto; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .product-head input[type=text]:focus{outline:none;}
+  .product-head .product-name-display{
+    display:block; font-size:17px; font-weight:700; color:var(--ink);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .product-head .product-name-display.placeholder{color:var(--ink-soft); font-weight:600;}
   .chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
   .product.open .chev{transform:rotate(180deg);}
   .group-tag{
@@ -2266,9 +2269,7 @@ function renderProducts(){
         <div class="head-info">
           <div class="product-head-top">
             <div class="name-wrap">
-              <input type="text" class="${lkClass}" ${lkAttr} value="${escapeHtml(prod.name)}" placeholder="نام محصول"
-                onclick="event.stopPropagation()"
-                oninput="updateProduct('${prod.id}','name',this.value)">
+              <span class="product-name-display${prod.name?'':' placeholder'}" id="nameDisplay_${prod.id}">${prod.name ? escapeHtml(prod.name) : 'بدون نام'}</span>
             </div>
             <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </div>
@@ -2284,6 +2285,12 @@ function renderProducts(){
       </div>
       <div class="product-body">
         <div class="product-body-inner">
+          <div class="field">
+            <label>نام محصول</label>
+            <input type="text" class="${lkClass}" ${lkAttr} value="${escapeHtml(prod.name)}" placeholder="نام محصول رو وارد کن"
+              onclick="event.stopPropagation()"
+              oninput="updateProduct('${prod.id}','name',this.value)">
+          </div>
           <div class="field">
             <label>دسته‌بندی</label>
             <div class="group-select-row">
@@ -3110,6 +3117,11 @@ function updateProductDisplay(id){
   setText('bd_total_'+id, fmt(c.total)+' تومان');
   setText('res_w_'+id, fmt(c.priceW));
   setText('res_r_'+id, fmt(c.priceR));
+  const nameEl = document.getElementById('nameDisplay_'+id);
+  if(nameEl){
+    nameEl.textContent = prod.name ? prod.name : 'بدون نام';
+    nameEl.classList.toggle('placeholder', !prod.name);
+  }
   const stock = prod.stock||0;
   const badge = document.getElementById('stockBadge_'+id);
   if(badge){ badge.textContent = fa.format(stock); badge.style.color = stock<=0 ? 'var(--red)' : ''; }
@@ -3190,6 +3202,8 @@ function addProduct(){
   setTimeout(()=>{
     const card = document.getElementById('card_'+p.id);
     if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+    const nameInput = card ? card.querySelector('.product-body input[type=text]') : null;
+    if(nameInput) nameInput.focus();
   }, 50);
 }
 
