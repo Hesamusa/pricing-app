@@ -318,6 +318,8 @@
     font-size:14px; font-weight:700; color:var(--ink); user-select:none;
   }
   .breakdown-toggle:active{background:var(--line);}
+  .breakdown-toggle-left{display:flex; align-items:center; gap:10px;}
+  .breakdown-toggle-total{color:var(--orange); font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:15px; font-weight:700; direction:ltr; display:inline-block;}
   .breakdown-chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
   .breakdown-chev.open{transform:rotate(180deg);}
   .breakdown-wrap{max-height:0; overflow:hidden; transition:max-height .3s ease;}
@@ -2384,7 +2386,10 @@ function renderProducts(){
           ${lk ? '' : `
           <div class="breakdown-toggle" id="breakdownToggle_${prod.id}" onclick="event.stopPropagation(); toggleBreakdown('${prod.id}')">
             <span>جدول قیمت تمام‌شده</span>
-            <svg class="chev breakdown-chev${openBreakdownIds.has(prod.id)?' open':''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="breakdown-toggle-left">
+              <b id="bd_total_head_${prod.id}" class="breakdown-toggle-total">${fmt(c.total)} تومان</b>
+              <svg class="chev breakdown-chev${openBreakdownIds.has(prod.id)?' open':''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
           </div>
           <div class="breakdown-wrap${openBreakdownIds.has(prod.id)?' open':''}" id="breakdownWrap_${prod.id}">
             <div class="breakdown">
@@ -3158,6 +3163,7 @@ function updateProductDisplay(id){
   setText('bd_paint_'+id, fmt(c.paintCost));
   setText('bd_accessory_'+id, fmt(c.accessoryCost));
   setText('bd_total_'+id, fmt(c.total)+' تومان');
+  setText('bd_total_head_'+id, fmt(c.total)+' تومان');
   setText('res_w_'+id, fmt(c.priceW));
   setText('res_r_'+id, fmt(c.priceR));
   const nameEl = document.getElementById('nameDisplay_'+id);
