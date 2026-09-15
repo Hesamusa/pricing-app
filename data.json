@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T12:31:38.475Z",
+  "updatedAt": "2026-09-15T12:31:42.614Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -43,7 +43,7 @@
   "products": [
     {
       "id": "p_1789475484761nq179",
-      "name": "سگ ساموئید سفید دم لند",
+      "name": "سگ ساموئید سفید دم بلند",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
