@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T11:41:26.385Z",
+  "updatedAt": "2026-09-15T11:41:30.628Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -188,26 +188,6 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
           "path": "product-images/p_1788796315293vahtq.jpg",
           "sha": "d7a4f9f92a924fe7cd1ad1875c5ef238af865f57"
-        }
-      ]
-    },
-    {
-      "id": "p_1788796218199rdwc3",
-      "name": "سگ ساموید فلکسی دم‌بلند",
-      "weight": 9,
-      "printHours": 1,
-      "manualHours": 0,
-      "paintHours": 0.5,
-      "accessoryCost": 10000,
-      "marginW": null,
-      "marginR": null,
-      "stock": 1,
-      "category": "g_mtqsahf4t778",
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796218199rdwc3.jpg?v=1788796254312",
-          "path": "product-images/p_1788796218199rdwc3.jpg",
-          "sha": "14338fa651a2aa7ab73037286d573a8b54f81b5b"
         }
       ]
     },
