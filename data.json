@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T16:31:28.703Z",
+  "updatedAt": "2026-09-15T16:44:04.992Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -58,7 +58,7 @@
           "sha": "720e59997926687fe4762854f4fb91d3b6bbc19c"
         }
       ],
-      "stock": 9,
+      "stock": 0,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -78,7 +78,7 @@
           "sha": "7f8047f6ea6ea11f2fd23c8864a3765ce08e737a"
         }
       ],
-      "stock": 6,
+      "stock": 0,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -98,7 +98,7 @@
           "sha": "fee9df6ef5cdd787e2af0074aae8f14cacd71f50"
         }
       ],
-      "stock": 12,
+      "stock": 0,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -118,7 +118,7 @@
           "sha": "e656533094dddbcea21e875101ba8c362e36f800"
         }
       ],
-      "stock": 4,
+      "stock": 0,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -138,7 +138,7 @@
           "sha": "10481f1d4eca04c66f4900e2dd13a6d904e4102c"
         }
       ],
-      "stock": 4,
+      "stock": 0,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -241,7 +241,7 @@
       "accessoryCost": 50000,
       "marginW": null,
       "marginR": 65,
-      "stock": 1,
+      "stock": 0,
       "category": "g_mtqsahf4t778",
       "images": [
         {
@@ -261,7 +261,7 @@
       "accessoryCost": 10000,
       "marginW": null,
       "marginR": 75,
-      "stock": 1,
+      "stock": 0,
       "category": "g_mtqsahf4t778",
       "images": [
         {
@@ -286,7 +286,7 @@
       "accessoryCost": 50000,
       "marginW": null,
       "marginR": 60,
-      "stock": 1,
+      "stock": 0,
       "category": "g_mtqsahf4t778",
       "images": [
         {
@@ -346,7 +346,7 @@
       "accessoryCost": 10000,
       "marginW": null,
       "marginR": 85,
-      "stock": 1,
+      "stock": 0,
       "category": "g_mu0mydrdz7a1",
       "images": [
         {
@@ -366,7 +366,7 @@
       "accessoryCost": 0,
       "marginW": null,
       "marginR": 85,
-      "stock": 11,
+      "stock": 0,
       "category": "g_mtqsahf4t778",
       "images": [
         {
@@ -386,7 +386,7 @@
       "accessoryCost": 5000,
       "marginW": null,
       "marginR": null,
-      "stock": 9,
+      "stock": 0,
       "category": "g_mtqsahf4t778",
       "images": [
         {
