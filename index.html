@@ -610,6 +610,8 @@
   .consign-tr .cnum{font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr;}
   .consign-tr .is-need{color:var(--orange); font-weight:800;}
   .consign-tr .is-zero{color:var(--ink-soft);}
+  .consign-tr.consign-total{border-top:2px solid var(--line); font-weight:800;}
+  .consign-tr.consign-total .cname{color:var(--ink-soft);}
   .consign-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
   .consign-actions .order-status-btn{flex:1 1 44%; min-width:130px;}
 
@@ -5165,7 +5167,7 @@ async function restockConsign(id){
   });
   const res = await openConsignQtyModal({
     title: 'شارژ مجدد اقلام',
-    sub: 'عددهای پیشنهادی بر اساس ظرفیت مطلوب هر قلم پر شده‌اند. هر عددی رو می‌تونی تغییر بدی؛ همین تعداد از انبار کم و به فروشگاه اضافه می‌شه.',
+    sub: 'عددهای پیشنهادی بر اساس ظرفیت مطلوب هر قلم پر شده‌اند. هر عددی رو می‌تونی تغییر بدی؛ همین تعداد از انبار کم و به فروشگاه اضافه می‌شه — و چون شارژ مجدد یعنی همون تعداد قبلاً فروخته شده، به‌صورت خودکار «فروش‌رفته» هم ثبت می‌شه.',
     rows, okLabel: 'ثبت شارژ'
   });
   if(!res) return;
@@ -5186,13 +5188,17 @@ async function restockConsign(id){
     if(!ok) return;
   }
 
-  const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
+  const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries, saleLogs: c.saleLogs}));
   const delivered = [];
+  const soldFromRestock = [];
   entries.forEach(([pid, qty]) => {
     const it = (c.items||[]).find(x => x.productId === pid);
     if(!it) return;
     it.deliveredQty = (it.deliveredQty||0) + qty;
+    // شارژ مجدد یعنی همین تعداد نزد فروشگاه فروخته شده؛ پس فروش‌رفته هم به همون اندازه بالا می‌ره
+    it.soldQty = (it.soldQty||0) + qty;
     delivered.push({productId: pid, productName: it.productName, qty});
+    soldFromRestock.push({productId: pid, productName: it.productName, qty, unitPrice: it.unitPrice||0});
   });
   if(!delivered.length) return;
   if(!Array.isArray(c.deliveries)) c.deliveries = [];
@@ -5202,9 +5208,17 @@ async function restockConsign(id){
     items: delivered,
     note: 'شارژ مجدد'
   });
+  if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
+  c.saleLogs.unshift({
+    id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
+    date: new Date().toISOString().slice(0,10),
+    items: soldFromRestock,
+    total: soldFromRestock.reduce((s,l)=> s + l.qty*l.unitPrice, 0),
+    note: 'خودکار از شارژ مجدد'
+  });
   renderConsignTab();
   const ok = await syncConsignmentToSupabase(c);
-  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
+  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; c.saleLogs = snapshot.saleLogs; renderConsignTab(); return; }
   delivered.forEach(d => {
     const prod = products.find(p => p.id === d.productId);
     if(prod){ prod.stock = (prod.stock||0) - d.qty; updateProductDisplay(prod.id); }
@@ -5212,7 +5226,7 @@ async function restockConsign(id){
   persist();
   renderConsignTab();
   renderSummary();
-  showToast('شارژ مجدد ثبت شد ✓', 'success');
+  showToast('شارژ مجدد و فروش مربوطه ثبت شد ✓', 'success');
 }
 
 // ۳) مرجوعی: از فروشگاه برمی‌گرده و دوباره به موجودی انبار اضافه می‌شه.
@@ -5527,9 +5541,13 @@ function renderConsignCard(c){
   const debt = consignDebt(c);
   const profit = consignProfit(c);
   const needs = consignNeedsRestock(c);
+  let totalRemain = 0, totalSold = 0, totalRestockNeed = 0;
   const rows = items.map(it => {
     const remain = consignRemaining(it);
     const restock = consignRestockQty(it);
+    totalRemain += remain;
+    totalSold += (it.soldQty||0);
+    totalRestockNeed += restock;
     return `
       <div class="consign-tr">
         <span class="cname">${escapeHtml(it.productName)}</span>
@@ -5538,6 +5556,13 @@ function renderConsignCard(c){
         <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
       </div>`;
   }).join('');
+  const totalsRow = items.length > 1 ? `
+      <div class="consign-tr consign-total">
+        <span class="cname">جمع کل</span>
+        <span class="cnum">${fa.format(totalRemain)}</span>
+        <span class="cnum">${fa.format(totalSold)}</span>
+        <span class="cnum">${totalRestockNeed>0 ? '+'+fa.format(totalRestockNeed) : '—'}</span>
+      </div>` : '';
 
   const paymentsHistory = (c.payments||[]).length
     ? `<div class="sale-item-note">تسویه‌ها: ${(c.payments||[]).map(p => `
@@ -5574,6 +5599,7 @@ function renderConsignCard(c){
         <span>محصول</span><span>نزد فروشگاه</span><span>فروش‌رفته</span><span>شارژ</span>
       </div>
       ${rows || '<div class="hint" style="margin:8px 2px;">قلمی ثبت نشده.</div>'}
+      ${totalsRow}
     </div>
 
     <div class="sale-item-bottom" style="margin-top:6px;">
