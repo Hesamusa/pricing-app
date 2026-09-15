@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T11:57:51.929Z",
+  "updatedAt": "2026-09-15T11:58:03.240Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -43,7 +43,7 @@
   "products": [
     {
       "id": "p_1789473468341u6rm9",
-      "name": "سمحصول جدید",
+      "name": "سگ پودل بافتنی",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
