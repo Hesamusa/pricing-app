@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T11:54:54.643Z",
+  "updatedAt": "2026-09-15T11:57:50.100Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -41,6 +41,19 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789473468341u6rm9",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0
+    },
     {
       "id": "p_178941010031173kks",
       "name": "جاسوییچی فلکسی بیبی گروت",
