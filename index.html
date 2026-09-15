@@ -2383,7 +2383,7 @@ async function handleCompanyLogoFile(inputEl){
   setCompanyLogoStatus('در حال آپلود لوگو...', '');
   try{
     // خروجی PNG بدون پس‌زمینه سفید و با کیفیت بالا، چون همین فایل بعداً به‌عنوان واترمارک روی عکس محصولات گذاشته می‌شه
-    const base64 = await resizeLogoToBase64(file, 640);
+    const { base64, hasTransparency } = await resizeLogoToBase64(file, 640);
     const branch = (settings.githubBranch || 'main').trim();
     const folder = (settings.githubFolder || 'product-images').trim().replace(/^\/+|\/+$/g,'');
     const path = `${folder}/brand-logo.png`;
@@ -2413,8 +2413,12 @@ async function handleCompanyLogoFile(inputEl){
     settings.logoSha = data.content.sha;
     persist();
     renderBrand();
-    setCompanyLogoStatus('لوگو آپلود شد ✓', 'success');
-    setTimeout(()=>setCompanyLogoStatus('',''), 3000);
+    if(hasTransparency){
+      setCompanyLogoStatus('لوگو آپلود شد ✓', 'success');
+      setTimeout(()=>setCompanyLogoStatus('',''), 3000);
+    }else{
+      setCompanyLogoStatus('لوگو آپلود شد، ولی این فایل پس‌زمینه شفاف نداره (کاملاً مات هست)؛ روی عکس محصولات به‌شکل یک مربع/مستطیل پشتش دیده می‌شه. یک فایل PNG با پس‌زمینه واقعاً شفاف (بدون هیچ رنگی پشت لوگو) انتخاب کن.', 'error');
+    }
   }catch(err){
     console.error(err);
     setCompanyLogoStatus('آپلود ناموفق شد: ' + (err.message || 'خطای ناشناخته'), 'error');
@@ -2729,6 +2733,7 @@ function drawLogoWatermark(ctx, w, h, logoImg){
 
 // مخصوص خود فایل لوگو: هیچ پس‌زمینه سفیدی زیرش کشیده نمی‌شه (شفافیت PNG حفظ می‌شه)
 // و خروجی PNG بدون فشرده‌سازی lossy هست، تا وقتی روی عکس محصولات به‌عنوان واترمارک گذاشته می‌شه کیفیتش افت نکنه.
+// خروجی شامل hasTransparency هم هست تا بشه به کاربر گفت فایلی که انتخاب کرده واقعاً شفاف هست یا نه.
 function resizeLogoToBase64(file, maxDim){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
@@ -2743,7 +2748,14 @@ function resizeLogoToBase64(file, maxDim){
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0,0,w,h); // بدون fillRect سفید، تا شفافیت لوگو از بین نره
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/png').split(',')[1]);
+        let hasTransparency = false;
+        try{
+          const data = ctx.getImageData(0,0,w,h).data;
+          for(let i=3; i<data.length; i+=4){
+            if(data[i] < 250){ hasTransparency = true; break; }
+          }
+        }catch(err){ /* اگه نشد بررسی کرد (مثلاً کنواس آلوده شد)، بی‌خیال هشدار می‌شیم و فقط آپلود می‌کنیم */ }
+        resolve({ base64: canvas.toDataURL('image/png').split(',')[1], hasTransparency });
       };
       img.onerror = () => reject(new Error('فایل عکس قابل خواندن نبود'));
       img.src = e.target.result;
