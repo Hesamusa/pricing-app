@@ -414,6 +414,47 @@
   }
   .save-note.show{opacity:1;}
 
+  /* توست سراسری — جایگزین await customAlert() مرورگر، در همه تب‌ها دیده می‌شه */
+  .toast-host{
+    position:fixed; left:0; right:0; bottom:calc(84px + env(safe-area-inset-bottom));
+    z-index:400; display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:0 16px; pointer-events:none;
+  }
+  .toast{
+    max-width:440px; width:100%; display:flex; align-items:center; gap:10px;
+    background:var(--card); border:1px solid var(--line); border-radius:16px; padding:13px 16px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.22); color:var(--ink); font-size:14.5px; font-weight:600;
+    line-height:1.6; opacity:0; transform:translateY(10px); transition:opacity .22s ease, transform .22s ease;
+    pointer-events:auto;
+  }
+  .toast.show{opacity:1; transform:translateY(0);}
+  .toast .toast-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .toast.warn .toast-dot{background:var(--red);}
+  .toast.success .toast-dot{background:var(--green);}
+  .toast.info .toast-dot{background:var(--blue);}
+
+  /* مودال سفارشی — جایگزین await customConfirm()/await customAlert() مرورگر */
+  .confirm-overlay{
+    display:none; position:fixed; inset:0; z-index:410;
+    background:rgba(0,0,0,0.5); align-items:flex-end; justify-content:center;
+    padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+  }
+  .confirm-overlay.show{display:flex;}
+  .confirm-box{
+    width:100%; max-width:420px; background:var(--card); border-radius:22px;
+    padding:22px 20px 16px; box-shadow:0 -10px 40px rgba(0,0,0,0.3);
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .confirm-msg{font-size:15.5px; font-weight:600; color:var(--ink); line-height:1.9; white-space:pre-line;}
+  .confirm-actions{display:flex; gap:10px;}
+  .confirm-actions button{
+    flex:1; min-height:var(--tap); border:none; border-radius:16px; font-family:'Vazirmatn',sans-serif;
+    font-size:15.5px; font-weight:700; cursor:pointer;
+  }
+  .confirm-cancel{background:var(--bg); color:var(--ink-soft);}
+  .confirm-ok{background:var(--red); color:#fff;}
+  .confirm-ok.info-ok{background:var(--blue);}
+
   .switch-row{
     display:flex; align-items:center; justify-content:space-between;
     padding:16px 0; min-height:var(--tap);
@@ -524,6 +565,10 @@
   .admin-lock-screen svg{color:var(--ink-soft);}
   input.locked-field, .num-input.locked-field{
     opacity:.6; pointer-events:none; background:transparent;
+    transition:opacity .25s ease;
+  }
+  .stock-btn, .product-picker-btn, .delete-btn, .sale-del{
+    transition:opacity .25s ease;
   }
   .locked-note{
     display:flex; align-items:center; gap:6px; justify-content:center;
@@ -570,7 +615,7 @@
 <main>
 
   <!-- SETTINGS TAB -->
-  <div id="tab-settings" class="tab-panel active">
+  <div id="tab-settings" class="tab-panel">
     <div class="save-note" id="save-note-settings">ذخیره شد ✓</div>
 
     <div class="section-title">ظاهر</div>
@@ -747,6 +792,7 @@
         <label>Personal Access Token</label>
         <input type="password" class="gh-field" id="s_ghToken" placeholder="ghp_..." autocomplete="off">
         <div class="hint">از github.com → Settings → Developer settings → Personal access tokens بساز؛ دسترسی نوشتن (Contents: Read and write) روی همین مخزن کافیه.</div>
+        <div class="hint" style="color:var(--red);">⚠️ این توکن روی همین گوشی ذخیره می‌شه؛ فقط روی دستگاه شخصی خودت واردش کن و با کسی به اشتراک نذار.</div>
       </div>
     </div>
 
@@ -783,7 +829,7 @@
   </div>
 
   <!-- PRODUCTS TAB -->
-  <div id="tab-products" class="tab-panel">
+  <div id="tab-products" class="tab-panel active">
     <div class="locked-note" id="products-locked-note" style="display:none;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       مشاهده فقط؛ ویرایش محصولات مخصوص مدیره
@@ -1076,10 +1122,6 @@
 
 <nav>
   <div class="nav-inner">
-  <button id="nav-settings" onclick="switchTab('settings')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    تنظیمات
-  </button>
   <button id="nav-products" onclick="switchTab('products')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     محصولات
@@ -1100,6 +1142,10 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14.1"/></svg>
     خلاصه
   </button>
+  <button id="nav-settings" onclick="switchTab('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    تنظیمات
+  </button>
   <button id="nav-sellers" onclick="switchTab('sellers')" style="display:none;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     فروشنده‌ها
@@ -1107,6 +1153,20 @@
   </div>
 </nav>
 </div><!-- /app-content -->
+
+<!-- توست سراسری (جایگزین alert مرورگر) — همیشه روی صفحه، مستقل از تب فعال -->
+<div class="toast-host" id="toast-host"></div>
+
+<!-- مودال سفارشی (جایگزین confirm/alert مرورگر) -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-actions" id="confirm-actions">
+      <button class="confirm-cancel" id="confirm-cancel-btn" type="button">انصراف</button>
+      <button class="confirm-ok" id="confirm-ok-btn" type="button">تأیید</button>
+    </div>
+  </div>
+</div>
 
 <!-- Big QR code overlay for sharing the Instagram page with a customer in-store -->
 <div id="qr-overlay" class="qr-overlay" onclick="if(event.target===this) closeQrOverlay()">
@@ -1395,9 +1455,82 @@ function persist(opts){
   }, 250);
 }
 function flashSaved(){
+  // نکته تنظیمات (اگه اون تب بازه) + توست سراسری که توی هر تبی دیده می‌شه
   const el = document.getElementById('save-note-settings');
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 1200);
+  if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1200); }
+  showToast('ذخیره شد ✓', 'success', 1400);
+}
+
+// توست سبک — جایگزین await customAlert() مرورگر برای پیام‌های کوتاه
+function showToast(message, type, duration){
+  const host = document.getElementById('toast-host');
+  if(!host) return;
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || 'info');
+  t.innerHTML = '<span class="toast-dot"></span><span>' + escapeHtml(message) + '</span>';
+  host.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{
+    t.classList.remove('show');
+    setTimeout(()=>t.remove(), 250);
+  }, duration || 3200);
+}
+
+// مودال سفارشی هم‌سبک اپ — جایگزین await customConfirm() مرورگر؛ Promise<boolean> برمی‌گردونه
+function customConfirm(message, okLabel){
+  return new Promise((resolve)=>{
+    const overlay = document.getElementById('confirm-overlay');
+    const msgEl = document.getElementById('confirm-msg');
+    const okBtn = document.getElementById('confirm-ok-btn');
+    const cancelBtn = document.getElementById('confirm-cancel-btn');
+    if(!overlay || !msgEl || !okBtn || !cancelBtn){ resolve(window.confirm(message)); return; }
+    msgEl.textContent = message;
+    okBtn.textContent = okLabel || 'تأیید';
+    okBtn.classList.remove('info-ok');
+    cancelBtn.style.display = '';
+    overlay.classList.add('show');
+    const cleanup = (result) => {
+      overlay.classList.remove('show');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve(result);
+    };
+    const onOk = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    const onBackdrop = (e) => { if(e.target === overlay) cleanup(false); };
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+  });
+}
+
+// مودال سفارشی هم‌سبک اپ — جایگزین await customAlert() مرورگر؛ فقط یک دکمه «باشه» داره
+function customAlert(message, okLabel){
+  return new Promise((resolve)=>{
+    const overlay = document.getElementById('confirm-overlay');
+    const msgEl = document.getElementById('confirm-msg');
+    const okBtn = document.getElementById('confirm-ok-btn');
+    const cancelBtn = document.getElementById('confirm-cancel-btn');
+    if(!overlay || !msgEl || !okBtn || !cancelBtn){ window.alert(message); resolve(); return; }
+    msgEl.textContent = message;
+    okBtn.textContent = okLabel || 'باشه';
+    okBtn.classList.add('info-ok');
+    cancelBtn.style.display = 'none';
+    overlay.classList.add('show');
+    const cleanup = () => {
+      overlay.classList.remove('show');
+      cancelBtn.style.display = '';
+      okBtn.classList.remove('info-ok');
+      okBtn.removeEventListener('click', onOk);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve();
+    };
+    const onOk = () => cleanup();
+    const onBackdrop = (e) => { if(e.target === overlay) cleanup(); };
+    okBtn.addEventListener('click', onOk);
+    overlay.addEventListener('click', onBackdrop);
+  });
 }
 
 function switchTab(name){
@@ -1641,16 +1774,16 @@ async function syncOrderToSupabase(order){
   const { id, creatorId, creatorEmail, ...rest } = order;
   try{
     const { error } = await sb.from('orders').update({ data: { ...rest, creatorEmail } }).eq('id', id);
-    if(error){ alert('به‌روزرسانی سفارش روی سرور ناموفق بود: ' + error.message); return false; }
+    if(error){ await customAlert('به‌روزرسانی سفارش روی سرور ناموفق بود: ' + error.message); return false; }
     return true;
-  }catch(e){ alert('به‌روزرسانی سفارش ناموفق بود؛ اتصال رو چک کن.'); return false; }
+  }catch(e){ await customAlert('به‌روزرسانی سفارش ناموفق بود؛ اتصال رو چک کن.'); return false; }
 }
 
 sb.auth.onAuthStateChange(() => { refreshAuthState(); });
 
-function onModeBadgeClick(){
+async function onModeBadgeClick(){
   if(isAdmin){
-    if(confirm('از حالت مدیر خارج بشی؟')) lockAdmin();
+    if(await customConfirm('از حالت مدیر خارج بشی؟')) lockAdmin();
   }else{
     switchTab('settings');
   }
@@ -1757,7 +1890,7 @@ async function maybeInitGithubSync(){
   setSyncStatus('در حال بررسی نسخه گیت‌هاب...', '');
   const remote = await fetchRemoteData();
   if(remote){
-    const useRemote = confirm('یک نسخه از داده‌ها از قبل روی این مخزن گیت‌هاب هست.\nبرای بارگذاری همون نسخه «OK» بزن، یا برای جایگزین کردنش با اطلاعات همین دستگاه «Cancel» رو بزن.');
+    const useRemote = await customConfirm('یک نسخه از داده‌ها از قبل روی این مخزن گیت‌هاب هست.\nبرای بارگذاری همون نسخه «OK» بزن، یا برای جایگزین کردنش با اطلاعات همین دستگاه «Cancel» رو بزن.');
     if(useRemote){
       settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
       products = Array.isArray(remote.products) ? remote.products : products;
@@ -1787,7 +1920,7 @@ function normalizeInstagramUrl(v){
   if(!handle) return '';
   return 'https://instagram.com/' + handle;
 }
-function showShareQr(){
+async function showShareQr(){
   let raw = (settings.instagramUrl || '').trim();
   if(!raw){
     if(isAdmin){
@@ -1799,13 +1932,13 @@ function showShareQr(){
       persist();
       raw = settings.instagramUrl;
     }else{
-      alert('اول باید مدیر آدرس صفحه اینستاگرام رو از تب «تنظیمات» وارد کنه.');
+      await customAlert('اول باید مدیر آدرس صفحه اینستاگرام رو از تب «تنظیمات» وارد کنه.');
       return;
     }
   }
   const url = normalizeInstagramUrl(raw);
   const handle = instagramHandleOnly(raw);
-  if(!url){ alert('آدرس صفحه اینستاگرام نامعتبره.'); return; }
+  if(!url){ await customAlert('آدرس صفحه اینستاگرام نامعتبره.'); return; }
   openQrOverlay(url, handle ? '@' + handle : url);
 }
 function renderQrImagePreview(){
@@ -1860,13 +1993,13 @@ async function handleQrImageFile(input){
     persist();
     renderQrImagePreview();
   }catch(e){
-    alert('آپلود عکس با خطا مواجه شد. دوباره امتحان کن.');
+    await customAlert('آپلود عکس با خطا مواجه شد. دوباره امتحان کن.');
   }
   input.value = '';
 }
 
-function removeQrImage(){
-  if(!confirm('عکس کیوآر کد حذف بشه؟')) return;
+async function removeQrImage(){
+  if(!await customConfirm('عکس کیوآر کد حذف بشه؟')) return;
   settings.qrImageUrl = null;
   persist();
   renderQrImagePreview();
@@ -2226,9 +2359,9 @@ async function handleCompanyLogoFile(inputEl){
   inputEl.value = '';
 }
 
-function removeCompanyLogo(){
+async function removeCompanyLogo(){
   if(!settings.logoUrl) return;
-  if(!confirm('لوگو حذف بشه؟')) return;
+  if(!await customConfirm('لوگو حذف بشه؟')) return;
 
   const cleanupLocal = () => {
     settings.logoUrl = null; settings.logoPath = null; settings.logoSha = null;
@@ -2597,13 +2730,13 @@ async function handleImageFile(id, inputEl){
   inputEl.value = '';
 }
 
-function removeProductImage(id){
+async function removeProductImage(id){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(!prod || !Array.isArray(prod.images) || !prod.images.length) return;
   const idx = Math.min(productCarouselIndex[id]||0, prod.images.length-1);
   const img = prod.images[idx];
-  if(!confirm('این عکس حذف بشه؟')) return;
+  if(!await customConfirm('این عکس حذف بشه؟')) return;
 
   const cleanupLocal = () => {
     prod.images.splice(idx, 1);
@@ -3056,27 +3189,27 @@ function customerStats(phone){
 }
 
 async function addCustomerManual(){
-  if(!currentUser){ alert('اول باید وارد بشی.'); return; }
+  if(!currentUser){ await customAlert('اول باید وارد بشی.'); return; }
   const nameEl = document.getElementById('new_customer_name');
   const phoneEl = document.getElementById('new_customer_phone');
   const name = nameEl.value.trim();
   const phone = normalizeDigits(phoneEl.value);
-  if(!name && !phone){ alert('نام یا شماره تماس مشتری رو وارد کن'); return; }
+  if(!name && !phone){ await customAlert('نام یا شماره تماس مشتری رو وارد کن'); return; }
   if(!markPhoneValidity(phoneEl, 'new_customer_phone_hint')){
-    alert('شماره تماس نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
+    await customAlert('شماره تماس نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
     phoneEl.focus();
     return;
   }
   if(phone && myCustomers().some(c => c.phone === phone)){
-    alert('مشتری‌ای با این شماره تماس قبلاً ثبت شده.');
+    await customAlert('مشتری‌ای با این شماره تماس قبلاً ثبت شده.');
     return;
   }
   const customerData = makeCustomerData(name, phone);
   try{
     const { data, error } = await sb.from('customers').insert({ owner_id: currentUser.id, data: customerData }).select().single();
-    if(error){ alert('ثبت مشتری روی سرور ناموفق بود: ' + error.message); return; }
+    if(error){ await customAlert('ثبت مشتری روی سرور ناموفق بود: ' + error.message); return; }
     customers.unshift({ ...customerData, id: data.id, ownerId: currentUser.id });
-  }catch(e){ alert('ثبت مشتری ناموفق بود؛ اتصال رو چک کن.'); return; }
+  }catch(e){ await customAlert('ثبت مشتری ناموفق بود؛ اتصال رو چک کن.'); return; }
   nameEl.value = '';
   phoneEl.value = '';
   document.getElementById('new_customer_phone_hint').textContent = '';
@@ -3103,11 +3236,11 @@ async function updateCustomer(id, field, value){
 
 async function deleteCustomer(id){
   if(!isAdmin) return;
-  if(!confirm('این مشتری حذف بشه؟')) return;
+  if(!await customConfirm('این مشتری حذف بشه؟')) return;
   try{
     const { error } = await sb.from('customers').delete().eq('id', id);
-    if(error){ alert('حذف مشتری روی سرور ناموفق بود: ' + error.message); return; }
-  }catch(e){ alert('حذف مشتری ناموفق بود؛ اتصال رو چک کن.'); return; }
+    if(error){ await customAlert('حذف مشتری روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ await customAlert('حذف مشتری ناموفق بود؛ اتصال رو چک کن.'); return; }
   customers = customers.filter(c => c.id !== id);
   renderCustomersTab();
 }
@@ -3116,12 +3249,12 @@ async function deleteCustomer(id){
 // همزمان فقط یک کارت در حالت ویرایش باز می‌مونه.
 let editingCustomerId = null;
 
-function toggleCustomerEdit(id){
+async function toggleCustomerEdit(id){
   if(editingCustomerId === id){
     // در حال بستن حالت ویرایش: قبلش شماره تماس رو اعتبارسنجی کن.
     const phoneEl = document.getElementById('cust_phone_' + id);
     if(phoneEl && !isValidIranPhone(phoneEl.value)){
-      alert('شماره تماس باید ۱۱ رقم باشد و با ۰۹ شروع شود (مثل 09121234567)؛ اصلاحش کن یا خالی بذار.');
+      await customAlert('شماره تماس باید ۱۱ رقم باشد و با ۰۹ شروع شود (مثل 09121234567)؛ اصلاحش کن یا خالی بذار.');
       phoneEl.focus();
       return;
     }
@@ -3545,20 +3678,20 @@ function resetSaleForm(){
 }
 
 async function submitSale(){
-  if(!currentUser){ alert('اول باید وارد بشی.'); return; }
+  if(!currentUser){ await customAlert('اول باید وارد بشی.'); return; }
   const prodId = currentSaleProductId();
   const prod = products.find(p => p.id === prodId);
-  if(!prod){ alert('اول یک محصول اضافه کن'); return; }
+  if(!prod){ await customAlert('اول یک محصول اضافه کن'); return; }
   const phoneEl = document.getElementById('sale_buyer_phone');
   if(!markPhoneValidity(phoneEl, 'sale_buyer_phone_hint')){
-    alert('شماره تماس خریدار نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
+    await customAlert('شماره تماس خریدار نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه (یا خالی بذارش).');
     phoneEl.focus();
     return;
   }
   const qty = Math.max(1, Math.round(parseNum(document.getElementById('sale_qty').value)) || 1);
   const currentStock = prod.stock || 0;
   if(qty > currentStock){
-    const ok = confirm('موجودی انبار این محصول ' + fa.format(currentStock) + ' عدد است، کمتر از تعداد فروش (' + fa.format(qty) + ' عدد).\nموجودی بعد از ثبت این فروش منفی می‌شه. ادامه بدم؟');
+    const ok = await customConfirm('موجودی انبار این محصول ' + fa.format(currentStock) + ' عدد است، کمتر از تعداد فروش (' + fa.format(qty) + ' عدد).\nموجودی بعد از ثبت این فروش منفی می‌شه. ادامه بدم؟');
     if(!ok) return;
   }
   clampSalePrice();
@@ -3575,9 +3708,9 @@ async function submitSale(){
   let insertedRow;
   try{
     const { data, error } = await sb.from('sales').insert({ seller_id: currentUser.id, data: saleData }).select().single();
-    if(error){ alert('ثبت فروش روی سرور ناموفق بود: ' + error.message); return; }
+    if(error){ await customAlert('ثبت فروش روی سرور ناموفق بود: ' + error.message); return; }
     insertedRow = data;
-  }catch(e){ alert('ثبت فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
+  }catch(e){ await customAlert('ثبت فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
   sales.unshift({ ...saleData, id: insertedRow.id, sellerId: currentUser.id });
   prod.stock = currentStock - qty;
   if(buyerName || buyerPhone){
@@ -3592,12 +3725,12 @@ async function submitSale(){
 
 async function deleteSale(id){
   if(!isAdmin) return;
-  if(!confirm('این فروش حذف بشه؟')) return;
+  if(!await customConfirm('این فروش حذف بشه؟')) return;
   const sale = sales.find(s => s.id === id);
   try{
     const { error } = await sb.from('sales').delete().eq('id', id);
-    if(error){ alert('حذف فروش روی سرور ناموفق بود: ' + error.message); return; }
-  }catch(e){ alert('حذف فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
+    if(error){ await customAlert('حذف فروش روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ await customAlert('حذف فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
   sales = sales.filter(s => s.id !== id);
   if(sale){
     const prod = products.find(p => p.id === sale.productId);
@@ -3703,7 +3836,7 @@ function orderRemaining(order){
 }
 
 async function editOrderTotalPrice(id){
-  if(!isAdmin){ alert('فقط مدیر می‌تونه قیمت کل سفارش رو تنظیم کنه.'); return; }
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه قیمت کل سفارش رو تنظیم کنه.'); return; }
   const order = orders.find(o => o.id === id);
   if(!order) return;
   const input = prompt('قیمت کل سفارش (تومان):', order.totalPrice ? String(order.totalPrice) : '');
@@ -3723,7 +3856,7 @@ async function addOrderPayment(id){
   const input = prompt('مبلغ پرداخت جدید (تومان):');
   if(input === null) return;
   const amount = parseNum(input);
-  if(!amount || amount <= 0){ alert('مبلغ نامعتبره.'); return; }
+  if(!amount || amount <= 0){ await customAlert('مبلغ نامعتبره.'); return; }
   if(!Array.isArray(order.payments)) order.payments = [];
   const payment = makePayment(amount);
   order.payments.push(payment);
@@ -3737,7 +3870,7 @@ async function deleteOrderPayment(orderId, paymentId){
   if(!isAdmin) return;
   const order = orders.find(o => o.id === orderId);
   if(!order) return;
-  if(!confirm('این پرداخت حذف بشه؟')) return;
+  if(!await customConfirm('این پرداخت حذف بشه؟')) return;
   const prevPayments = order.payments;
   order.payments = (order.payments||[]).filter(p => p.id !== paymentId);
   renderOrdersTab();
@@ -3793,13 +3926,13 @@ function updateOrderItemPickerLabel(){
   label.textContent = prod ? prod.name : (products.length ? '— انتخاب محصول —' : 'ابتدا یک محصول اضافه کن');
 }
 
-function addItemToOrder(){
+async function addItemToOrder(){
   if(!orderItemProductId && products.length){
     orderItemProductId = products[0].id;
     updateOrderItemPickerLabel();
   }
   const prod = products.find(p => p.id === orderItemProductId);
-  if(!prod){ alert('اول یک محصول رو انتخاب کن.'); return; }
+  if(!prod){ await customAlert('اول یک محصول رو انتخاب کن.'); return; }
   const qtyEl = document.getElementById('order_item_qty');
   const qty = Math.max(1, Math.round(parseNum(qtyEl.value)) || 1);
   const existing = currentOrderItems.find(it => it.productId === prod.id);
@@ -3846,24 +3979,24 @@ function resetOrderForm(){
 }
 
 async function submitOrder(){
-  if(!currentUser){ alert('اول باید وارد بشی.'); return; }
-  if(!currentOrderItems.length){ alert('اول حداقل یک محصول به سفارش اضافه کن.'); return; }
+  if(!currentUser){ await customAlert('اول باید وارد بشی.'); return; }
+  if(!currentOrderItems.length){ await customAlert('اول حداقل یک محصول به سفارش اضافه کن.'); return; }
   const nameEl = document.getElementById('order_customer_name');
   const name = nameEl.value.trim();
   if(!name){
-    alert('نام مشتری رو وارد کن.');
+    await customAlert('نام مشتری رو وارد کن.');
     nameEl.focus();
     return;
   }
   const phoneEl = document.getElementById('order_customer_phone');
   const phone = normalizeDigits(phoneEl.value);
   if(!phone){
-    alert('شماره تماس مشتری رو وارد کن.');
+    await customAlert('شماره تماس مشتری رو وارد کن.');
     phoneEl.focus();
     return;
   }
   if(!markPhoneValidity(phoneEl, 'order_customer_phone_hint')){
-    alert('شماره تماس مشتری نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه.');
+    await customAlert('شماره تماس مشتری نامعتبره؛ باید ۱۱ رقم باشه و با ۰۹ شروع بشه.');
     phoneEl.focus();
     return;
   }
@@ -3878,9 +4011,9 @@ async function submitOrder(){
   let insertedRow;
   try{
     const { data, error } = await sb.from('orders').insert({ creator_id: currentUser.id, data: orderData }).select().single();
-    if(error){ alert('ثبت سفارش روی سرور ناموفق بود: ' + error.message); return; }
+    if(error){ await customAlert('ثبت سفارش روی سرور ناموفق بود: ' + error.message); return; }
     insertedRow = data;
-  }catch(e){ alert('ثبت سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
+  }catch(e){ await customAlert('ثبت سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
   orders.unshift({ ...orderData, id: insertedRow.id, creatorId: currentUser.id });
   if(name || phone){
     await upsertCustomer(name, phone);
@@ -3903,11 +4036,11 @@ async function setOrderStatus(id, status){
 
 async function deleteOrder(id){
   if(!isAdmin) return;
-  if(!confirm('این سفارش حذف بشه؟')) return;
+  if(!await customConfirm('این سفارش حذف بشه؟')) return;
   try{
     const { error } = await sb.from('orders').delete().eq('id', id);
-    if(error){ alert('حذف سفارش روی سرور ناموفق بود: ' + error.message); return; }
-  }catch(e){ alert('حذف سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
+    if(error){ await customAlert('حذف سفارش روی سرور ناموفق بود: ' + error.message); return; }
+  }catch(e){ await customAlert('حذف سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
   orders = orders.filter(o => o.id !== id);
   renderOrdersTab();
   renderSummary();
