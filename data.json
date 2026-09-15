@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T12:34:11.235Z",
+  "updatedAt": "2026-09-15T12:35:03.485Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -44,7 +44,7 @@
     {
       "id": "p_1789475484761nq179",
       "name": "سگ ساموئید سفید دم بلند",
-      "weight": 50,
+      "weight": 14,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
