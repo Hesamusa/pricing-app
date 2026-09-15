@@ -193,7 +193,7 @@
     max-height:0; overflow:hidden; transition:max-height .25s ease;
     border-top:1px solid var(--line);
   }
-  .product.open .product-body{max-height:1400px;}
+  .product.open .product-body{max-height:5000px;}
   .product-body-inner{padding:18px;}
 
   .photo-field{margin-bottom:20px;}
@@ -2350,6 +2350,10 @@ function renderProducts(){
               <label>وزن با ساپورت و دورریز (گرم)</label>
               <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
             </div>
+            <div class="field">
+              <label>هزینه متعلقات (زنجیر، قلاب و...)</label>
+              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="numeric" value="${groupDigits(prod.accessoryCost||0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','accessoryCost',n))" onblur="formatNumField(this,0)">
+            </div>
             <div class="field" style="grid-column:1 / -1;">
               <label>زمان پرینت (ساعت و دقیقه)</label>
               <div class="input-row" style="gap:6px;">
@@ -2376,10 +2380,6 @@ function renderProducts(){
                 <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintMins_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.paintHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">دقیقه</span>
               </div>
-            </div>
-            <div class="field">
-              <label>هزینه متعلقات (زنجیر، قلاب و...)</label>
-              <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="numeric" value="${groupDigits(prod.accessoryCost||0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','accessoryCost',n))" onblur="formatNumField(this,0)">
             </div>
           </div>
 
