@@ -2198,30 +2198,30 @@ function renderProducts(){
               <label>وزن با ساپورت و دورریز (گرم)</label>
               <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" value="${toFaNum(prod.weight,2)}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','weight',n))" onblur="formatNumField(this,2)">
             </div>
-            <div class="field">
+            <div class="field" style="grid-column:1 / -1;">
               <label>زمان پرینت (ساعت و دقیقه)</label>
               <div class="input-row" style="gap:6px;">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="printHrs_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.printHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','printHours','printHrs_${prod.id}','printMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="printHrs_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.printHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','printHours','printHrs_${prod.id}','printMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">ساعت</span>
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="printMins_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.printHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','printHours','printHrs_${prod.id}','printMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="printMins_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.printHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','printHours','printHrs_${prod.id}','printMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">دقیقه</span>
               </div>
             </div>
-            <div class="field">
+            <div class="field" style="grid-column:1 / -1;">
               <label>ساعت کار دستی (ساعت و دقیقه)</label>
               <div class="input-row" style="gap:6px;">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualHrs_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.manualHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualHrs_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.manualHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">ساعت</span>
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualMins_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.manualHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualMins_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.manualHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">دقیقه</span>
               </div>
             </div>
-            <div class="field">
+            <div class="field" style="grid-column:1 / -1;">
               <label>ساعت نقاشی (ساعت و دقیقه)</label>
               <div class="input-row" style="gap:6px;">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintHrs_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.paintHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintHrs_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.paintHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">ساعت</span>
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintMins_${prod.id}" inputmode="numeric" value="${toFaNum(hoursToHM(prod.paintHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
+                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintMins_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.paintHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
                 <span class="unit">دقیقه</span>
               </div>
             </div>
