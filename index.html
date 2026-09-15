@@ -216,7 +216,7 @@
   }
   .photo-lightbox.show{display:flex;}
   .photo-lightbox-inner{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
-  .photo-lightbox-img{max-width:92vw; max-height:80vh; object-fit:contain; display:block; touch-action:pan-y; user-select:none; -webkit-user-drag:none; cursor:pointer;}
+  .photo-lightbox-img{max-width:92vw; max-height:80vh; object-fit:contain; display:block; touch-action:none; user-select:none; -webkit-user-drag:none; cursor:pointer;}
   .photo-lightbox-close{
     position:fixed; top:calc(18px + env(safe-area-inset-top)); left:18px; z-index:201;
     width:44px; height:44px; border-radius:50%; border:none;
@@ -1185,6 +1185,7 @@
     <img id="photo-lightbox-img" class="photo-lightbox-img" alt=""
       onclick="onLightboxImgClick(event)"
       ontouchstart="onLightboxTouchStart(event)"
+      ontouchmove="onLightboxTouchMove(event)"
       ontouchend="onLightboxTouchEnd(event)">
     <div class="photo-lightbox-dots" id="photo-lightbox-dots"></div>
   </div>
@@ -2461,11 +2462,63 @@ let lightboxProductId = null;
 let lightboxIndex = 0;
 let lbTouchStartX = null;
 
+// --- زوم لایت‌باکس عکس محصول: پینچ (دو انگشتی) + دوبار تپ ---
+let lbScale = 1, lbPanX = 0, lbPanY = 0;
+let lbGestureMode = null; // null | 'pan' | 'pinch' | 'swipe'
+let lbPinchStartDist = 0, lbPinchStartScale = 1;
+let lbTouchStartY = null;
+let lbPanStartX = 0, lbPanStartY = 0, lbPanStartTX = 0, lbPanStartTY = 0;
+let lbLastTapTime = 0, lbLastTapX = 0, lbLastTapY = 0;
+const LB_MAX_SCALE = 4, LB_MIN_SCALE = 1;
+
+function lbApplyTransform(withTransition){
+  const img = document.getElementById('photo-lightbox-img');
+  if(!img) return;
+  img.style.transition = withTransition ? 'transform .2s ease' : 'none';
+  img.style.transform = `translate(${lbPanX}px, ${lbPanY}px) scale(${lbScale})`;
+}
+
+function lbResetZoom(withTransition){
+  lbScale = 1; lbPanX = 0; lbPanY = 0;
+  lbApplyTransform(withTransition !== false);
+}
+
+function lbClampPan(){
+  const img = document.getElementById('photo-lightbox-img');
+  if(!img) return;
+  const maxX = (img.clientWidth * (lbScale - 1)) / 2;
+  const maxY = (img.clientHeight * (lbScale - 1)) / 2;
+  lbPanX = Math.max(-maxX, Math.min(maxX, lbPanX));
+  lbPanY = Math.max(-maxY, Math.min(maxY, lbPanY));
+}
+
+function lbDist(t0, t1){
+  return Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+}
+
+function lbToggleZoomAt(clientX, clientY){
+  const img = document.getElementById('photo-lightbox-img');
+  if(!img) return;
+  if(lbScale > 1.01){
+    lbResetZoom(true);
+    return;
+  }
+  const rect = img.getBoundingClientRect();
+  const offsetX = clientX - (rect.left + rect.width/2);
+  const offsetY = clientY - (rect.top + rect.height/2);
+  lbScale = 2.4;
+  lbPanX = -offsetX * lbScale;
+  lbPanY = -offsetY * lbScale;
+  lbClampPan();
+  lbApplyTransform(true);
+}
+
 function openPhotoLightbox(id){
   const prod = products.find(p=>p.id===id);
   if(!prod || !prod.images || !prod.images.length) return;
   lightboxProductId = id;
   lightboxIndex = Math.min(productCarouselIndex[id]||0, prod.images.length-1);
+  lbResetZoom(false);
   renderLightbox();
   const overlay = document.getElementById('photo-lightbox');
   if(overlay) overlay.classList.add('show');
@@ -2475,6 +2528,7 @@ function closePhotoLightbox(){
   const overlay = document.getElementById('photo-lightbox');
   if(overlay) overlay.classList.remove('show');
   lightboxProductId = null;
+  lbResetZoom(false);
 }
 
 function lightboxStep(dir){
@@ -2483,6 +2537,7 @@ function lightboxStep(dir){
   const len = prod.images.length;
   lightboxIndex = ((lightboxIndex + dir) % len + len) % len;
   productCarouselIndex[lightboxProductId] = lightboxIndex; // تصویر کوچیک روی کارت هم هماهنگ بمونه
+  lbResetZoom(false);
   renderLightbox();
   updateProductPhotoUI(lightboxProductId);
 }
@@ -2502,20 +2557,80 @@ function renderLightbox(){
 }
 
 function onLightboxImgClick(e){
+  if(lbScale > 1.01) return; // وقتی زوم شده، تپ ساده رفتار ناوبری نداره
   const rect = e.currentTarget.getBoundingClientRect();
   const x = e.clientX - rect.left;
   lightboxStep(x < rect.width/2 ? -1 : 1);
 }
 
 function onLightboxTouchStart(e){
-  lbTouchStartX = e.changedTouches[0].clientX;
+  if(e.touches.length === 2){
+    lbGestureMode = 'pinch';
+    lbPinchStartDist = lbDist(e.touches[0], e.touches[1]);
+    lbPinchStartScale = lbScale;
+  }else if(e.touches.length === 1){
+    lbTouchStartX = e.touches[0].clientX;
+    lbTouchStartY = e.touches[0].clientY;
+    if(lbScale > 1.01){
+      lbGestureMode = 'pan';
+      lbPanStartX = lbTouchStartX; lbPanStartY = lbTouchStartY;
+      lbPanStartTX = lbPanX; lbPanStartTY = lbPanY;
+    }else{
+      lbGestureMode = 'swipe';
+    }
+  }
+}
+
+function onLightboxTouchMove(e){
+  if(lbGestureMode === 'pinch' && e.touches.length === 2){
+    e.preventDefault();
+    const dist = lbDist(e.touches[0], e.touches[1]);
+    const ratio = dist / (lbPinchStartDist || dist);
+    lbScale = Math.max(LB_MIN_SCALE, Math.min(LB_MAX_SCALE, lbPinchStartScale * ratio));
+    lbClampPan();
+    lbApplyTransform(false);
+  }else if(lbGestureMode === 'pan' && e.touches.length === 1){
+    e.preventDefault();
+    lbPanX = lbPanStartTX + (e.touches[0].clientX - lbPanStartX);
+    lbPanY = lbPanStartTY + (e.touches[0].clientY - lbPanStartY);
+    lbClampPan();
+    lbApplyTransform(false);
+  }
 }
 
 function onLightboxTouchEnd(e){
+  const mode = lbGestureMode;
+  lbGestureMode = null;
+  if(mode === 'pinch'){
+    lbClampPan();
+    lbApplyTransform(true);
+    if(lbScale <= 1.01) lbResetZoom(true);
+    return;
+  }
+  if(mode === 'pan'){
+    lbApplyTransform(true);
+    return;
+  }
+  // mode === 'swipe': تک‌انگشتی و بدون زوم فعلی — سوایپ برای رفتن به عکس بعد/قبل، دوبار تپ برای زوم روی نقطه‌ی لمس
   if(lbTouchStartX===null) return;
-  const dx = e.changedTouches[0].clientX - lbTouchStartX;
+  const touch = e.changedTouches[0];
+  const dx = touch.clientX - lbTouchStartX;
+  const dy = touch.clientY - (lbTouchStartY||0);
   lbTouchStartX = null;
-  if(Math.abs(dx) > 40){
+  const now = Date.now();
+  const isTap = Math.abs(dx) < 10 && Math.abs(dy) < 10;
+  if(isTap){
+    const dt = now - lbLastTapTime;
+    const closeToLast = Math.abs(touch.clientX - lbLastTapX) < 30 && Math.abs(touch.clientY - lbLastTapY) < 30;
+    if(dt < 320 && closeToLast){
+      lbLastTapTime = 0;
+      lbToggleZoomAt(touch.clientX, touch.clientY);
+    }else{
+      lbLastTapTime = now; lbLastTapX = touch.clientX; lbLastTapY = touch.clientY;
+    }
+    return;
+  }
+  if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
     lightboxStep(dx < 0 ? 1 : -1);
   }
 }
