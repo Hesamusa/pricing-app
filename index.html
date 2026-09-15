@@ -5102,6 +5102,59 @@ function openConsignQtyModal(opts){
   });
 }
 
+// ————— مودال دوستونه: فروش‌رفته + شارژ مجدد به‌صورت مستقل از هم —————
+// برخلاف openConsignQtyModal (یک عدد به‌ازای هر قلم)، این یکی برای هر قلم دو عدد
+// جدا می‌گیره چون فروشنده ممکنه بگه «فقط فروختم» یا «فروختم و بیشتر از همون هم شارژ کن».
+function openConsignSaleRestockModal(opts){
+  return new Promise(resolve => {
+    const overlay = document.getElementById('consign-modal');
+    const titleEl = document.getElementById('consign-modal-title');
+    const subEl = document.getElementById('consign-modal-sub');
+    const listEl = document.getElementById('consign-modal-list');
+    const okBtn = document.getElementById('consign-modal-ok');
+    const cancelBtn = document.getElementById('consign-modal-cancel');
+    if(!overlay || !listEl){ resolve(null); return; }
+    titleEl.textContent = opts.title || '';
+    subEl.textContent = opts.sub || '';
+    subEl.style.display = opts.sub ? '' : 'none';
+    okBtn.textContent = opts.okLabel || 'تأیید';
+    listEl.innerHTML = (opts.rows||[]).map(r => `
+      <div class="consign-qty-row" style="flex-direction:column; align-items:stretch; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="qname" style="flex:1;">${escapeHtml(r.name)}</span>
+          ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="qhint" style="width:76px; flex-shrink:0;">فروش‌رفته</span>
+          <input type="text" inputmode="numeric" data-role="sold" data-key="${escapeHtml(r.key)}" value="${r.sold ? toFaNum(r.sold,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="qhint" style="width:76px; flex-shrink:0;">شارژ جدید</span>
+          <input type="text" inputmode="numeric" data-role="recharge" data-key="${escapeHtml(r.key)}" value="${r.recharge ? toFaNum(r.recharge,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
+        </div>
+      </div>`).join('');
+    overlay.classList.add('show');
+    const cleanup = (result) => {
+      overlay.classList.remove('show');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      resolve(result);
+    };
+    const onOk = () => {
+      const sold = {}, recharge = {};
+      listEl.querySelectorAll('input[data-role="sold"]').forEach(inp => { sold[inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0); });
+      listEl.querySelectorAll('input[data-role="recharge"]').forEach(inp => { recharge[inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0); });
+      cleanup({ sold, recharge });
+    };
+    const onCancel = () => cleanup(null);
+    const onBackdrop = (e) => { if(e.target === overlay) cleanup(null); };
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+  });
+}
+
 // ————— عملیات روی یک واگذاری —————
 // ۱) ثبت فروش فروشگاه: از «موجودی نزد فروشگاه» کم و به «فروش‌رفته» اضافه می‌شه.
 async function recordConsignSale(id){
@@ -5151,7 +5204,9 @@ async function recordConsignSale(id){
   else showToast('فروش فروشگاه ثبت شد ✓', 'success');
 }
 
-// ۲) شارژ مجدد: تعداد پیشنهادی از روی «ظرفیت مطلوب − موجودی فعلی» پر می‌شه.
+// ۲) فروش + شارژ مجدد: فروش‌رفته و شارژ دو عدد کاملاً جدا از هم‌اند.
+// فروشگاه ممکنه بگه «فقط فروختم» (شارژ=۰) یا «فروختم و بیشتر/کمتر از همون هم برام بفرست».
+// بدهی فروشگاه فقط از روی «فروش‌رفته» حساب می‌شه؛ شارژ فقط انبار و موجودی نزد فروشگاه رو عوض می‌کنه.
 async function restockConsign(id){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
@@ -5162,20 +5217,32 @@ async function restockConsign(id){
       key: it.productId,
       name: it.productName,
       hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | انبار: ' + fa.format(prod ? (prod.stock||0) : 0),
-      value: consignRestockQty(it)
+      sold: 0,
+      recharge: consignRestockQty(it)
     };
   });
-  const res = await openConsignQtyModal({
-    title: 'شارژ مجدد اقلام',
-    sub: 'عددهای پیشنهادی بر اساس ظرفیت مطلوب هر قلم پر شده‌اند. هر عددی رو می‌تونی تغییر بدی؛ همین تعداد از انبار کم و به فروشگاه اضافه می‌شه — و چون شارژ مجدد یعنی همون تعداد قبلاً فروخته شده، به‌صورت خودکار «فروش‌رفته» هم ثبت می‌شه.',
-    rows, okLabel: 'ثبت شارژ'
+  const res = await openConsignSaleRestockModal({
+    title: 'ثبت فروش و شارژ مجدد',
+    sub: 'اول تعداد واقعیِ فروش‌رفته‌ی هر قلم رو بپرس و وارد کن، بعد تعدادی که می‌خوای براش بفرستی — می‌تونه برابر فروش، بیشتر یا کمتر باشه. فروش‌رفته روی بدهی فروشگاه اثر می‌ذاره؛ شارژ از انبار کم و به فروشگاه اضافه می‌شه.',
+    rows, okLabel: 'ثبت'
   });
   if(!res) return;
-  const entries = Object.entries(res).filter(([,q]) => q > 0);
-  if(!entries.length) return;
+  const soldEntries = Object.entries(res.sold||{}).filter(([,q]) => q > 0);
+  const rechargeEntries = Object.entries(res.recharge||{}).filter(([,q]) => q > 0);
+  if(!soldEntries.length && !rechargeEntries.length) return;
 
-  // هشدار کمبود انبار
-  const shortages = entries.filter(([pid, q]) => {
+  // هشدار فروش بیشتر از چیزی که نزد فروشگاه بوده (شاید شارژ قبلی درست ثبت نشده)
+  for(const [pid, qty] of soldEntries){
+    const it = (c.items||[]).find(x => x.productId === pid);
+    if(!it) continue;
+    const avail = consignRemaining(it);
+    if(qty > avail){
+      const ok = await customConfirm('برای «' + it.productName + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود ولی ' + fa.format(qty) + ' عدد فروش رفته ثبت کردی. ادامه بدم؟');
+      if(!ok) return;
+    }
+  }
+  // هشدار کمبود انبار برای شارژ
+  const shortages = rechargeEntries.filter(([pid, q]) => {
     const prod = products.find(p => p.id === pid);
     return prod && q > (prod.stock||0);
   });
@@ -5189,44 +5256,52 @@ async function restockConsign(id){
   }
 
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries, saleLogs: c.saleLogs}));
-  const delivered = [];
-  const soldFromRestock = [];
-  entries.forEach(([pid, qty]) => {
+  const soldLogItems = [];
+  soldEntries.forEach(([pid, qty]) => {
+    const it = (c.items||[]).find(x => x.productId === pid);
+    if(!it) return;
+    it.soldQty = (it.soldQty||0) + qty;
+    soldLogItems.push({productId: pid, productName: it.productName, qty, unitPrice: it.unitPrice||0});
+  });
+  const deliveredItems = [];
+  rechargeEntries.forEach(([pid, qty]) => {
     const it = (c.items||[]).find(x => x.productId === pid);
     if(!it) return;
     it.deliveredQty = (it.deliveredQty||0) + qty;
-    // شارژ مجدد یعنی همین تعداد نزد فروشگاه فروخته شده؛ پس فروش‌رفته هم به همون اندازه بالا می‌ره
-    it.soldQty = (it.soldQty||0) + qty;
-    delivered.push({productId: pid, productName: it.productName, qty});
-    soldFromRestock.push({productId: pid, productName: it.productName, qty, unitPrice: it.unitPrice||0});
+    deliveredItems.push({productId: pid, productName: it.productName, qty});
   });
-  if(!delivered.length) return;
-  if(!Array.isArray(c.deliveries)) c.deliveries = [];
-  c.deliveries.unshift({
-    id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
-    date: new Date().toISOString().slice(0,10),
-    items: delivered,
-    note: 'شارژ مجدد'
-  });
-  if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
-  c.saleLogs.unshift({
-    id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
-    date: new Date().toISOString().slice(0,10),
-    items: soldFromRestock,
-    total: soldFromRestock.reduce((s,l)=> s + l.qty*l.unitPrice, 0),
-    note: 'خودکار از شارژ مجدد'
-  });
+  if(!soldLogItems.length && !deliveredItems.length) return;
+
+  if(soldLogItems.length){
+    if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
+    c.saleLogs.unshift({
+      id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
+      date: new Date().toISOString().slice(0,10),
+      items: soldLogItems,
+      total: soldLogItems.reduce((s,l)=> s + l.qty*l.unitPrice, 0)
+    });
+  }
+  if(deliveredItems.length){
+    if(!Array.isArray(c.deliveries)) c.deliveries = [];
+    c.deliveries.unshift({
+      id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
+      date: new Date().toISOString().slice(0,10),
+      items: deliveredItems,
+      note: 'شارژ مجدد'
+    });
+  }
   renderConsignTab();
+  renderSummary();
   const ok = await syncConsignmentToSupabase(c);
-  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; c.saleLogs = snapshot.saleLogs; renderConsignTab(); return; }
-  delivered.forEach(d => {
+  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; c.saleLogs = snapshot.saleLogs; renderConsignTab(); renderSummary(); return; }
+  deliveredItems.forEach(d => {
     const prod = products.find(p => p.id === d.productId);
     if(prod){ prod.stock = (prod.stock||0) - d.qty; updateProductDisplay(prod.id); }
   });
   persist();
   renderConsignTab();
   renderSummary();
-  showToast('شارژ مجدد و فروش مربوطه ثبت شد ✓', 'success');
+  showToast('فروش و شارژ ثبت شد ✓', 'success');
 }
 
 // ۳) مرجوعی: از فروشگاه برمی‌گرده و دوباره به موجودی انبار اضافه می‌شه.
@@ -5420,6 +5495,58 @@ async function deleteConsignPayment(consignId, paymentId){
   if(!ok){ c.payments = prev; renderConsignTab(); renderSummary(); }
 }
 
+// ۸) اصلاح اشتباه: حذف یک ردیف فروش گزارش‌شده (چه مدیر ثبت کرده باشه چه کاربر)
+// فقط مدیر می‌تونه حذف کنه؛ اگه فروشنده اشتباه ثبت کرده، باید به مدیر بگه.
+async function deleteConsignSaleLog(consignId, logId){
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه گزارش فروش رو ویرایش یا حذف کنه.'); return; }
+  const c = consignments.find(x => x.id === consignId);
+  if(!c) return;
+  const log = (c.saleLogs||[]).find(l => l.id === logId);
+  if(!log) return;
+  const desc = (log.items||[]).map(it => it.productName + ' × ' + fa.format(it.qty)).join('، ');
+  if(!await customConfirm('این گزارش فروش حذف بشه؟\n' + desc + '\nبعد از حذف، اگه لازمه دوباره با عدد درست ثبتش کن.')) return;
+  const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
+  (log.items||[]).forEach(it => {
+    const item = (c.items||[]).find(x => x.productId === it.productId);
+    if(item) item.soldQty = Math.max(0, (item.soldQty||0) - it.qty);
+  });
+  c.saleLogs = (c.saleLogs||[]).filter(l => l.id !== logId);
+  renderConsignTab();
+  renderSummary();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot.items; c.saleLogs = snapshot.saleLogs; renderConsignTab(); renderSummary(); }
+  else showToast('گزارش فروش حذف شد ✓', 'success');
+}
+
+// ۹) اصلاح اشتباه: حذف یک ردیف تحویل/شارژ (تعداد به انبار برمی‌گرده)
+async function deleteConsignDelivery(consignId, deliveryId){
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه گزارش شارژ رو ویرایش یا حذف کنه.'); return; }
+  const c = consignments.find(x => x.id === consignId);
+  if(!c) return;
+  const delivery = (c.deliveries||[]).find(d => d.id === deliveryId);
+  if(!delivery) return;
+  if(delivery.note === 'واگذاری اولیه'){ await customAlert('واگذاری اولیه از اینجا حذف نمی‌شه. برای اصلاح اون، خود واگذاری رو حذف و دوباره درست ثبت کن.'); return; }
+  const desc = (delivery.items||[]).map(it => it.productName + ' × ' + fa.format(it.qty)).join('، ');
+  if(!await customConfirm('این گزارش شارژ حذف بشه؟ تعداد به موجودی انبار برمی‌گرده.\n' + desc)) return;
+  const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
+  (delivery.items||[]).forEach(it => {
+    const item = (c.items||[]).find(x => x.productId === it.productId);
+    if(item) item.deliveredQty = Math.max(0, (item.deliveredQty||0) - it.qty);
+  });
+  c.deliveries = (c.deliveries||[]).filter(d => d.id !== deliveryId);
+  renderConsignTab();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
+  (delivery.items||[]).forEach(it => {
+    const prod = products.find(p => p.id === it.productId);
+    if(prod){ prod.stock = (prod.stock||0) + it.qty; updateProductDisplay(prod.id); }
+  });
+  persist();
+  renderConsignTab();
+  renderSummary();
+  showToast('گزارش شارژ حذف و به انبار برگشت ✓', 'success');
+}
+
 async function setConsignStatus(id, status){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
@@ -5572,8 +5699,18 @@ function renderConsignCard(c){
         </span>`).join('')}</div>`
     : '';
 
-  const lastSale = (c.saleLogs||[])[0];
-  const lastDelivery = (c.deliveries||[])[0];
+  const recentSales = (c.saleLogs||[]).slice(0,3);
+  const recentDeliveries = (c.deliveries||[]).slice(0,3);
+  const saleHistory = recentSales.length ? `<div class="sale-item-note">گزارش‌های فروش اخیر:<br>${recentSales.map(l => `
+      <span style="display:inline-flex; align-items:center; gap:6px; margin-left:10px;">
+        ${formatDateFa(l.date)} — ${escapeHtml(l.items.map(it=>it.productName+' × '+fa.format(it.qty)).join('، '))}
+        ${isAdmin ? `<button type="button" onclick="deleteConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این گزارش">✕</button>` : ''}
+      </span>`).join('<br>')}</div>` : '';
+  const deliveryHistory = recentDeliveries.length ? `<div class="sale-item-note">گزارش‌های شارژ/تحویل اخیر:<br>${recentDeliveries.map(d => `
+      <span style="display:inline-flex; align-items:center; gap:6px; margin-left:10px;">
+        ${formatDateFa(d.date)}${d.note ? ' — ' + escapeHtml(d.note) : ''} — ${escapeHtml((d.items||[]).map(it=>it.productName+' × '+fa.format(it.qty)).join('، '))}
+        ${isAdmin && d.note !== 'واگذاری اولیه' ? `<button type="button" onclick="deleteConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این گزارش">✕</button>` : ''}
+      </span>`).join('<br>')}</div>` : '';
 
   return `
   <div class="sale-item">
@@ -5610,14 +5747,14 @@ function renderConsignCard(c){
       <span class="profit-pos">تسویه‌شده: <b>${fmt(paid)}</b></span>
       <span class="${debt>0?'profit-neg':'profit-pos'}">${debt>0 ? 'مانده طلب' : 'تسویه کامل'}: <b>${fmt(debt)}</b></span>
     </div>
-    ${lastSale ? `<div class="sale-item-note">آخرین فروش گزارش‌شده: ${formatDateFa(lastSale.date)} — ${escapeHtml(lastSale.items.map(l => l.productName + ' × ' + fa.format(l.qty)).join('، '))}</div>` : ''}
-    ${lastDelivery ? `<div class="sale-item-note">آخرین تحویل: ${formatDateFa(lastDelivery.date)}${lastDelivery.note ? ' — ' + escapeHtml(lastDelivery.note) : ''}</div>` : ''}
+    ${saleHistory}
+    ${deliveryHistory}
     ${c.notes ? `<div class="sale-item-note">${escapeHtml(c.notes)}</div>` : ''}
     ${paymentsHistory}
 
     <div class="consign-actions">
       <button type="button" class="order-status-btn done" onclick="recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
-      <button type="button" class="order-status-btn" onclick="restockConsign('${c.id}')">شارژ مجدد</button>
+      <button type="button" class="order-status-btn" onclick="restockConsign('${c.id}')">فروش + شارژ مجدد</button>
       <button type="button" class="order-status-btn" onclick="addConsignPayment('${c.id}')">ثبت تسویه</button>
       <button type="button" class="order-status-btn" onclick="returnConsign('${c.id}')">مرجوعی</button>
       <button type="button" class="order-status-btn" onclick="addProductsToConsign('${c.id}')">افزودن محصول</button>
