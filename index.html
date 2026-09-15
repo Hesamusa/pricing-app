@@ -602,10 +602,11 @@
   .consign-tag.debt{background:var(--orange-soft); color:var(--red);}
 
   .consign-table{margin-top:8px; border-top:1px solid var(--line); padding-top:8px;}
-  .consign-th, .consign-tr{display:grid; grid-template-columns:1fr 54px 54px 58px; gap:4px; align-items:center;}
-  .consign-th{font-size:11.5px; font-weight:700; color:var(--ink-soft); padding:0 2px 4px;}
-  .consign-tr{font-size:13.5px; font-weight:600; padding:8px 2px; border-top:1px solid var(--line);}
+  .consign-th, .consign-tr{display:grid; grid-template-columns:1fr 44px 44px 44px 50px; gap:3px; align-items:center;}
+  .consign-th{font-size:10.8px; font-weight:700; color:var(--ink-soft); padding:0 2px 4px;}
+  .consign-tr{font-size:12.5px; font-weight:600; padding:8px 2px; border-top:1px solid var(--line);}
   .consign-th span+span, .consign-tr span+span{text-align:center;}
+  .consign-tr .cnum.is-charged{color:var(--green); font-weight:800;}
   .consign-tr .cname{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .consign-tr .cnum{font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr;}
   .consign-tr .is-need{color:var(--orange); font-weight:800;}
@@ -5841,18 +5842,21 @@ function renderConsignCard(c){
   const debt = consignDebt(c);
   const profit = consignProfit(c);
   const needs = consignNeedsRestock(c);
-  let totalRemain = 0, totalSold = 0, totalRestockNeed = 0;
+  let totalRemain = 0, totalSold = 0, totalCharged = 0, totalRestockNeed = 0;
   const rows = items.map(it => {
     const remain = consignRemaining(it);
     const restock = consignRestockQty(it);
+    const charged = it.deliveredQty||0;
     totalRemain += remain;
     totalSold += (it.soldQty||0);
+    totalCharged += charged;
     totalRestockNeed += restock;
     return `
       <div class="consign-tr">
         <span class="cname">${escapeHtml(it.productName)}</span>
         <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
         <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
+        <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
         <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
       </div>`;
   }).join('');
@@ -5861,6 +5865,7 @@ function renderConsignCard(c){
         <span class="cname">جمع کل</span>
         <span class="cnum">${fa.format(totalRemain)}</span>
         <span class="cnum">${fa.format(totalSold)}</span>
+        <span class="cnum is-charged">${fa.format(totalCharged)}</span>
         <span class="cnum">${totalRestockNeed>0 ? '+'+fa.format(totalRestockNeed) : '—'}</span>
       </div>` : '';
 
@@ -5920,7 +5925,7 @@ function renderConsignCard(c){
 
     <div class="consign-table">
       <div class="consign-th">
-        <span>محصول</span><span>نزد فروشگاه</span><span>فروش‌رفته</span><span>شارژ</span>
+        <span>محصول</span><span>نزد فروشگاه</span><span>فروش‌رفته</span><span>شارژ شده</span><span>نیاز شارژ</span>
       </div>
       ${rows || '<div class="hint" style="margin:8px 2px;">قلمی ثبت نشده.</div>'}
       ${totalsRow}
