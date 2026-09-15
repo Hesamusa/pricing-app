@@ -144,9 +144,19 @@
   .product{
     background:var(--card); border-radius:var(--radius);
     margin-bottom:10px; overflow:hidden;
+    border:2px solid transparent; transition:border-color .2s, box-shadow .2s;
+    scroll-margin-top:90px;
+  }
+  .product.open{
+    border-color:var(--orange);
+    box-shadow:0 6px 20px rgba(198,93,46,0.18);
   }
   .product-head{
     display:flex; align-items:stretch; cursor:pointer; min-height:104px;
+    transition:background .2s;
+  }
+  .product.open .product-head{
+    background:var(--orange-soft);
   }
   .head-info{
     flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center;
@@ -302,9 +312,19 @@
   select.group-select:focus{outline:2px solid var(--orange); outline-offset:0;}
 
 
+  .breakdown-toggle{
+    display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    margin-top:18px; padding:14px 16px; background:var(--bg); border-radius:16px;
+    font-size:14px; font-weight:700; color:var(--ink); user-select:none;
+  }
+  .breakdown-toggle:active{background:var(--line);}
+  .breakdown-chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
+  .breakdown-chev.open{transform:rotate(180deg);}
+  .breakdown-wrap{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+  .breakdown-wrap.open{max-height:600px;}
   .breakdown{
     background:var(--bg); border-radius:16px;
-    padding:6px 16px; margin-top:18px; font-size:15px;
+    padding:6px 16px; margin-top:8px; font-size:15px;
   }
   .breakdown-row{display:flex; justify-content:space-between; padding:12px 0; color:var(--ink-soft); border-bottom:1px solid var(--line);}
   .breakdown-row:last-child{border-bottom:none;}
@@ -1294,6 +1314,7 @@ let orderItemProductId = null;
 let orderItemPickerQuery = '';
 let ordersFilter = 'all';
 let openProductId = null;
+let openBreakdownIds = new Set();
 let productCarouselIndex = {}; // شماره عکس فعلی هر محصول در کاروسل
 let salesFilter = 'all';
 let productSearchQuery = '';
@@ -2361,15 +2382,20 @@ function renderProducts(){
           </div>
 
           ${lk ? '' : `
-          <div class="breakdown">
-            <div class="legend-row"><span class="dot" style="background:var(--ink-soft)"></span>ریز هزینه‌ها</div>
-            <div class="breakdown-row"><span>فیلامنت</span><b id="bd_filament_${prod.id}">${fmt(c.filamentCost)}</b></div>
-            <div class="breakdown-row"><span>برق</span><b id="bd_elec_${prod.id}">${fmt(c.elecCost)}</b></div>
-            <div class="breakdown-row"><span>استهلاک دستگاه</span><b id="bd_depr_${prod.id}">${fmt(c.deprCost)}</b></div>
-            <div class="breakdown-row"><span>دستمزد کار دستی</span><b id="bd_labor_${prod.id}">${fmt(c.laborCost)}</b></div>
-            <div class="breakdown-row"><span>نقاشی</span><b id="bd_paint_${prod.id}">${fmt(c.paintCost)}</b></div>
-            <div class="breakdown-row"><span>متعلقات</span><b id="bd_accessory_${prod.id}">${fmt(c.accessoryCost)}</b></div>
-            <div class="breakdown-row total"><span>جمع قیمت تمام‌شده</span><b id="bd_total_${prod.id}">${fmt(c.total)} تومان</b></div>
+          <div class="breakdown-toggle" id="breakdownToggle_${prod.id}" onclick="event.stopPropagation(); toggleBreakdown('${prod.id}')">
+            <span>جدول قیمت تمام‌شده</span>
+            <svg class="chev breakdown-chev${openBreakdownIds.has(prod.id)?' open':''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+          <div class="breakdown-wrap${openBreakdownIds.has(prod.id)?' open':''}" id="breakdownWrap_${prod.id}">
+            <div class="breakdown">
+              <div class="breakdown-row"><span>فیلامنت</span><b id="bd_filament_${prod.id}">${fmt(c.filamentCost)}</b></div>
+              <div class="breakdown-row"><span>برق</span><b id="bd_elec_${prod.id}">${fmt(c.elecCost)}</b></div>
+              <div class="breakdown-row"><span>استهلاک دستگاه</span><b id="bd_depr_${prod.id}">${fmt(c.deprCost)}</b></div>
+              <div class="breakdown-row"><span>دستمزد کار دستی</span><b id="bd_labor_${prod.id}">${fmt(c.laborCost)}</b></div>
+              <div class="breakdown-row"><span>نقاشی</span><b id="bd_paint_${prod.id}">${fmt(c.paintCost)}</b></div>
+              <div class="breakdown-row"><span>متعلقات</span><b id="bd_accessory_${prod.id}">${fmt(c.accessoryCost)}</b></div>
+              <div class="breakdown-row total"><span>جمع قیمت تمام‌شده</span><b id="bd_total_${prod.id}">${fmt(c.total)} تومان</b></div>
+            </div>
           </div>`}
 
           <div class="result-cards">
@@ -3097,8 +3123,25 @@ async function removeProductImage(id){
 }
 
 function toggleProduct(id){
-  openProductId = (openProductId === id) ? null : id;
+  const wasOpen = openProductId === id;
+  openProductId = wasOpen ? null : id;
   renderProducts();
+  if(!wasOpen){
+    requestAnimationFrame(() => {
+      const card = document.getElementById('card_' + id);
+      if(card) card.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  }
+}
+
+function toggleBreakdown(id){
+  const isOpen = openBreakdownIds.has(id);
+  if(isOpen){ openBreakdownIds.delete(id); } else { openBreakdownIds.add(id); }
+  const wrap = document.getElementById('breakdownWrap_' + id);
+  const toggleEl = document.getElementById('breakdownToggle_' + id);
+  const chev = toggleEl ? toggleEl.querySelector('.breakdown-chev') : null;
+  if(wrap) wrap.classList.toggle('open', !isOpen);
+  if(chev) chev.classList.toggle('open', !isOpen);
 }
 
 function updateProductDisplay(id){
