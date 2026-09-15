@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T21:32:30.754Z",
+  "updatedAt": "2026-09-15T21:32:36.009Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -58,7 +58,7 @@
           "sha": "720e59997926687fe4762854f4fb91d3b6bbc19c"
         }
       ],
-      "stock": 0,
+      "stock": 5,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -78,7 +78,7 @@
           "sha": "7f8047f6ea6ea11f2fd23c8864a3765ce08e737a"
         }
       ],
-      "stock": 2,
+      "stock": 4,
       "category": "g_mu0mydrdz7a1"
     },
     {
@@ -98,7 +98,7 @@
           "sha": "fee9df6ef5cdd787e2af0074aae8f14cacd71f50"
         }
       ],
-      "stock": 0,
+      "stock": 3,
       "category": "g_mu0mydrdz7a1"
     },
     {
