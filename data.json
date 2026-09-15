@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-15T02:57:39.519Z",
+  "updatedAt": "2026-09-15T02:58:00.792Z",
   "settings": {
     "filPrice": 2800000,
     "resinPrice": 3000000,
@@ -30,7 +30,7 @@
     "githubBranch": "main",
     "githubFolder": "product-images",
     "companyName": "3D print plusy",
-    "logoUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/brand-logo.jpg?v=1789441057762",
+    "logoUrl": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/brand-logo.jpg?v=1789441079037",
     "logoPath": "product-images/brand-logo.jpg",
     "logoSha": "2c1fff5befc68c4f5cec3911d456208f63ed455b",
     "instagramUrl": "3dprintplusy",
