@@ -3456,9 +3456,11 @@ function telegramApi(method){
 }
 function telegramCaption(prod){
   const c = calc(prod);
-  let text = `<b>${escapeHtml(prod.name || 'محصول')}</b>\n${fmt(c.priceR)} تومان`;
+  const RLM = '\u200f'; // نشانه‌ی راست‌به‌چپ نامرئی؛ باعث می‌شه هر خط کپشن (حتی اگه با عدد یا حرف لاتین شروع بشه) توی تلگرام راست‌چین نمایش داده بشه
+  let text = `${RLM}<b>${escapeHtml(prod.name || 'محصول')}</b>\n${RLM}${fmt(c.priceR)} تومان`;
   if(prod.catalogDescription && prod.catalogDescription.trim()){
-    text += `\n\n${escapeHtml(prod.catalogDescription.trim())}`;
+    const descLines = prod.catalogDescription.trim().split('\n').map(line => RLM + escapeHtml(line)).join('\n');
+    text += `\n\n${descLines}`;
   }
   return text;
 }
