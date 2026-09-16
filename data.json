@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T20:33:19.180Z",
+  "updatedAt": "2026-09-16T20:33:25.362Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -346,7 +346,10 @@
           "sha": "29f4ef6432f8d8bf1c5f4131b68fca9e2d262aa7"
         }
       ],
-      "telegramMessageId": 14
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        43
+      ]
     },
     {
       "id": "p_1788795669560tpznq",
@@ -372,7 +375,11 @@
           "sha": "3779c6ec419e48801c387a2ef543482339836193"
         }
       ],
-      "telegramMessageId": 15
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        44,
+        45
+      ]
     },
     {
       "id": "p_1788795486741tfdfu",
