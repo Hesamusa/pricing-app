@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T19:36:54.934Z",
+  "updatedAt": "2026-09-16T19:39:54.340Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -62,7 +62,8 @@
       ],
       "stock": 16,
       "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": 3
+      "telegramMessageId": 3,
+      "catalogDescription": "جا کلیدی متفاوت "
     },
     {
       "id": "p_1789547116518l5j1s",
