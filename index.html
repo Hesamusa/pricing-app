@@ -263,6 +263,13 @@
   }
   .gh-field:focus{outline:2px solid var(--orange); outline-offset:0;}
 
+  .desc-textarea{
+    width:100%; border:none; background:var(--bg); border-radius:14px; padding:14px;
+    font-size:15px; color:var(--ink); font-weight:600; line-height:1.8; min-height:90px;
+    font-family:'Vazirmatn',sans-serif; direction:rtl; text-align:right; resize:vertical;
+  }
+  .desc-textarea:focus{outline:2px solid var(--orange); outline-offset:0;}
+
   .jalali-date-row{display:flex; gap:6px;}
   .jalali-date-select{
     flex:1; min-width:0; border:none; background:var(--bg); border-radius:14px; padding:14px 6px;
@@ -1854,6 +1861,7 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
     marginW: null, marginR: null, // null = use global default
     images: [],
     stock: 0,
+    catalogDescription: '', // توضیح جذاب مخصوص این محصول، برای پست کانال تلگرام
     telegramMessageId: null // شناسه‌ی پست این محصول توی کانال تلگرام کاتالوگ (اگه فعال باشه)
   };
 }
@@ -2674,6 +2682,12 @@ function renderProducts(){
             <div class="photo-status" id="photoStatus_${prod.id}"></div>
           </div>
 
+          <div class="field">
+            <label>توضیح جذاب برای کاتالوگ (اختیاری)</label>
+            <textarea class="desc-textarea ${lkClass}" ${lkAttr} placeholder="مثلاً: دست‌ساز و رنگ‌آمیزی باکیفیت، هدیه‌ای متفاوت برای عزیزانتون..." onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','catalogDescription',this.value)">${escapeHtml(prod.catalogDescription||'')}</textarea>
+            <div class="hint">این توضیح فقط زیر قیمت، توی پست کانال تلگرام (اگه فعال باشه) نشون داده می‌شه.</div>
+          </div>
+
           <div class="stock-field">
             <label>موجودی در انبار</label>
             <div class="stock-stepper">
@@ -3280,7 +3294,9 @@ function telegramApi(method){
 function telegramCaption(prod){
   const c = calc(prod);
   let text = `<b>${escapeHtml(prod.name || 'محصول')}</b>\n${fmt(c.priceR)} تومان`;
-  if(prod.weight) text += `\nوزن: ${toFaNum(prod.weight,0)} گرم`;
+  if(prod.catalogDescription && prod.catalogDescription.trim()){
+    text += `\n\n${escapeHtml(prod.catalogDescription.trim())}`;
+  }
   return text;
 }
 function setTelegramSyncStatus(text, kind){
