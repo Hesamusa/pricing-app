@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T20:31:57.917Z",
+  "updatedAt": "2026-09-16T20:32:47.323Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -63,8 +63,11 @@
       ],
       "stock": 16,
       "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": 3,
-      "catalogDescription": "جا کلیدی متفاوت و بی نظیر\nخفن تراز این سراغ دارید \nموجودی داره"
+      "telegramMessageId": null,
+      "catalogDescription": "جا کلیدی متفاوت و بی نظیر\nخفن تراز این سراغ دارید \nموجودی داره",
+      "telegramMessageIds": [
+        31
+      ]
     },
     {
       "id": "p_1789547116518l5j1s",
