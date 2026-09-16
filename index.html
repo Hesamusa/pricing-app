@@ -1072,6 +1072,42 @@
 
       <div class="settings-section">
         <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+          <span class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.4-1.5 3.2A3 3 0 0 0 13 12v1"/><line x1="12" y1="17" x2="12" y2="17.01"/><circle cx="12" cy="12" r="10"/></svg></span>
+          <span class="settings-section-title">نوشتن خودکار توضیحات با هوش مصنوعی</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="settings-section-body">
+      <div class="card">
+        <div class="hint" style="margin-bottom:14px; line-height:1.8;">
+          با انتخاب یه سرویس هوش مصنوعی و وارد کردن کلید API‌اش، دکمه‌ی «نوشتن با هوش مصنوعی ✨» زیر «توضیح جذاب برای کاتالوگ» هر محصول ظاهر می‌شه؛ با زدنش، بر اساس نام و قیمت و مشخصات محصول، یه توضیح تبلیغاتی کوتاه و جذاب می‌سازه و خودش توی همون فیلد می‌ذاره (می‌تونی بعدش ویرایشش کنی).
+        </div>
+        <div class="field">
+          <label>سرویس هوش مصنوعی</label>
+          <select class="gh-field" id="s_aiProvider">
+            <option value="anthropic">کلود (Claude / Anthropic)</option>
+            <option value="gemini">جمینای (Google Gemini)</option>
+          </select>
+          <div class="hint">هر دو مستقیم از داخل همین صفحه (بدون سرور واسط) قابل استفاده‌ن. اگه سرویس دیگه‌ای (مثلاً ChatGPT) می‌خوای، معمولاً باید مثل بخش «آدرس جایگزین API تلگرام» یه پروکسی/relay کوچیک واسطه باشه، چون اون سرویس‌ها اجازه‌ی تماس مستقیم از مرورگر رو نمی‌دن.</div>
+        </div>
+        <div class="field" id="aiKeyField_anthropic">
+          <label>کلید API کلود (Anthropic API Key)</label>
+          <input type="password" class="gh-field" id="s_aiKey" placeholder="sk-ant-..." autocomplete="off" style="direction:ltr; text-align:left;">
+          <div class="hint">از <span dir="ltr" style="unicode-bidi:plaintext;">console.anthropic.com</span> یه کلید API بساز.</div>
+        </div>
+        <div class="field" id="aiKeyField_gemini" style="display:none;">
+          <label>کلید API جمینای (Gemini API Key)</label>
+          <input type="password" class="gh-field" id="s_aiKeyGemini" placeholder="AIza..." autocomplete="off" style="direction:ltr; text-align:left;">
+          <div class="hint">از <span dir="ltr" style="unicode-bidi:plaintext;">aistudio.google.com/apikey</span> یه کلید API رایگان بساز.</div>
+        </div>
+        <div class="hint" style="color:var(--red);">⚠️ چون این تماس مستقیم از داخل مرورگر به سرور سرویس هوش مصنوعی زده می‌شه، کلید توی کد صفحه (Network tab) قابل دیدنه. این کلیدها فقط روی همین گوشی ذخیره می‌شن و هیچ‌وقت داخل مخزن گیت‌هاب قرار نمی‌گیرن؛ فقط روی دستگاه شخصی خودت واردشون کن و با کسی به اشتراک نذار.</div>
+      </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
           <span class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></span>
           <span class="settings-section-title">همگام‌سازی داده‌ها با گیت‌هاب</span>
           <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1749,7 +1785,8 @@ const DEFAULT_SETTINGS = {
   instagramUrl: '',
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
-  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: ''
+  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '',
+  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: ''
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -1998,7 +2035,7 @@ function loadState(){
     setSyncStatus('در حال دریافت آخرین نسخه از گیت‌هاب...', '');
     fetchRemoteData().then(remote => {
       if(remote){
-        settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken};
+        settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken, aiApiKey: settings.aiApiKey, aiApiKeyGemini: settings.aiApiKeyGemini};
         products = Array.isArray(remote.products) ? remote.products : products;
         // مشتریان و سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
         renderSettings();
@@ -2455,6 +2492,13 @@ function renderSettings(){
   if(tgTokenEl) tgTokenEl.value = settings.telegramBotToken || '';
   const tgApiBaseEl = document.getElementById('s_tgApiBase');
   if(tgApiBaseEl) tgApiBaseEl.value = settings.telegramApiBase || '';
+  const aiKeyEl = document.getElementById('s_aiKey');
+  if(aiKeyEl) aiKeyEl.value = settings.aiApiKey || '';
+  const aiKeyGeminiEl = document.getElementById('s_aiKeyGemini');
+  if(aiKeyGeminiEl) aiKeyGeminiEl.value = settings.aiApiKeyGemini || '';
+  const aiProviderEl = document.getElementById('s_aiProvider');
+  if(aiProviderEl) aiProviderEl.value = settings.aiProvider || 'anthropic';
+  updateAiProviderFieldsUI();
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
   document.querySelectorAll('#watermark-pos-row .sale-type-chip').forEach(b=>{
@@ -2498,6 +2542,35 @@ function bindTelegramInputs(){
       persist();
     });
   });
+  const aiKeyEl = document.getElementById('s_aiKey');
+  if(aiKeyEl){
+    aiKeyEl.addEventListener('input', ()=>{
+      settings.aiApiKey = aiKeyEl.value;
+      persist();
+    });
+  }
+  const aiKeyGeminiEl = document.getElementById('s_aiKeyGemini');
+  if(aiKeyGeminiEl){
+    aiKeyGeminiEl.addEventListener('input', ()=>{
+      settings.aiApiKeyGemini = aiKeyGeminiEl.value;
+      persist();
+    });
+  }
+  const aiProviderEl = document.getElementById('s_aiProvider');
+  if(aiProviderEl){
+    aiProviderEl.addEventListener('change', ()=>{
+      settings.aiProvider = aiProviderEl.value;
+      persist();
+      updateAiProviderFieldsUI();
+    });
+  }
+}
+function updateAiProviderFieldsUI(){
+  const provider = settings.aiProvider || 'anthropic';
+  const anthropicField = document.getElementById('aiKeyField_anthropic');
+  const geminiField = document.getElementById('aiKeyField_gemini');
+  if(anthropicField) anthropicField.style.display = provider === 'gemini' ? 'none' : '';
+  if(geminiField) geminiField.style.display = provider === 'gemini' ? '' : 'none';
 }
 function onTelegramEnabledChange(checked){
   settings.telegramCatalogEnabled = !!checked;
@@ -2553,7 +2626,7 @@ async function maybeInitGithubSync(){
   if(remote){
     const useRemote = await customConfirm('یک نسخه از داده‌ها از قبل روی این مخزن گیت‌هاب هست.\nبرای بارگذاری همون نسخه «OK» بزن، یا برای جایگزین کردنش با اطلاعات همین دستگاه «Cancel» رو بزن.');
     if(useRemote){
-      settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken};
+      settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken, aiApiKey: settings.aiApiKey, aiApiKeyGemini: settings.aiApiKeyGemini};
       products = Array.isArray(remote.products) ? remote.products : products;
       sales = Array.isArray(remote.sales) ? remote.sales : sales;
       orders = Array.isArray(remote.orders) ? remote.orders : orders;
@@ -2854,7 +2927,11 @@ function renderProducts(){
 
           <div class="field">
             <label>توضیح جذاب برای کاتالوگ (اختیاری)</label>
-            <textarea class="desc-textarea ${lkClass}" ${lkAttr} placeholder="مثلاً: دست‌ساز و رنگ‌آمیزی باکیفیت، هدیه‌ای متفاوت برای عزیزانتون..." onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','catalogDescription',this.value)">${escapeHtml(prod.catalogDescription||'')}</textarea>
+            <textarea class="desc-textarea ${lkClass}" ${lkAttr} id="descTextarea_${prod.id}" placeholder="مثلاً: دست‌ساز و رنگ‌آمیزی باکیفیت، هدیه‌ای متفاوت برای عزیزانتون..." onclick="event.stopPropagation()" oninput="updateProduct('${prod.id}','catalogDescription',this.value)">${escapeHtml(prod.catalogDescription||'')}</textarea>
+            ${lk ? '' : `
+            <button type="button" class="photo-btn" id="aiDescBtn_${prod.id}" style="margin-top:8px;" onclick="event.stopPropagation(); generateAIDescription('${prod.id}')">✨ نوشتن با هوش مصنوعی</button>
+            <div class="hint" id="aiDescStatus_${prod.id}" style="margin-top:6px;"></div>
+            `}
             <div class="hint">این توضیح فقط زیر قیمت، توی پست کانال تلگرام (اگه فعال باشه) نشون داده می‌شه.</div>
           </div>
 
@@ -3602,6 +3679,96 @@ async function deleteProductTelegramPost(prod){
   await deleteTelegramMessages(settings.telegramChannelId.trim(), ids);
 }
 
+// --- نوشتن خودکار توضیح کاتالوگ با هوش مصنوعی (کلود) ---
+async function generateAIDescription(id){
+  const prod = products.find(p => p.id === id);
+  if(!prod) return;
+  const btn = document.getElementById('aiDescBtn_' + id);
+  const statusEl = document.getElementById('aiDescStatus_' + id);
+  const setStatus = (text, kind) => {
+    if(!statusEl) return;
+    statusEl.textContent = text || '';
+    statusEl.style.color = kind === 'error' ? 'var(--red)' : 'var(--ink-soft)';
+  };
+
+  const provider = settings.aiProvider || 'anthropic';
+  const apiKey = provider === 'gemini' ? settings.aiApiKeyGemini : settings.aiApiKey;
+  if(!apiKey || !apiKey.trim()){
+    await customAlert(`اول باید کلید API ${provider === 'gemini' ? 'جمینای' : 'کلود'} رو توی تنظیمات → «نوشتن خودکار توضیحات با هوش مصنوعی» وارد کنی.`);
+    switchTab('settings');
+    return;
+  }
+
+  const c = calc(prod);
+  const groupName = (settings.productGroups || []).find(g => g.id === prod.category);
+  const productInfo = [
+    `نام محصول: ${prod.name || 'بدون‌نام'}`,
+    `قیمت خرده‌فروشی: ${fmt(c.priceR)} تومان`,
+    groupName ? `دسته‌بندی: ${groupName.name}` : null,
+    prod.weight ? `وزن پرینت: حدود ${toFaNum(prod.weight,0)} گرم` : null,
+    prod.stock ? `موجودی: ${toFaNum(prod.stock,0)} عدد` : null,
+    prod.catalogDescription && prod.catalogDescription.trim() ? `توضیح فعلی (اگه هست، برای الهام‌گیری): ${prod.catalogDescription.trim()}` : null,
+  ].filter(Boolean).join('\n');
+
+  const prompt = `تو یه کپی‌رایتر حرفه‌ای فارسی‌نویس برای یه کانال تلگرامی فروش محصولات پرینت سه‌بعدی هستی. برای محصول زیر یه توضیح تبلیغاتی کوتاه (۲ تا ۴ خط)، جذاب و صمیمی به زبان فارسی بنویس که زیر قیمت توی پست کانال بیاد. از تکرار اسم و قیمت محصول (که جدا نشون داده می‌شن) خودداری کن؛ فقط روی حس‌وحال، کاربرد یا نکته‌ی جذاب محصول تمرکز کن. از ایموجی با تعادل و کم استفاده کن (حداکثر ۱-۲ تا). فقط متن توضیح رو برگردون، بدون هیچ مقدمه یا گیومه یا توضیح اضافه.
+
+${productInfo}`;
+
+  if(btn){ btn.disabled = true; btn.style.opacity = '.6'; }
+  setStatus('در حال نوشتن توضیح...', '');
+
+  try{
+    let generated;
+    if(provider === 'gemini'){
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok){
+        throw new Error((data && data.error && data.error.message) || 'خطای نامشخص از سمت جمینای');
+      }
+      const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+      generated = parts && parts.length ? parts.map(p => p.text || '').join('').trim() : '';
+    }else{
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey.trim(),
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-5',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if(!res.ok){
+        throw new Error((data && data.error && data.error.message) || 'خطای نامشخص از سمت کلود');
+      }
+      const textBlock = (data.content || []).find(b => b.type === 'text');
+      generated = textBlock ? textBlock.text.trim() : '';
+    }
+    if(!generated) throw new Error('پاسخی از هوش مصنوعی دریافت نشد');
+
+    prod.catalogDescription = generated;
+    updateProductDisplay(id);
+    persist();
+    queueTelegramSync(id);
+    const el = document.getElementById('descTextarea_' + id);
+    if(el) el.value = generated;
+    setStatus('توضیح نوشته شد ✓', '');
+  }catch(e){
+    setStatus('نوشتن توضیح ناموفق بود: ' + e.message, 'error');
+  }finally{
+    if(btn){ btn.disabled = false; btn.style.opacity = ''; }
+  }
+}
+
 async function telegramSyncAllProducts(){
   if(!settings.telegramCatalogEnabled){ await customAlert('اول کاتالوگ تلگرام رو از همین صفحه فعال کن.'); return; }
   if(!settings.telegramBotToken || !settings.telegramBotToken.trim() || !settings.telegramChannelId || !settings.telegramChannelId.trim()){
@@ -3636,7 +3803,7 @@ function githubReadConfigured(){
 function githubDataPath(){ return 'data.json'; }
 
 function buildSyncPayload(){
-  const {githubToken, telegramBotToken, ...safeSettings} = settings; // توکن‌ها هیچ‌وقت داخل ریپو ذخیره نمی‌شن
+  const {githubToken, telegramBotToken, aiApiKey, aiApiKeyGemini, ...safeSettings} = settings; // توکن‌ها هیچ‌وقت داخل ریپو ذخیره نمی‌شن
   // مشتریان (و فروش/سفارش) عمداً توی این payload نیستن: این فایل روی گیت‌هاب
   // مشترک/عمومیه و اگه داده‌ی هر کاربر این‌جا هم می‌رفت، همون نشتی قبلی برمی‌گشت.
   return { updatedAt: new Date().toISOString(), settings: safeSettings, products };
