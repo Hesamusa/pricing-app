@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T19:40:12.863Z",
+  "updatedAt": "2026-09-16T20:17:29.909Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -40,6 +40,7 @@
     "watermarkMargin": 3.5,
     "telegramCatalogEnabled": true,
     "telegramChannelId": "@threedprintplusy",
+    "telegramApiBase": "",
     "adminPin": "373763"
   },
   "products": [
@@ -63,7 +64,7 @@
       "stock": 16,
       "category": "g_mu0mydrdz7a1",
       "telegramMessageId": 3,
-      "catalogDescription": "جا کلیدی متفاوت و بی نظیر\nخفن تراز این سراغ دارید"
+      "catalogDescription": "جا کلیدی متفاوت و بی نظیر\nخفن تراز این سراغ دارید \n"
     },
     {
       "id": "p_1789547116518l5j1s",
