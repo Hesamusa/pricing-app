@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T18:58:12.667Z",
+  "updatedAt": "2026-09-16T18:59:06.703Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -38,7 +38,7 @@
     "watermarkPos": "top-right",
     "watermarkSize": 17,
     "watermarkMargin": 3.5,
-    "telegramCatalogEnabled": false,
+    "telegramCatalogEnabled": true,
     "telegramChannelId": "@threedprintplusy",
     "adminPin": "373763"
   },
