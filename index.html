@@ -3468,10 +3468,12 @@ function telegramApi(method){
 }
 function telegramCaption(prod){
   const c = calc(prod);
-  const RLM = '\u200f'; // نشانه‌ی راست‌به‌چپ نامرئی؛ باعث می‌شه هر خط کپشن (حتی اگه با عدد یا حرف لاتین شروع بشه) توی تلگرام راست‌چین نمایش داده بشه
-  let text = `${RLM}<b>${escapeHtml(prod.name || 'محصول')}</b>\n${RLM}${fmt(c.priceR)} تومان`;
+  const RLM = '\u200f'; // نشانه‌ی راست‌به‌چپ نامرئی
+  const RLE = '\u202b', PDF = '\u202c'; // شروع/پایان صریح جهت راست‌به‌چپ — تلگرام گاهی توی کپشن عکس/آلبوم تنها به RLM بسنده نمی‌کنه، این دوتا با هم قوی‌تر و مطمئن‌ترن
+  const rtl = line => RLE + RLM + line + PDF;
+  let text = `${rtl(`<b>${escapeHtml(prod.name || 'محصول')}</b>`)}\n${rtl(`${fmt(c.priceR)} تومان`)}`;
   if(prod.catalogDescription && prod.catalogDescription.trim()){
-    const descLines = prod.catalogDescription.trim().split('\n').map(line => RLM + escapeHtml(line)).join('\n');
+    const descLines = prod.catalogDescription.trim().split('\n').map(line => rtl(escapeHtml(line))).join('\n');
     text += `\n\n${descLines}`;
   }
   return text;
