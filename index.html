@@ -5829,16 +5829,25 @@ async function deleteConsignment(id){
   if(!c) return;
   const left = consignStockAtStore(c);
   const msg = left > 0
-    ? 'این واگذاری حذف بشه؟\nتوجه: ' + fa.format(left) + ' قلم امانی که هنوز نزد این فروشگاه ثبت شده، خودکار به انبار برنمی‌گرده.'
+    ? 'این واگذاری حذف بشه؟\n' + fa.format(left) + ' قلم امانی که هنوز نزد این فروشگاهه، خودکار به موجودی انبار برمی‌گرده.'
     : 'این واگذاری حذف بشه؟';
   if(!await customConfirm(msg)) return;
   try{
     const { error } = await sb.from('consignments').delete().eq('id', id);
     if(error){ await customAlert('حذف واگذاری روی سرور ناموفق بود: ' + error.message); return; }
   }catch(e){ await customAlert('حذف واگذاری ناموفق بود؛ اتصال رو چک کن.'); return; }
+  // برگردوندن اقلام باقیمانده‌ی نزد این فروشگاه به موجودی انبار
+  (c.items||[]).forEach(it => {
+    const remaining = consignRemaining(it);
+    if(remaining <= 0) return;
+    const prod = products.find(p => p.id === it.productId);
+    if(prod){ prod.stock = (prod.stock||0) + remaining; updateProductDisplay(prod.id); }
+  });
   consignments = consignments.filter(x => x.id !== id);
+  persist();
   renderConsignTab();
   renderSummary();
+  showToast(left > 0 ? ('واگذاری حذف و ' + fa.format(left) + ' قلم به انبار برگشت ✓') : 'واگذاری حذف شد ✓', 'success');
 }
 
 // ————— فیلتر و جستجو —————
