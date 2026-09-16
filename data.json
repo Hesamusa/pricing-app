@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T19:36:49.767Z",
+  "updatedAt": "2026-09-16T19:36:54.934Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -453,7 +453,8 @@
           "path": "product-images/p_1788787726489xvrd0.jpg",
           "sha": "bdee9a309f828a89a8246fdb66d36caf4c4fcbd5"
         }
-      ]
+      ],
+      "telegramMessageId": 20
     },
     {
       "id": "p_1788757924479oy27y",
@@ -473,7 +474,8 @@
           "path": "product-images/p_1788757924479oy27y.jpg",
           "sha": "e21ddf732807566dc1a03483a0e9995322dee8b4"
         }
-      ]
+      ],
+      "telegramMessageId": 21
     }
   ]
 }
