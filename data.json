@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T08:28:15.969Z",
+  "updatedAt": "2026-09-16T08:28:18.056Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -44,7 +44,7 @@
     {
       "id": "p_1789547212385khl84",
       "name": "اسپایدرمن ونوم",
-      "weight": 50,
+      "weight": 15,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
