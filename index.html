@@ -2027,7 +2027,7 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
     images: [],
     stock: 0,
     catalogDescription: '', // توضیح جذاب مخصوص این محصول، برای پست کانال تلگرام
-    telegramMessageId: null // شناسه‌ی پست این محصول توی کانال تلگرام کاتالوگ (اگه فعال باشه)
+    telegramMessageIds: [] // شناسه‌ی پست(های) این محصول توی کانال تلگرام کاتالوگ (اگه فعال باشه) — اگه چند عکس داشته باشه، یه آلبومه و چند آیدی داره
   };
 }
 
@@ -3497,6 +3497,34 @@ function queueTelegramSync(id){
   }, 2500);
 }
 
+// آیدی پست‌های قبلیِ این محصول توی کانال رو برمی‌گردونه؛ از فرمت قدیمی (یک آیدی تکی) هم پشتیبانی می‌کنه
+function getTelegramMessageIds(prod){
+  if(Array.isArray(prod.telegramMessageIds) && prod.telegramMessageIds.length) return prod.telegramMessageIds.slice();
+  if(prod.telegramMessageId) return [prod.telegramMessageId];
+  return [];
+}
+function setTelegramMessageIds(prod, ids){
+  prod.telegramMessageIds = ids || [];
+  prod.telegramMessageId = null; // فرمت قدیمی دیگه لازم نیست
+}
+async function telegramCall(method, body){
+  let data;
+  try{
+    const res = await fetch(telegramApi(method), {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    data = await res.json().catch(()=>({}));
+  }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
+  return data;
+}
+// یک یا چند پست قدیمی رو از کانال پاک می‌کنه؛ خطاها رو نادیده می‌گیره (best-effort)
+async function deleteTelegramMessages(channel, ids){
+  for(const messageId of (ids || [])){
+    try{ await telegramCall('deleteMessage', { chat_id: channel, message_id: messageId }); }
+    catch(e){ /* best-effort */ }
+  }
+}
+
 // موفق بود => برمی‌گردونه؛ ناموفق بود => خطا رو با پیام واقعیِ تلگرام پرتاب می‌کنه
 // (تا صدا زننده بفهمه واقعاً ارسال شده یا نه، به‌جای اینکه فقط توی کنسول قایم بشه)
 async function syncProductToTelegram(id){
@@ -3504,60 +3532,72 @@ async function syncProductToTelegram(id){
   const prod = products.find(p => p.id === id);
   if(!prod) throw new Error('محصول پیدا نشد');
   const channel = settings.telegramChannelId.trim();
-  const photoUrl = (prod.images && prod.images[0]) ? prod.images[0].url : null;
+  const images = prod.images || [];
   const caption = telegramCaption(prod);
+  const existingIds = getTelegramMessageIds(prod);
 
-  if(prod.telegramMessageId){
-    // پست قبلاً وجود داره؛ سعی کن همون رو ویرایش کنی
-    const method = photoUrl ? 'editMessageMedia' : 'editMessageCaption';
-    const body = photoUrl
-      ? { chat_id: channel, message_id: prod.telegramMessageId, media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} }
-      : { chat_id: channel, message_id: prod.telegramMessageId, caption, parse_mode:'HTML' };
-    let data;
-    try{
-      const res = await fetch(telegramApi(method), {
-        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
-      });
-      data = await res.json().catch(()=>({}));
-    }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
-    if(data.ok) return true;
-    // اگه ویرایش شکست خورد (مثلاً پست دستی از کانال پاک شده)، یه پست تازه بساز — در غیر این صورت خطا رو بالا می‌فرستیم
-    if(!/message to edit not found|message can't be edited/i.test(data.description || '')){
-      throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
+  // بدون عکس: فقط پیام متنی
+  if(images.length === 0){
+    if(existingIds.length === 1){
+      const data = await telegramCall('editMessageCaption', { chat_id: channel, message_id: existingIds[0], caption, parse_mode:'HTML' });
+      if(data.ok) return true;
+      if(!/message to edit not found|message can't be edited/i.test(data.description || '')){
+        throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
+      }
     }
-  }
-  if(!photoUrl){
-    let data;
-    try{
-      const res = await fetch(telegramApi('sendMessage'), {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ chat_id: channel, text: caption, parse_mode:'HTML' })
-      });
-      data = await res.json().catch(()=>({}));
-    }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
-    if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); return true; }
+    if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
+    const data = await telegramCall('sendMessage', { chat_id: channel, text: caption, parse_mode:'HTML' });
+    if(data.ok){ setTelegramMessageIds(prod, [data.result.message_id]); persist(); return true; }
     throw new Error(data.description || 'ارسال پیام به تلگرام ناموفق بود');
   }
-  let data;
-  try{
-    const res = await fetch(telegramApi('sendPhoto'), {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: channel, photo: photoUrl, caption, parse_mode:'HTML' })
-    });
-    data = await res.json().catch(()=>({}));
-  }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
-  if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); return true; }
-  throw new Error(data.description || 'ارسال عکس به تلگرام ناموفق بود');
+
+  // یک عکس: پست تک‌عکسه، مثل قبل قابل ویرایش سر جا
+  if(images.length === 1){
+    const photoUrl = images[0].url;
+    if(existingIds.length === 1){
+      const data = await telegramCall('editMessageMedia', { chat_id: channel, message_id: existingIds[0], media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} });
+      if(data.ok) return true;
+      if(!/message to edit not found|message can't be edited/i.test(data.description || '')){
+        throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
+      }
+    }
+    if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
+    const data = await telegramCall('sendPhoto', { chat_id: channel, photo: photoUrl, caption, parse_mode:'HTML' });
+    if(data.ok){ setTelegramMessageIds(prod, [data.result.message_id]); persist(); return true; }
+    throw new Error(data.description || 'ارسال عکس به تلگرام ناموفق بود');
+  }
+
+  // چند عکس: آلبوم (media group). کپشن فقط روی اولین عکسِ آلبوم نمایش داده می‌شه.
+  // اگه تعداد عکس‌ها با دفعه‌ی قبل یکی باشه، تک‌تک عکس‌های همون آلبوم رو ویرایش می‌کنیم (پست جابه‌جا نمی‌شه)؛
+  // وگرنه (تعداد عوض شده) آلبوم قبلی رو پاک می‌کنیم و یه آلبوم تازه می‌فرستیم.
+  if(existingIds.length === images.length){
+    let allOk = true;
+    for(let i = 0; i < images.length; i++){
+      const media = i === 0
+        ? {type:'photo', media: images[i].url, caption, parse_mode:'HTML'}
+        : {type:'photo', media: images[i].url};
+      const data = await telegramCall('editMessageMedia', { chat_id: channel, message_id: existingIds[i], media });
+      if(!data.ok){
+        if(/message to edit not found|message can't be edited/i.test(data.description || '')){ allOk = false; break; }
+        throw new Error(data.description || 'ویرایش آلبوم تلگرام ناموفق بود');
+      }
+    }
+    if(allOk) return true;
+  }
+  if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
+  const media = images.map((img, i) => i === 0
+    ? {type:'photo', media: img.url, caption, parse_mode:'HTML'}
+    : {type:'photo', media: img.url});
+  const data = await telegramCall('sendMediaGroup', { chat_id: channel, media });
+  if(data.ok){ setTelegramMessageIds(prod, data.result.map(m => m.message_id)); persist(); return true; }
+  throw new Error(data.description || 'ارسال آلبوم عکس به تلگرام ناموفق بود');
 }
 
 async function deleteProductTelegramPost(prod){
-  if(!telegramConfigured() || !prod || !prod.telegramMessageId) return;
-  try{
-    await fetch(telegramApi('deleteMessage'), {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: settings.telegramChannelId.trim(), message_id: prod.telegramMessageId })
-    });
-  }catch(e){ console.error('حذف پست تلگرام ناموفق بود', e); }
+  if(!telegramConfigured() || !prod) return;
+  const ids = getTelegramMessageIds(prod);
+  if(!ids.length) return;
+  await deleteTelegramMessages(settings.telegramChannelId.trim(), ids);
 }
 
 async function telegramSyncAllProducts(){
