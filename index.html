@@ -3603,6 +3603,11 @@ async function deleteTelegramMessages(channel, ids){
     catch(e){ /* best-effort */ }
   }
 }
+// وقتی ویرایش/حذف یه پست با این خطاها مواجه می‌شه، یعنی اون پست دیگه معتبر نیست
+// (دستی از کانال پاک شده، کانال عوض شده، یا آیدی‌اش خراب/قدیمیه) — پس باید یه پست تازه ساخت، نه اینکه کل سینک fail بشه.
+function isStaleTelegramMessageError(description){
+  return /message to edit not found|message can't be edited|message_id_invalid|message to delete not found/i.test(description || '');
+}
 
 // موفق بود => برمی‌گردونه؛ ناموفق بود => خطا رو با پیام واقعیِ تلگرام پرتاب می‌کنه
 // (تا صدا زننده بفهمه واقعاً ارسال شده یا نه، به‌جای اینکه فقط توی کنسول قایم بشه)
@@ -3620,7 +3625,7 @@ async function syncProductToTelegram(id){
     if(existingIds.length === 1){
       const data = await telegramCall('editMessageCaption', { chat_id: channel, message_id: existingIds[0], caption, parse_mode:'HTML' });
       if(data.ok) return true;
-      if(!/message to edit not found|message can't be edited/i.test(data.description || '')){
+      if(!isStaleTelegramMessageError(data.description)){
         throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
       }
     }
@@ -3636,7 +3641,7 @@ async function syncProductToTelegram(id){
     if(existingIds.length === 1){
       const data = await telegramCall('editMessageMedia', { chat_id: channel, message_id: existingIds[0], media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} });
       if(data.ok) return true;
-      if(!/message to edit not found|message can't be edited/i.test(data.description || '')){
+      if(!isStaleTelegramMessageError(data.description)){
         throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
       }
     }
@@ -3657,7 +3662,7 @@ async function syncProductToTelegram(id){
         : {type:'photo', media: images[i].url};
       const data = await telegramCall('editMessageMedia', { chat_id: channel, message_id: existingIds[i], media });
       if(!data.ok){
-        if(/message to edit not found|message can't be edited/i.test(data.description || '')){ allOk = false; break; }
+        if(isStaleTelegramMessageError(data.description)){ allOk = false; break; }
         throw new Error(data.description || 'ویرایش آلبوم تلگرام ناموفق بود');
       }
     }
