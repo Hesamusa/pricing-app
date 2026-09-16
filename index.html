@@ -1011,7 +1011,7 @@
       </div>
       <div class="field">
         <label>آیدی یا لینک کانال</label>
-        <input type="text" class="gh-field" id="s_tgChannel" placeholder="مثلاً @mycatalog@ یا -100xxxxxxxxxx" style="direction:ltr; text-align:left;">
+        <input type="text" class="gh-field" id="s_tgChannel" placeholder="مثلاً @mycatalog یا -100xxxxxxxxxx" style="direction:ltr; text-align:left;">
         <div class="hint">اگه کانال پابلیکه، آیدیش با @ کافیه (مثلاً @mycatalog). اگه خصوصیه، باید عددی شکل «Chat ID» کانال رو بذاری (با فوروارد یه پیام از کانال به @userinfobot می‌تونی پیداش کنی).</div>
       </div>
       <div class="field">
@@ -3393,49 +3393,65 @@ const telegramSyncTimers = {};
 function queueTelegramSync(id){
   if(!telegramConfigured()) return;
   clearTimeout(telegramSyncTimers[id]);
-  telegramSyncTimers[id] = setTimeout(() => { syncProductToTelegram(id); }, 2500);
+  telegramSyncTimers[id] = setTimeout(() => {
+    syncProductToTelegram(id).catch(err => {
+      console.error(err);
+      setTelegramSyncStatus('همگام‌سازی خودکار با تلگرام ناموفق بود: ' + err.message, 'error');
+    });
+  }, 2500);
 }
 
+// موفق بود => برمی‌گردونه؛ ناموفق بود => خطا رو با پیام واقعیِ تلگرام پرتاب می‌کنه
+// (تا صدا زننده بفهمه واقعاً ارسال شده یا نه، به‌جای اینکه فقط توی کنسول قایم بشه)
 async function syncProductToTelegram(id){
-  if(!telegramConfigured()) return;
+  if(!telegramConfigured()) throw new Error('کاتالوگ تلگرام تنظیم نشده');
   const prod = products.find(p => p.id === id);
-  if(!prod) return;
+  if(!prod) throw new Error('محصول پیدا نشد');
   const channel = settings.telegramChannelId.trim();
   const photoUrl = (prod.images && prod.images[0]) ? prod.images[0].url : null;
   const caption = telegramCaption(prod);
 
-  try{
-    if(prod.telegramMessageId){
-      // پست قبلاً وجود داره؛ سعی کن همون رو ویرایش کنی
-      const method = photoUrl ? 'editMessageMedia' : 'editMessageCaption';
-      const body = photoUrl
-        ? { chat_id: channel, message_id: prod.telegramMessageId, media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} }
-        : { chat_id: channel, message_id: prod.telegramMessageId, caption, parse_mode:'HTML' };
+  if(prod.telegramMessageId){
+    // پست قبلاً وجود داره؛ سعی کن همون رو ویرایش کنی
+    const method = photoUrl ? 'editMessageMedia' : 'editMessageCaption';
+    const body = photoUrl
+      ? { chat_id: channel, message_id: prod.telegramMessageId, media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} }
+      : { chat_id: channel, message_id: prod.telegramMessageId, caption, parse_mode:'HTML' };
+    let data;
+    try{
       const res = await fetch(telegramApi(method), {
         method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
-      const data = await res.json().catch(()=>({}));
-      if(data.ok) return;
-      // اگه ویرایش شکست خورد (مثلاً پست دستی از کانال پاک شده)، یه پست تازه بساز
+      data = await res.json().catch(()=>({}));
+    }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
+    if(data.ok) return true;
+    // اگه ویرایش شکست خورد (مثلاً پست دستی از کانال پاک شده)، یه پست تازه بساز — در غیر این صورت خطا رو بالا می‌فرستیم
+    if(!/message to edit not found|message can't be edited/i.test(data.description || '')){
+      throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
     }
-    if(!photoUrl){
+  }
+  if(!photoUrl){
+    let data;
+    try{
       const res = await fetch(telegramApi('sendMessage'), {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ chat_id: channel, text: caption, parse_mode:'HTML' })
       });
-      const data = await res.json().catch(()=>({}));
-      if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); }
-      else console.error('ارسال به تلگرام ناموفق بود', data);
-      return;
-    }
+      data = await res.json().catch(()=>({}));
+    }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
+    if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); return true; }
+    throw new Error(data.description || 'ارسال پیام به تلگرام ناموفق بود');
+  }
+  let data;
+  try{
     const res = await fetch(telegramApi('sendPhoto'), {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ chat_id: channel, photo: photoUrl, caption, parse_mode:'HTML' })
     });
-    const data = await res.json().catch(()=>({}));
-    if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); }
-    else console.error('ارسال به تلگرام ناموفق بود', data);
-  }catch(e){ console.error('خطای اتصال به تلگرام', e); }
+    data = await res.json().catch(()=>({}));
+  }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
+  if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); return true; }
+  throw new Error(data.description || 'ارسال عکس به تلگرام ناموفق بود');
 }
 
 async function deleteProductTelegramPost(prod){
@@ -3456,14 +3472,15 @@ async function telegramSyncAllProducts(){
   }
   if(!products.length){ await customAlert('هنوز محصولی برای ثبت توی کانال نداری.'); return; }
   setTelegramSyncStatus('در حال ارسال محصولات به کانال...', '');
-  let ok = 0, fail = 0;
+  let ok = 0, fail = 0, lastError = '';
   for(let i=0; i<products.length; i++){
     setTelegramSyncStatus(`در حال ارسال ${toFaNum(i+1,0)} از ${toFaNum(products.length,0)}...`, '');
     try{ await syncProductToTelegram(products[i].id); ok++; }
-    catch(e){ fail++; }
+    catch(e){ fail++; lastError = e.message || 'خطای ناشناخته'; console.error('ارسال به تلگرام ناموفق بود', e); }
     await new Promise(r => setTimeout(r, 1200)); // برای رعایت محدودیت نرخ تلگرام
   }
-  setTelegramSyncStatus(`تمام شد: ${toFaNum(ok,0)} محصول همگام‌سازی شد${fail? ' — ' + toFaNum(fail,0) + ' مورد ناموفق':''} ✓`, fail ? 'error' : 'success');
+  const summary = `تمام شد: ${toFaNum(ok,0)} محصول همگام‌سازی شد${fail? ' — ' + toFaNum(fail,0) + ' مورد ناموفق':''}`;
+  setTelegramSyncStatus(fail ? `${summary} (${lastError})` : summary + ' ✓', fail ? 'error' : 'success');
 }
 
 function githubConfigured(){
