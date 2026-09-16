@@ -121,6 +121,24 @@
     margin-bottom:14px;
   }
 
+  /* Collapsible settings sections */
+  .settings-section{margin-bottom:4px;}
+  .settings-section-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    width:100%; background:transparent; border:none; cursor:pointer; padding:0;
+    margin:30px 6px 10px; font-family:'Vazirmatn',sans-serif; text-align:right; direction:rtl;
+  }
+  .settings-section:first-child .settings-section-head{margin-top:6px;}
+  .settings-section-title{
+    font-size:14px; font-weight:700; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:0.3px;
+  }
+  .settings-section-title.orange{color:var(--orange);}
+  .settings-section-head .chev{width:18px; height:18px; flex-shrink:0; color:var(--ink-soft); transition:transform .2s;}
+  .settings-section.open .settings-section-head .chev{transform:rotate(180deg);}
+  .settings-section-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+  .settings-section.open .settings-section-body{max-height:4000px;}
+
   .field{padding:16px 0; border-bottom:1px solid var(--line);}
   .field:last-child{border-bottom:none;}
   .field label{
@@ -765,18 +783,12 @@
   <div id="tab-settings" class="tab-panel">
     <div class="save-note" id="save-note-settings">ذخیره شد ✓</div>
 
-    <div class="section-title">ظاهر</div>
-    <div class="card">
-      <div class="switch-row">
-        <span class="switch-label">حالت تاریک</span>
-        <label class="switch">
-          <input type="checkbox" id="themeToggle" onchange="setTheme(this.checked ? 'dark' : 'light')">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="section-title"><span class="bar"></span>اشتراک‌گذاری صفحه اینستاگرام</div>
+    <div class="settings-section open">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title"><span class="bar"></span>اشتراک‌گذاری صفحه اینستاگرام</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="field">
         <label>عکس کیوآر کد (اختیاری — خودت آپلود کن)</label>
@@ -794,6 +806,8 @@
           نمایش کیوآر کد بزرگ
         </button>
         <div class="hint" style="margin-top:12px;">گوشی رو به مشتری نشون بده تا با دوربین یا اپ اینستاگرام کد رو اسکن کنه و مستقیم وارد صفحه‌ت بشه.</div>
+      </div>
+    </div>
       </div>
     </div>
 
@@ -815,7 +829,12 @@
       <button type="button" class="add-btn" style="margin:0; background:var(--red); width:auto; padding:8px 16px;" onclick="sbSignOut()">خروج</button>
     </div>
 
-    <div class="section-title"><span class="bar"></span>هزینه‌های مواد و دستگاه</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title"><span class="bar"></span>هزینه‌های مواد و دستگاه</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="field">
         <label>قیمت هر کیلوگرم فیلامنت</label>
@@ -855,8 +874,15 @@
         <div class="hint">قیمت خرید دستگاه و قطعات یدکی تقسیم بر عمر مفید تخمینی به ساعت</div>
       </div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title"><span class="bar"></span>دستمزد</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title"><span class="bar"></span>دستمزد</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="field">
         <label>نرخ دستمزد کار دستی (تمیزکاری/فینیش)</label>
@@ -873,8 +899,15 @@
         </div>
       </div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>درصد سود پیش‌فرض</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>درصد سود پیش‌فرض</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="field">
         <label>سود فروش عمده (مغازه‌دار)</label>
@@ -902,8 +935,15 @@
         <div class="hint">قیمت پیشنهادی عمده/خرده (بعد از اضافه‌شدن درصد سود) به این عدد گرد می‌شه تا خرده‌ریز نداشته باشه.</div>
       </div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>صفحه اینستاگرام</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>صفحه اینستاگرام</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="field">
         <label>آیدی یا لینک صفحه اینستاگرام</label>
@@ -911,8 +951,15 @@
         <div class="hint">فقط آیدی کافیه (بدون @)؛ یا آدرس کامل صفحه رو بچسبون. همین آدرس برای ساختن کیوآر کد بخش «اشتراک‌گذاری» بالای همین تب استفاده می‌شه.</div>
       </div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>ذخیره‌سازی عکس محصولات (گیت‌هاب)</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>ذخیره‌سازی عکس محصولات (گیت‌هاب)</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="hint" style="margin-bottom:14px;">
         مخزن گیت‌هاب Public هست، پس هر دستگاهی که این لینک رو باز کنه خودکار و بدون نیاز به توکن، آخرین داده‌ها رو می‌بینه. اما برای ثبت تغییرات (سفارش، محصول، عکس و ...) هر دستگاه باید یک Personal Access Token خودش رو اینجا وارد کنه؛ یک توکن با دسترسی نوشتن روی همین مخزن بساز (ترجیحاً fine-grained و محدود به همین ریپو). این توکن فقط روی همین گوشی/مرورگر ذخیره می‌شه و هیچ‌وقت داخل خود مخزن یا لینک قرار نمی‌گیره؛ فقط به افرادی بده که بهشون اعتماد داری.
@@ -942,8 +989,15 @@
         <div class="hint" style="color:var(--red);">⚠️ این توکن روی همین گوشی ذخیره می‌شه؛ فقط روی دستگاه شخصی خودت واردش کن و با کسی به اشتراک نذار.</div>
       </div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>کاتالوگ تلگرام</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>کاتالوگ تلگرام</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="hint" style="margin-bottom:14px; line-height:1.8;">
         با فعال‌کردن این بخش، هر محصول به‌صورت یک پست (عکس اول محصول + نام و قیمت خرده) توی کانال تلگرامی‌ت ثبت می‌شه. با تغییر قیمت یا عکس اول، همون پست ویرایش می‌شه (نه پست جدید)، و با حذف محصول، پستش هم از کانال پاک می‌شه.
@@ -973,8 +1027,15 @@
       </button>
       <div class="hint" style="margin-top:10px; line-height:1.7;">این دکمه برای اولین‌باره که همه محصولات موجود رو توی کانال پست می‌کنه؛ بعدش هر تغییری خودکار سینک می‌شه.</div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>واترمارک لوگو روی عکس محصولات</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>واترمارک لوگو روی عکس محصولات</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="field">
         <label>محل قرارگیری لوگو</label>
@@ -1003,8 +1064,15 @@
       </div>
       <div class="hint" style="margin-top:8px; line-height:1.7;">لوگو بدون هیچ پس‌زمینه‌ای (فقط خود شکل لوگو، با شفافیت حفظ‌شده) روی عکس محصولات گذاشته می‌شه. برای بهترین کیفیت، لوگوی خودت رو با پس‌زمینه شفاف (PNG) در قسمت پروفایل آپلود کن.</div>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>همگام‌سازی داده‌ها با گیت‌هاب</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>همگام‌سازی داده‌ها با گیت‌هاب</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="hint" style="margin-bottom:14px;">
         تنظیمات، محصولات، سفارش‌ها و فروش‌ها توی یک فایل <span class="mono">data.json</span> در ریشه همون مخزن ذخیره می‌شن. چون مخزن Public هست، همه‌ی دستگاه‌ها بدون نیاز به توکن این فایل رو می‌خونن و آخرین نسخه رو می‌بینن. برای ذخیره‌ی تغییرات جدید (نوشتن روی همین فایل)، همون دستگاه باید توکن گیت‌هابش رو بالا وارد کرده باشه. توکن گیت‌هاب هیچ‌وقت داخل این فایل ذخیره نمی‌شه.
@@ -1015,8 +1083,15 @@
         همگام‌سازی الان
       </button>
     </div>
+      </div>
+    </div>
 
-    <div class="section-title orange"><span class="bar"></span>پشتیبان‌گیری</div>
+    <div class="settings-section">
+      <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
+        <span class="settings-section-title orange"><span class="bar"></span>پشتیبان‌گیری</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="settings-section-body">
     <div class="card">
       <div class="hint" style="margin-bottom:12px;">
         تنظیمات و محصولات روی همین گوشی ذخیره می‌شن؛ فروش، سفارش و مشتریان روی سرور (Supabase) هستن. فایل پشتیبان همه‌ی این‌ها رو با هم یک‌جا دانلود می‌کنه، ولی «بازگردانی» فقط تنظیمات و محصولات رو واقعاً برمی‌گردونه — فروش/سفارش/مشتری فقط برای مشاهده‌ی لحظه‌ای نمایش داده می‌شن و دوباره روی سرور نمی‌شینن.
@@ -1031,6 +1106,8 @@
       </button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(event)">
       <div class="hint" id="import-status" style="margin-top:10px; color:var(--green); font-weight:600;"></div>
+    </div>
+      </div>
     </div>
 
     </div><!-- /settings-admin-content -->
@@ -1650,7 +1727,6 @@ const THEME_ICON_SUN = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M
 
 function setTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
-  document.getElementById('themeToggle').checked = (mode === 'dark');
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if(metaTheme) metaTheme.setAttribute('content', mode === 'dark' ? '#000000' : '#F2F2F5');
   const iconEl = document.getElementById('themeToggleIcon');
@@ -1663,6 +1739,11 @@ function setTheme(mode){
 function toggleTheme(){
   const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   setTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+function toggleSettingsSection(headBtn){
+  const section = headBtn.closest('.settings-section');
+  if(section) section.classList.toggle('open');
 }
 
 function loadTheme(){
