@@ -601,6 +601,20 @@
   .consign-tag.closed{background:var(--bg); color:var(--ink-soft);}
   .consign-tag.debt{background:var(--orange-soft); color:var(--red);}
 
+  .consign-card{padding:0; overflow:hidden;}
+  .consign-card-head{padding:16px 18px; cursor:pointer;}
+  .consign-card-head .sale-item-top{margin-bottom:8px;}
+  .consign-card-head .sale-item-meta{margin-bottom:0;}
+  .consign-card.open .consign-card-head .sale-item-meta{margin-bottom:2px;}
+  .consign-chev{transition:transform .2s; color:var(--ink-soft); flex-shrink:0;}
+  .consign-card.open .consign-chev{transform:rotate(180deg);}
+  .consign-card-glance{font-size:12.5px; color:var(--ink-soft); font-weight:600; margin-top:6px; display:flex; flex-wrap:wrap; gap:4px 14px;}
+  .consign-card-glance b{color:var(--ink); font-family:'IBM Plex Mono','Vazirmatn',monospace; font-weight:700;}
+  .consign-card.open .consign-card-glance{display:none;}
+  .consign-card-body{max-height:0; overflow:hidden; transition:max-height .3s ease;}
+  .consign-card.open .consign-card-body{max-height:4000px;}
+  .consign-card-body-inner{padding:0 18px 16px;}
+
   .consign-table{margin-top:8px; border-top:1px solid var(--line); padding-top:8px;}
   .consign-th, .consign-tr{display:grid; grid-template-columns:1fr 44px 44px 44px 50px; gap:3px; align-items:center;}
   .consign-th{font-size:10.8px; font-weight:700; color:var(--ink-soft); padding:0 2px 4px;}
@@ -1517,6 +1531,19 @@ function toggleConsignHistory(id){
   if(consignHistoryOpen.has(id)) consignHistoryOpen.delete(id);
   else consignHistoryOpen.add(id);
   renderConsignTab();
+}
+let consignCardOpen = new Set();
+function toggleConsignCard(id){
+  const wasOpen = consignCardOpen.has(id);
+  if(wasOpen) consignCardOpen.delete(id);
+  else consignCardOpen.add(id);
+  renderConsignTab();
+  if(!wasOpen){
+    requestAnimationFrame(() => {
+      const card = document.getElementById('consignCard_' + id);
+      if(card) card.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  }
 }
 let consignSearchQuery = '';
 let consignFormHasStand = true;
@@ -5886,7 +5913,7 @@ function renderConsignCard(c){
     ? `<div class="sale-item-note">تسویه‌ها: ${(c.payments||[]).map(p => `
         <span style="display:inline-flex; align-items:center; gap:6px; margin-left:10px;">
           ${fmt(p.amount)} تومان (${formatDateFa(p.date)})
-          ${isAdmin ? `<button type="button" onclick="deleteConsignPayment('${c.id}','${p.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این پرداخت">✕</button>` : ''}
+          ${isAdmin ? `<button type="button" onclick="event.stopPropagation(); deleteConsignPayment('${c.id}','${p.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این پرداخت">✕</button>` : ''}
         </span>`).join('')}</div>`
     : '';
 
@@ -5901,8 +5928,8 @@ function renderConsignCard(c){
         ${allSales.map(l => `
           <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
             <span style="flex:1;">${formatDateFa(l.date)}${l.note ? ' — ' + escapeHtml(l.note) : ''} — ${escapeHtml(l.items.map(it=>it.productName+' × '+fa.format(it.qty)).join('، '))}</span>
-            ${isAdmin ? `<button type="button" onclick="editConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
-            <button type="button" onclick="deleteConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
+            ${isAdmin ? `<button type="button" onclick="event.stopPropagation(); editConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
+            <button type="button" onclick="event.stopPropagation(); deleteConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
           </div>`).join('')}
       </div>` : ''}
       ${allDeliveries.length ? `<div>
@@ -5910,65 +5937,81 @@ function renderConsignCard(c){
         ${allDeliveries.map(d => `
           <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
             <span style="flex:1;">${formatDateFa(d.date)}${d.note ? ' — ' + escapeHtml(d.note) : ''} — ${escapeHtml((d.items||[]).map(it=>it.productName+' × '+fa.format(it.qty)).join('، '))}</span>
-            ${isAdmin && d.note !== 'واگذاری اولیه' ? `<button type="button" onclick="editConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
-            <button type="button" onclick="deleteConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
+            ${isAdmin && d.note !== 'واگذاری اولیه' ? `<button type="button" onclick="event.stopPropagation(); editConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
+            <button type="button" onclick="event.stopPropagation(); deleteConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
           </div>`).join('')}
       </div>` : ''}
       ${!historyCount ? `<span class="hint">هنوز گزارشی ثبت نشده.</span>` : ''}
     </div>` : '';
 
+  const isOpen = consignCardOpen.has(c.id);
+
   return `
-  <div class="sale-item">
-    <div class="sale-item-top">
-      <span class="sale-item-name">${escapeHtml(c.storeName || 'بدون نام')}</span>
-      <button class="sale-del${isAdmin?'':' is-disabled'}" ${isAdmin ? `onclick="deleteConsignment('${c.id}')"` : 'disabled title="فقط مدیر می‌تونه واگذاری حذف کنه"'}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
-      </button>
-    </div>
-    <div class="sale-item-meta">
-      <span class="consign-tag ${c.hasStand?'stand':'nostand'}">${c.hasStand ? ('با استند' + (c.standCode ? ' — ' + escapeHtml(c.standCode) : '')) : 'بدون استند'}</span>
-      ${c.status === 'closed' ? `<span class="consign-tag closed">بسته‌شده</span>` : ''}
-      ${needs ? `<span class="consign-tag need">نیاز به شارژ</span>` : ''}
-      ${debt > 0 ? `<span class="consign-tag debt">بدهکار</span>` : ''}
-      ${c.contactName ? `<span>${escapeHtml(c.contactName)}</span>` : ''}
-      ${c.contactPhone ? `<span class="mono">${c.contactPhone}</span>` : ''}
-      ${isAdmin && (c.creatorName || c.creatorEmail) ? `<span class="tag pending">ثبت‌کننده: ${escapeHtml(c.creatorName || c.creatorEmail)}</span>` : ''}
-    </div>
-    ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
-
-    <div class="consign-table">
-      <div class="consign-th">
-        <span>محصول</span><span>نزد فروشگاه</span><span>فروش‌رفته</span><span>شارژ شده</span><span>نیاز شارژ</span>
+  <div class="sale-item consign-card${isOpen?' open':''}" id="consignCard_${c.id}">
+    <div class="consign-card-head" onclick="toggleConsignCard('${c.id}')">
+      <div class="sale-item-top">
+        <span class="sale-item-name">${escapeHtml(c.storeName || 'بدون نام')}</span>
+        <div style="display:flex; align-items:center; gap:2px; flex-shrink:0;">
+          <button class="sale-del${isAdmin?'':' is-disabled'}" ${isAdmin ? `onclick="event.stopPropagation(); deleteConsignment('${c.id}')"` : 'disabled title="فقط مدیر می‌تونه واگذاری حذف کنه"'}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+          </button>
+          <svg class="consign-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
       </div>
-      ${rows || '<div class="hint" style="margin:8px 2px;">قلمی ثبت نشده.</div>'}
-      ${totalsRow}
+      <div class="sale-item-meta">
+        <span class="consign-tag ${c.hasStand?'stand':'nostand'}">${c.hasStand ? ('با استند' + (c.standCode ? ' — ' + escapeHtml(c.standCode) : '')) : 'بدون استند'}</span>
+        ${c.status === 'closed' ? `<span class="consign-tag closed">بسته‌شده</span>` : ''}
+        ${needs ? `<span class="consign-tag need">نیاز به شارژ</span>` : ''}
+        ${debt > 0 ? `<span class="consign-tag debt">بدهکار</span>` : ''}
+        ${c.contactName ? `<span>${escapeHtml(c.contactName)}</span>` : ''}
+        ${c.contactPhone ? `<span class="mono">${c.contactPhone}</span>` : ''}
+        ${isAdmin && (c.creatorName || c.creatorEmail) ? `<span class="tag pending">ثبت‌کننده: ${escapeHtml(c.creatorName || c.creatorEmail)}</span>` : ''}
+      </div>
+      <div class="consign-card-glance">
+        <span>نزد فروشگاه: <b>${fa.format(totalRemain)}</b></span>
+        <span>ارزش فروش: <b>${fmt(soldValue)}</b></span>
+        ${debt>0 ? `<span style="color:var(--red);">مانده طلب: <b>${fmt(debt)}</b></span>` : `<span>تسویه: <b>${fmt(paid)}</b></span>`}
+      </div>
     </div>
+    <div class="consign-card-body">
+      <div class="consign-card-body-inner">
+        ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
 
-    <div class="sale-item-bottom" style="margin-top:6px;">
-      <span>ارزش فروش: <b>${fmt(soldValue)}</b></span>
-      <span class="${profit>=0?'profit-pos':'profit-neg'}">سود: <b>${fmt(profit)}</b></span>
-    </div>
-    <div class="sale-item-bottom">
-      <span class="profit-pos">تسویه‌شده: <b>${fmt(paid)}</b></span>
-      <span class="${debt>0?'profit-neg':'profit-pos'}">${debt>0 ? 'مانده طلب' : 'تسویه کامل'}: <b>${fmt(debt)}</b></span>
-    </div>
-    <button type="button" class="order-status-btn" style="margin-top:8px; width:100%;" onclick="toggleConsignHistory('${c.id}')">${historyOpen ? '▲' : '▼'} گزارش‌ها (${fa.format(historyCount)})</button>
-    ${historyPanel}
-    ${c.notes ? `<div class="sale-item-note">${escapeHtml(c.notes)}</div>` : ''}
-    ${paymentsHistory}
+        <div class="consign-table">
+          <div class="consign-th">
+            <span>محصول</span><span>نزد فروشگاه</span><span>فروش‌رفته</span><span>شارژ شده</span><span>نیاز شارژ</span>
+          </div>
+          ${rows || '<div class="hint" style="margin:8px 2px;">قلمی ثبت نشده.</div>'}
+          ${totalsRow}
+        </div>
 
-    <div class="consign-actions">
-      <button type="button" class="order-status-btn done" onclick="recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
-      <button type="button" class="order-status-btn" onclick="restockConsign('${c.id}')">فروش + شارژ مجدد</button>
-      <button type="button" class="order-status-btn" onclick="addConsignPayment('${c.id}')">ثبت تسویه</button>
-      <button type="button" class="order-status-btn" onclick="returnConsign('${c.id}')">مرجوعی</button>
-      <button type="button" class="order-status-btn" onclick="addProductsToConsign('${c.id}')">افزودن محصول</button>
-      <button type="button" class="order-status-btn" onclick="editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
-      ${isAdmin ? `<button type="button" class="order-status-btn" onclick="editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
-      ${isAdmin ? `<button type="button" class="order-status-btn" onclick="editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
-      ${c.status === 'closed'
-        ? `<button type="button" class="order-status-btn" onclick="setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
-        : `<button type="button" class="order-status-btn" onclick="setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`}
+        <div class="sale-item-bottom" style="margin-top:6px;">
+          <span>ارزش فروش: <b>${fmt(soldValue)}</b></span>
+          <span class="${profit>=0?'profit-pos':'profit-neg'}">سود: <b>${fmt(profit)}</b></span>
+        </div>
+        <div class="sale-item-bottom">
+          <span class="profit-pos">تسویه‌شده: <b>${fmt(paid)}</b></span>
+          <span class="${debt>0?'profit-neg':'profit-pos'}">${debt>0 ? 'مانده طلب' : 'تسویه کامل'}: <b>${fmt(debt)}</b></span>
+        </div>
+        <button type="button" class="order-status-btn" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); toggleConsignHistory('${c.id}')">${historyOpen ? '▲' : '▼'} گزارش‌ها (${fa.format(historyCount)})</button>
+        ${historyPanel}
+        ${c.notes ? `<div class="sale-item-note">${escapeHtml(c.notes)}</div>` : ''}
+        ${paymentsHistory}
+
+        <div class="consign-actions">
+          <button type="button" class="order-status-btn done" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
+          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
+          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); addConsignPayment('${c.id}')">ثبت تسویه</button>
+          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
+          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>
+          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
+          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
+          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
+          ${c.status === 'closed'
+            ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
+            : `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`}
+        </div>
+      </div>
     </div>
   </div>`;
 }
