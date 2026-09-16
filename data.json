@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T08:24:11.612Z",
+  "updatedAt": "2026-09-16T08:24:58.636Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -44,7 +44,7 @@
     {
       "id": "p_1789547032305o8cnz",
       "name": "بتمن جا کلیدی",
-      "weight": 50,
+      "weight": 17,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
