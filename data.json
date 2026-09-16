@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T08:25:44.417Z",
+  "updatedAt": "2026-09-16T08:26:26.026Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -44,7 +44,7 @@
     {
       "id": "p_1789547116518l5j1s",
       "name": "جنگ ستارگان",
-      "weight": 50,
+      "weight": 17,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
