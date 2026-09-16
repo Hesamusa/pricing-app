@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T20:35:43.092Z",
+  "updatedAt": "2026-09-16T20:57:51.733Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -41,6 +41,7 @@
     "telegramCatalogEnabled": true,
     "telegramChannelId": "@threedprintplusy",
     "telegramApiBase": "",
+    "aiProvider": "gemini",
     "adminPin": "373763"
   },
   "products": [
