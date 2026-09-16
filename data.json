@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T08:25:06.893Z",
+  "updatedAt": "2026-09-16T08:25:18.283Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -41,6 +41,19 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789547116518l5j1s",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0
+    },
     {
       "id": "p_1789547032305o8cnz",
       "name": "بتمن جا کلیدی",
