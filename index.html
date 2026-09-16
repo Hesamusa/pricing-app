@@ -936,6 +936,37 @@
       </div>
     </div>
 
+    <div class="section-title orange"><span class="bar"></span>کاتالوگ تلگرام</div>
+    <div class="card">
+      <div class="hint" style="margin-bottom:14px; line-height:1.8;">
+        با فعال‌کردن این بخش، هر محصول به‌صورت یک پست (عکس اول محصول + نام و قیمت خرده) توی کانال تلگرامی‌ت ثبت می‌شه. با تغییر قیمت یا عکس اول، همون پست ویرایش می‌شه (نه پست جدید)، و با حذف محصول، پستش هم از کانال پاک می‌شه.
+      </div>
+      <div class="switch-row">
+        <span class="switch-label">فعال بودن کاتالوگ تلگرام</span>
+        <label class="switch">
+          <input type="checkbox" id="s_tgEnabled" onchange="onTelegramEnabledChange(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="field">
+        <label>آیدی یا لینک کانال</label>
+        <input type="text" class="gh-field" id="s_tgChannel" placeholder="مثلاً @mycatalog@ یا -100xxxxxxxxxx" style="direction:ltr; text-align:left;">
+        <div class="hint">اگه کانال پابلیکه، آیدیش با @ کافیه (مثلاً @mycatalog). اگه خصوصیه، باید عددی شکل «Chat ID» کانال رو بذاری (با فوروارد یه پیام از کانال به @userinfobot می‌تونی پیداش کنی).</div>
+      </div>
+      <div class="field">
+        <label>توکن ربات (Bot Token)</label>
+        <input type="password" class="gh-field" id="s_tgToken" placeholder="123456:ABC-..." autocomplete="off" style="direction:ltr; text-align:left;">
+        <div class="hint">از تلگرام با @BotFather یه ربات جدید بساز (دستور /newbot)، توکنی که می‌ده رو اینجا بذار، و همون ربات رو ادمین کانالت کن (با دسترسی ارسال و ویرایش پیام).</div>
+        <div class="hint" style="color:var(--red);">⚠️ این توکن روی همین گوشی ذخیره می‌شه و هیچ‌وقت توی فایل گیت‌هاب یا جای دیگه‌ای قرار نمی‌گیره؛ فقط روی دستگاه شخصی خودت واردش کن.</div>
+      </div>
+      <div class="hint" id="telegram-sync-status" style="margin:6px 0 12px; font-weight:600;"></div>
+      <button type="button" class="add-btn" style="background:var(--blue); margin-top:0;" onclick="telegramSyncAllProducts()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        همگام‌سازی همه محصولات با کانال
+      </button>
+      <div class="hint" style="margin-top:10px; line-height:1.7;">این دکمه برای اولین‌باره که همه محصولات موجود رو توی کانال پست می‌کنه؛ بعدش هر تغییری خودکار سینک می‌شه.</div>
+    </div>
+
     <div class="section-title orange"><span class="bar"></span>واترمارک لوگو روی عکس محصولات</div>
     <div class="card">
       <div class="field">
@@ -1549,7 +1580,8 @@ const DEFAULT_SETTINGS = {
   companyName: '', logoUrl: null, logoPath: null, logoSha: null,
   instagramUrl: '',
   qrImageUrl: null,
-  watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5
+  watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
+  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: ''
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -1794,7 +1826,7 @@ function loadState(){
     setSyncStatus('در حال دریافت آخرین نسخه از گیت‌هاب...', '');
     fetchRemoteData().then(remote => {
       if(remote){
-        settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
+        settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken};
         products = Array.isArray(remote.products) ? remote.products : products;
         // مشتریان و سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
         renderSettings();
@@ -1821,7 +1853,8 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
     accessoryCost: 0,
     marginW: null, marginR: null, // null = use global default
     images: [],
-    stock: 0
+    stock: 0,
+    telegramMessageId: null // شناسه‌ی پست این محصول توی کانال تلگرام کاتالوگ (اگه فعال باشه)
   };
 }
 
@@ -2238,6 +2271,12 @@ function renderSettings(){
   document.getElementById('s_ghBranch').value = settings.githubBranch || 'main';
   document.getElementById('s_ghFolder').value = settings.githubFolder || 'product-images';
   document.getElementById('s_ghToken').value = settings.githubToken || '';
+  const tgEnabledEl = document.getElementById('s_tgEnabled');
+  if(tgEnabledEl) tgEnabledEl.checked = !!settings.telegramCatalogEnabled;
+  const tgChannelEl = document.getElementById('s_tgChannel');
+  if(tgChannelEl) tgChannelEl.value = settings.telegramChannelId || '';
+  const tgTokenEl = document.getElementById('s_tgToken');
+  if(tgTokenEl) tgTokenEl.value = settings.telegramBotToken || '';
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
   document.querySelectorAll('#watermark-pos-row .sale-type-chip').forEach(b=>{
@@ -2270,6 +2309,22 @@ function groupDigits(n){
 const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
 const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
+const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken'};
+
+function bindTelegramInputs(){
+  Object.keys(TELEGRAM_FIELDS).forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', ()=>{
+      settings[TELEGRAM_FIELDS[id]] = el.value;
+      persist();
+    });
+  });
+}
+function onTelegramEnabledChange(checked){
+  settings.telegramCatalogEnabled = !!checked;
+  persist();
+}
 
 function bindGithubInputs(){
   Object.keys(GITHUB_FIELDS).forEach(id=>{
@@ -2320,7 +2375,7 @@ async function maybeInitGithubSync(){
   if(remote){
     const useRemote = await customConfirm('یک نسخه از داده‌ها از قبل روی این مخزن گیت‌هاب هست.\nبرای بارگذاری همون نسخه «OK» بزن، یا برای جایگزین کردنش با اطلاعات همین دستگاه «Cancel» رو بزن.');
     if(useRemote){
-      settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken};
+      settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken};
       products = Array.isArray(remote.products) ? remote.products : products;
       sales = Array.isArray(remote.sales) ? remote.sales : sales;
       orders = Array.isArray(remote.orders) ? remote.orders : orders;
@@ -3213,6 +3268,107 @@ function b64DecodeUnicode(str){
   return decodeURIComponent(escape(atob(str)));
 }
 
+// ═══════════════ کاتالوگ تلگرام — هر محصول یه پست، فقط عکس اول + قیمت خرده ═══════════════
+function telegramConfigured(){
+  return !!(settings.telegramCatalogEnabled &&
+    settings.telegramBotToken && settings.telegramBotToken.trim() &&
+    settings.telegramChannelId && settings.telegramChannelId.trim());
+}
+function telegramApi(method){
+  return `https://api.telegram.org/bot${settings.telegramBotToken.trim()}/${method}`;
+}
+function telegramCaption(prod){
+  const c = calc(prod);
+  let text = `<b>${escapeHtml(prod.name || 'محصول')}</b>\n${fmt(c.priceR)} تومان`;
+  if(prod.weight) text += `\nوزن: ${toFaNum(prod.weight,0)} گرم`;
+  return text;
+}
+function setTelegramSyncStatus(text, kind){
+  const el = document.getElementById('telegram-sync-status');
+  if(!el) return;
+  el.textContent = text || '';
+  el.style.color = kind === 'error' ? 'var(--red)' : kind === 'success' ? 'var(--green)' : 'var(--ink-soft)';
+}
+
+const telegramSyncTimers = {};
+// هر ویرایشی (قیمت، وزن، عکس) این تابع رو صدا می‌زنه؛ به‌جای سینک فوری، چند ثانیه صبر
+// می‌کنه تا ویرایش‌های پشت‌سرهم توی یک درخواست جمع بشن و به تلگرام فشار نیاره.
+function queueTelegramSync(id){
+  if(!telegramConfigured()) return;
+  clearTimeout(telegramSyncTimers[id]);
+  telegramSyncTimers[id] = setTimeout(() => { syncProductToTelegram(id); }, 2500);
+}
+
+async function syncProductToTelegram(id){
+  if(!telegramConfigured()) return;
+  const prod = products.find(p => p.id === id);
+  if(!prod) return;
+  const channel = settings.telegramChannelId.trim();
+  const photoUrl = (prod.images && prod.images[0]) ? prod.images[0].url : null;
+  const caption = telegramCaption(prod);
+
+  try{
+    if(prod.telegramMessageId){
+      // پست قبلاً وجود داره؛ سعی کن همون رو ویرایش کنی
+      const method = photoUrl ? 'editMessageMedia' : 'editMessageCaption';
+      const body = photoUrl
+        ? { chat_id: channel, message_id: prod.telegramMessageId, media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} }
+        : { chat_id: channel, message_id: prod.telegramMessageId, caption, parse_mode:'HTML' };
+      const res = await fetch(telegramApi(method), {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
+      });
+      const data = await res.json().catch(()=>({}));
+      if(data.ok) return;
+      // اگه ویرایش شکست خورد (مثلاً پست دستی از کانال پاک شده)، یه پست تازه بساز
+    }
+    if(!photoUrl){
+      const res = await fetch(telegramApi('sendMessage'), {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ chat_id: channel, text: caption, parse_mode:'HTML' })
+      });
+      const data = await res.json().catch(()=>({}));
+      if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); }
+      else console.error('ارسال به تلگرام ناموفق بود', data);
+      return;
+    }
+    const res = await fetch(telegramApi('sendPhoto'), {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: channel, photo: photoUrl, caption, parse_mode:'HTML' })
+    });
+    const data = await res.json().catch(()=>({}));
+    if(data.ok){ prod.telegramMessageId = data.result.message_id; persist(); }
+    else console.error('ارسال به تلگرام ناموفق بود', data);
+  }catch(e){ console.error('خطای اتصال به تلگرام', e); }
+}
+
+async function deleteProductTelegramPost(prod){
+  if(!telegramConfigured() || !prod || !prod.telegramMessageId) return;
+  try{
+    await fetch(telegramApi('deleteMessage'), {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id: settings.telegramChannelId.trim(), message_id: prod.telegramMessageId })
+    });
+  }catch(e){ console.error('حذف پست تلگرام ناموفق بود', e); }
+}
+
+async function telegramSyncAllProducts(){
+  if(!settings.telegramCatalogEnabled){ await customAlert('اول کاتالوگ تلگرام رو از همین صفحه فعال کن.'); return; }
+  if(!settings.telegramBotToken || !settings.telegramBotToken.trim() || !settings.telegramChannelId || !settings.telegramChannelId.trim()){
+    await customAlert('اول توکن ربات و آیدی کانال رو کامل کن.');
+    return;
+  }
+  if(!products.length){ await customAlert('هنوز محصولی برای ثبت توی کانال نداری.'); return; }
+  setTelegramSyncStatus('در حال ارسال محصولات به کانال...', '');
+  let ok = 0, fail = 0;
+  for(let i=0; i<products.length; i++){
+    setTelegramSyncStatus(`در حال ارسال ${toFaNum(i+1,0)} از ${toFaNum(products.length,0)}...`, '');
+    try{ await syncProductToTelegram(products[i].id); ok++; }
+    catch(e){ fail++; }
+    await new Promise(r => setTimeout(r, 1200)); // برای رعایت محدودیت نرخ تلگرام
+  }
+  setTelegramSyncStatus(`تمام شد: ${toFaNum(ok,0)} محصول همگام‌سازی شد${fail? ' — ' + toFaNum(fail,0) + ' مورد ناموفق':''} ✓`, fail ? 'error' : 'success');
+}
+
 function githubConfigured(){
   return !!(settings.githubOwner && settings.githubOwner.trim() &&
             settings.githubRepo && settings.githubRepo.trim() &&
@@ -3228,7 +3384,7 @@ function githubReadConfigured(){
 function githubDataPath(){ return 'data.json'; }
 
 function buildSyncPayload(){
-  const {githubToken, ...safeSettings} = settings; // never store the token itself in the repo
+  const {githubToken, telegramBotToken, ...safeSettings} = settings; // توکن‌ها هیچ‌وقت داخل ریپو ذخیره نمی‌شن
   // مشتریان (و فروش/سفارش) عمداً توی این payload نیستن: این فایل روی گیت‌هاب
   // مشترک/عمومیه و اگه داده‌ی هر کاربر این‌جا هم می‌رفت، همون نشتی قبلی برمی‌گشت.
   return { updatedAt: new Date().toISOString(), settings: safeSettings, products };
@@ -3374,6 +3530,7 @@ async function handleImageFile(id, inputEl){
   setPhotoStatus(id, msg, 'success');
   setTimeout(()=>setPhotoStatus(id,'',''), 3500);
   inputEl.value = '';
+  if(uploadedCount > 0) queueTelegramSync(id);
 }
 
 async function removeProductImage(id){
@@ -3389,6 +3546,7 @@ async function removeProductImage(id){
     if((productCarouselIndex[id]||0) >= prod.images.length) productCarouselIndex[id] = Math.max(prod.images.length-1, 0);
     persist();
     updateProductPhotoUI(id);
+    if(idx === 0) queueTelegramSync(id); // عکس اول عوض شد، پست کانال هم باید سینک بشه
   };
 
   if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path || !img.sha){
@@ -3484,6 +3642,7 @@ function updateProduct(id, field, value){
   // so the input the user is typing in never loses focus/keyboard.
   updateProductDisplay(id);
   persist();
+  queueTelegramSync(id);
 }
 
 function setProductGroupFilter(gid){
@@ -3544,6 +3703,8 @@ function addProduct(){
 
 function deleteProduct(id){
   if(!isAdmin) return;
+  const prod = products.find(p=>p.id===id);
+  if(prod) deleteProductTelegramPost(prod); // best-effort، منتظرش نمی‌مونیم
   products = products.filter(p=>p.id!==id);
   if(openProductId===id) openProductId=null;
   renderProducts();
@@ -6203,6 +6364,7 @@ function importData(event){
 
 bindSettingsInputs();
 bindGithubInputs();
+bindTelegramInputs();
 loadTheme();
 loadState();
 </script>
