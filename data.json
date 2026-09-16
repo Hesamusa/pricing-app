@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T08:26:26.026Z",
+  "updatedAt": "2026-09-16T08:26:59.664Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -42,14 +42,27 @@
   },
   "products": [
     {
-      "id": "p_1789547116518l5j1s",
-      "name": "جنگ ستارگان",
-      "weight": 17,
+      "id": "p_1789547212385khl84",
+      "name": "اسپایدر",
+      "weight": 50,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
       "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0
+    },
+    {
+      "id": "p_1789547116518l5j1s",
+      "name": "جنگ ستارگان",
+      "weight": 17,
+      "printHours": 2,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": 85,
       "marginR": null,
       "images": [
         {
