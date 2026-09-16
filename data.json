@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T08:26:59.664Z",
+  "updatedAt": "2026-09-16T08:28:15.969Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -43,7 +43,7 @@
   "products": [
     {
       "id": "p_1789547212385khl84",
-      "name": "اسپایدر",
+      "name": "اسپایدرمن ونوم",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
@@ -52,7 +52,8 @@
       "marginW": null,
       "marginR": null,
       "images": [],
-      "stock": 0
+      "stock": 0,
+      "category": "g_mu0mydrdz7a1"
     },
     {
       "id": "p_1789547116518l5j1s",
