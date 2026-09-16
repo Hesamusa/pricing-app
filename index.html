@@ -1055,6 +1055,11 @@
           <div class="hint">از تلگرام با @BotFather یه ربات جدید بساز (دستور /newbot)، توکنی که می‌ده رو اینجا بذار، و همون ربات رو ادمین کانالت کن (با دسترسی ارسال و ویرایش پیام).</div>
           <div class="hint" style="color:var(--red);">⚠️ این توکن روی همین گوشی ذخیره می‌شه و هیچ‌وقت توی فایل گیت‌هاب یا جای دیگه‌ای قرار نمی‌گیره؛ فقط روی دستگاه شخصی خودت واردش کن.</div>
         </div>
+        <div class="field">
+          <label>آدرس جایگزین API تلگرام (اختیاری)</label>
+          <input type="text" class="gh-field" id="s_tgApiBase" placeholder="خالی = api.telegram.org (پیش‌فرض)" style="direction:ltr; text-align:left;">
+          <div class="hint" style="line-height:1.8;">چون تلگرام توی ایران فیلتره، همگام‌سازی از داخل همین صفحه بدون وی‌پی‌ان معمولاً کار نمی‌کنه — این محدودیت شبکه‌ست، نه چیزی که با کد این اپ حل بشه. راه‌حل: یک پروکسی/relay کوچیک برای Bot API تلگرام (مثلاً یک Cloudflare Worker رایگان) بساز که در دسترس باشه، و آدرسش رو همینجا بذار؛ اپ به‌جای زدن مستقیم به api.telegram.org، از همون آدرس عبور می‌کنه.</div>
+        </div>
         <div class="hint" id="telegram-sync-status" style="margin:6px 0 12px; font-weight:600;"></div>
         <button type="button" class="add-btn" style="background:var(--blue); margin-top:0;" onclick="telegramSyncAllProducts()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -1744,7 +1749,7 @@ const DEFAULT_SETTINGS = {
   instagramUrl: '',
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
-  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: ''
+  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: ''
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -2448,6 +2453,8 @@ function renderSettings(){
   if(tgChannelEl) tgChannelEl.value = settings.telegramChannelId || '';
   const tgTokenEl = document.getElementById('s_tgToken');
   if(tgTokenEl) tgTokenEl.value = settings.telegramBotToken || '';
+  const tgApiBaseEl = document.getElementById('s_tgApiBase');
+  if(tgApiBaseEl) tgApiBaseEl.value = settings.telegramApiBase || '';
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
   document.querySelectorAll('#watermark-pos-row .sale-type-chip').forEach(b=>{
@@ -2480,7 +2487,7 @@ function groupDigits(n){
 const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
 const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
-const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken'};
+const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken', s_tgApiBase:'telegramApiBase'};
 
 function bindTelegramInputs(){
   Object.keys(TELEGRAM_FIELDS).forEach(id=>{
@@ -3452,7 +3459,12 @@ function telegramConfigured(){
     settings.telegramChannelId && settings.telegramChannelId.trim());
 }
 function telegramApi(method){
-  return `https://api.telegram.org/bot${settings.telegramBotToken.trim()}/${method}`;
+  // اگه یه آدرس پروکسی/relay برای بات API تلگرام تنظیم شده باشه (برای دور زدن فیلترینگ)، از همون استفاده می‌کنیم؛
+  // وگرنه مستقیم به api.telegram.org می‌زنیم.
+  const base = (settings.telegramApiBase && settings.telegramApiBase.trim())
+    ? settings.telegramApiBase.trim().replace(/\/+$/, '')
+    : 'https://api.telegram.org';
+  return `${base}/bot${settings.telegramBotToken.trim()}/${method}`;
 }
 function telegramCaption(prod){
   const c = calc(prod);
