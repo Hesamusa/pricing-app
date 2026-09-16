@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T20:32:47.323Z",
+  "updatedAt": "2026-09-16T20:33:00.103Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -88,7 +88,10 @@
       ],
       "stock": 8,
       "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": 4
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        32
+      ]
     },
     {
       "id": "p_1789547032305o8cnz",
@@ -109,7 +112,10 @@
       ],
       "stock": 8,
       "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": 5
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        33
+      ]
     },
     {
       "id": "p_1789475484761nq179",
@@ -130,7 +136,10 @@
       ],
       "stock": 0,
       "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": 6
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        34
+      ]
     },
     {
       "id": "p_1789473468341u6rm9",
@@ -151,7 +160,10 @@
       ],
       "stock": 0,
       "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": 7
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        35
+      ]
     },
     {
       "id": "p_178941010031173kks",
