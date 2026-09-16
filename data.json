@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T18:17:11.197Z",
+  "updatedAt": "2026-09-16T18:56:02.917Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -38,6 +38,8 @@
     "watermarkPos": "top-right",
     "watermarkSize": 17,
     "watermarkMargin": 3.5,
+    "telegramCatalogEnabled": false,
+    "telegramChannelId": "",
     "adminPin": "373763"
   },
   "products": [
