@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-16T20:33:41.947Z",
+  "updatedAt": "2026-09-16T20:35:38.373Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -398,6 +398,11 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795486741tfdfu.jpg?v=1788795556971",
           "path": "product-images/p_1788795486741tfdfu.jpg",
           "sha": "57c08c1547d460fd5fa10a4d0970339317923010"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795486741tfdfu_1789590927195_0.jpg?v=1789590931253",
+          "path": "product-images/p_1788795486741tfdfu_1789590927195_0.jpg",
+          "sha": "4eaba2323cfbeaec75c716c962cb7329a786507c"
         }
       ],
       "telegramMessageId": null,
@@ -520,7 +525,10 @@
           "sha": "e21ddf732807566dc1a03483a0e9995322dee8b4"
         }
       ],
-      "telegramMessageId": 21
+      "telegramMessageId": null,
+      "telegramMessageIds": [
+        51
+      ]
     }
   ]
 }
