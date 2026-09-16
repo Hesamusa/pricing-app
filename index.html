@@ -1100,6 +1100,11 @@
           <div class="hint">از <span dir="ltr" style="unicode-bidi:plaintext;">aistudio.google.com/apikey</span> یه کلید API رایگان بساز.</div>
         </div>
         <div class="hint" style="color:var(--red);">⚠️ چون این تماس مستقیم از داخل مرورگر به سرور سرویس هوش مصنوعی زده می‌شه، کلید توی کد صفحه (Network tab) قابل دیدنه. این کلیدها فقط روی همین گوشی ذخیره می‌شن و هیچ‌وقت داخل مخزن گیت‌هاب قرار نمی‌گیرن؛ فقط روی دستگاه شخصی خودت واردشون کن و با کسی به اشتراک نذار.</div>
+        <div class="field">
+          <label>قوانین سفارشی نوشتن کپشن (اختیاری)</label>
+          <textarea class="gh-field" id="s_aiCaptionRules" rows="4" placeholder="مثلاً: لحن رسمی باشه، از ایموجی استفاده نشه، همیشه با یه سوال تموم بشه، به مشتری‌ها با «شما» خطاب کن..."></textarea>
+          <div class="hint" style="line-height:1.8;">هر قانون یا سلیقه‌ای که اینجا بنویسی، به دستور اصلی هوش مصنوعی (چه کلود چه جمینای) اضافه می‌شه و روی هر توضیحی که از این پس تولید می‌کنه اثر می‌ذاره. مثلاً می‌تونی طول متن، لحن، ایموجی‌ها یا نکاتی که همیشه باید یا نباید بیاد رو مشخص کنی.</div>
+        </div>
       </div>
         </div>
       </div>
@@ -1786,7 +1791,7 @@ const DEFAULT_SETTINGS = {
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
   telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '',
-  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: ''
+  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiCaptionRules: ''
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -2498,6 +2503,8 @@ function renderSettings(){
   if(aiKeyGeminiEl) aiKeyGeminiEl.value = settings.aiApiKeyGemini || '';
   const aiProviderEl = document.getElementById('s_aiProvider');
   if(aiProviderEl) aiProviderEl.value = settings.aiProvider || 'anthropic';
+  const aiCaptionRulesEl = document.getElementById('s_aiCaptionRules');
+  if(aiCaptionRulesEl && document.activeElement !== aiCaptionRulesEl) aiCaptionRulesEl.value = settings.aiCaptionRules || '';
   updateAiProviderFieldsUI();
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
@@ -2562,6 +2569,13 @@ function bindTelegramInputs(){
       settings.aiProvider = aiProviderEl.value;
       persist();
       updateAiProviderFieldsUI();
+    });
+  }
+  const aiCaptionRulesEl = document.getElementById('s_aiCaptionRules');
+  if(aiCaptionRulesEl){
+    aiCaptionRulesEl.addEventListener('input', ()=>{
+      settings.aiCaptionRules = aiCaptionRulesEl.value;
+      persist();
     });
   }
 }
@@ -3715,7 +3729,11 @@ async function generateAIDescription(id){
     prod.catalogDescription && prod.catalogDescription.trim() ? `توضیح فعلی (اگه هست، برای الهام‌گیری): ${prod.catalogDescription.trim()}` : null,
   ].filter(Boolean).join('\n');
 
-  const prompt = `تو یه کپی‌رایتر حرفه‌ای فارسی‌نویس برای یه کانال تلگرامی فروش محصولات پرینت سه‌بعدی هستی. برای محصول زیر یه توضیح تبلیغاتی کوتاه (۲ تا ۴ خط)، جذاب و صمیمی به زبان فارسی بنویس که زیر قیمت توی پست کانال بیاد. از تکرار اسم و قیمت محصول (که جدا نشون داده می‌شن) خودداری کن؛ فقط روی حس‌وحال، کاربرد یا نکته‌ی جذاب محصول تمرکز کن. از ایموجی با تعادل و کم استفاده کن (حداکثر ۱-۲ تا). فقط متن توضیح رو برگردون، بدون هیچ مقدمه یا گیومه یا توضیح اضافه.
+  const customRules = (settings.aiCaptionRules || '').trim();
+  const prompt = `تو یه کپی‌رایتر حرفه‌ای فارسی‌نویس برای یه کانال تلگرامی فروش محصولات پرینت سه‌بعدی هستی. برای محصول زیر یه توضیح تبلیغاتی کوتاه (۲ تا ۴ خط)، جذاب و صمیمی به زبان فارسی بنویس که زیر قیمت توی پست کانال بیاد. از تکرار اسم و قیمت محصول (که جدا نشون داده می‌شن) خودداری کن؛ فقط روی حس‌وحال، کاربرد یا نکته‌ی جذاب محصول تمرکز کن. از ایموجی با تعادل و کم استفاده کن (حداکثر ۱-۲ تا). فقط متن توضیح رو برگردون، بدون هیچ مقدمه یا گیومه یا توضیح اضافه.${customRules ? `
+
+قوانین و سلیقه‌ی اضافیِ صاحب کانال که حتماً باید رعایت کنی (این‌ها روی قوانین بالا اولویت دارن):
+${customRules}` : ''}
 
 ${productInfo}`;
 
