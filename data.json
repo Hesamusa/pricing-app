@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T04:33:22.799Z",
+  "updatedAt": "2026-09-17T04:33:24.830Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -185,7 +185,7 @@
       "paintHours": 0,
       "accessoryCost": 5000,
       "marginW": 100,
-      "marginR": 1,
+      "marginR": 140,
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
