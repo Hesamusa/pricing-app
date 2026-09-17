@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T15:38:31.783Z",
+  "updatedAt": "2026-09-17T15:38:38.342Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -238,11 +238,6 @@
       "marginR": 85,
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789473578478_0.jpg?v=1789473580134",
-          "path": "product-images/p_1789473468341u6rm9_1789473578478_0.jpg",
-          "sha": "7f8047f6ea6ea11f2fd23c8864a3765ce08e737a"
-        },
-        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659466164_0.jpg?v=1789659468613",
           "path": "product-images/p_1789473468341u6rm9_1789659466164_0.jpg",
           "sha": "ae6a8681f5c13948d9ccdf3e0b1d64b137faf0b2"
@@ -267,10 +262,11 @@
       "category": "g_mu0mydrdz7a1",
       "telegramMessageId": null,
       "telegramMessageIds": [
-        199,
-        200,
-        201,
-        202
+        203,
+        204,
+        205,
+        206,
+        207
       ],
       "catalogDescription": "ظاهرش طوری طراحی شده که حس یه بافتنی نرم رو میده، اما با دقت و ظرافت بالا پرینت شده! 🎈\nانقدر سبک و خاصه که بهترین آویز برای کیف یا رفیق فابریک کلیدات میشه.\nیه اکسسوری بانمک و متفاوت که هربار می‌بینیش حسابی حالت رو خوب می‌کنه."
     },
