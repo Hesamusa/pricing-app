@@ -1105,6 +1105,38 @@
           <textarea class="gh-field" id="s_aiCaptionRules" rows="4" placeholder="مثلاً: لحن رسمی باشه، از ایموجی استفاده نشه، همیشه با یه سوال تموم بشه، به مشتری‌ها با «شما» خطاب کن..."></textarea>
           <div class="hint" style="line-height:1.8;">هر قانون یا سلیقه‌ای که اینجا بنویسی، به دستور اصلی هوش مصنوعی (چه کلود چه جمینای) اضافه می‌شه و روی هر توضیحی که از این پس تولید می‌کنه اثر می‌ذاره. مثلاً می‌تونی طول متن، لحن، ایموجی‌ها یا نکاتی که همیشه باید یا نباید بیاد رو مشخص کنی.</div>
         </div>
+        <div class="field">
+          <label>مشخصاتی که برای هوش مصنوعی ارسال بشه</label>
+          <div class="hint" style="margin-bottom:10px; line-height:1.8;">این مشخصات فقط برای این فرستاده می‌شن که هوش مصنوعی زمینه‌ی بهتری برای نوشتن داشته باشه؛ خودش تصمیم می‌گیره کدومش رو توی متن بیاره. هر کدوم رو نمی‌خوای براش فاش بشه، خاموشش کن.</div>
+          <div class="switch-row">
+            <span class="switch-label">قیمت خرده‌فروشی</span>
+            <label class="switch">
+              <input type="checkbox" id="s_aiSendPrice">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="switch-row">
+            <span class="switch-label">دسته‌بندی محصول</span>
+            <label class="switch">
+              <input type="checkbox" id="s_aiSendCategory">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="switch-row">
+            <span class="switch-label">وزن پرینت</span>
+            <label class="switch">
+              <input type="checkbox" id="s_aiSendWeight">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="switch-row">
+            <span class="switch-label">موجودی انبار</span>
+            <label class="switch">
+              <input type="checkbox" id="s_aiSendStock">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
       </div>
         </div>
       </div>
@@ -1791,7 +1823,8 @@ const DEFAULT_SETTINGS = {
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
   telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '',
-  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiCaptionRules: ''
+  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiCaptionRules: '',
+  aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -2505,6 +2538,14 @@ function renderSettings(){
   if(aiProviderEl) aiProviderEl.value = settings.aiProvider || 'anthropic';
   const aiCaptionRulesEl = document.getElementById('s_aiCaptionRules');
   if(aiCaptionRulesEl && document.activeElement !== aiCaptionRulesEl) aiCaptionRulesEl.value = settings.aiCaptionRules || '';
+  const aiSendPriceEl = document.getElementById('s_aiSendPrice');
+  if(aiSendPriceEl) aiSendPriceEl.checked = settings.aiSendPrice !== false;
+  const aiSendCategoryEl = document.getElementById('s_aiSendCategory');
+  if(aiSendCategoryEl) aiSendCategoryEl.checked = settings.aiSendCategory !== false;
+  const aiSendWeightEl = document.getElementById('s_aiSendWeight');
+  if(aiSendWeightEl) aiSendWeightEl.checked = settings.aiSendWeight !== false;
+  const aiSendStockEl = document.getElementById('s_aiSendStock');
+  if(aiSendStockEl) aiSendStockEl.checked = settings.aiSendStock !== false;
   updateAiProviderFieldsUI();
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
@@ -2578,6 +2619,15 @@ function bindTelegramInputs(){
       persist();
     });
   }
+  const AI_SEND_TOGGLES = {s_aiSendPrice:'aiSendPrice', s_aiSendCategory:'aiSendCategory', s_aiSendWeight:'aiSendWeight', s_aiSendStock:'aiSendStock'};
+  Object.keys(AI_SEND_TOGGLES).forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('change', ()=>{
+      settings[AI_SEND_TOGGLES[id]] = el.checked;
+      persist();
+    });
+  });
 }
 function updateAiProviderFieldsUI(){
   const provider = settings.aiProvider || 'anthropic';
@@ -3722,10 +3772,10 @@ async function generateAIDescription(id){
   const groupName = (settings.productGroups || []).find(g => g.id === prod.category);
   const productInfo = [
     `نام محصول: ${prod.name || 'بدون‌نام'}`,
-    `قیمت خرده‌فروشی: ${fmt(c.priceR)} تومان`,
-    groupName ? `دسته‌بندی: ${groupName.name}` : null,
-    prod.weight ? `وزن پرینت: حدود ${toFaNum(prod.weight,0)} گرم` : null,
-    prod.stock ? `موجودی: ${toFaNum(prod.stock,0)} عدد` : null,
+    settings.aiSendPrice !== false ? `قیمت خرده‌فروشی: ${fmt(c.priceR)} تومان` : null,
+    (settings.aiSendCategory !== false && groupName) ? `دسته‌بندی: ${groupName.name}` : null,
+    (settings.aiSendWeight !== false && prod.weight) ? `وزن پرینت: حدود ${toFaNum(prod.weight,0)} گرم` : null,
+    (settings.aiSendStock !== false && prod.stock) ? `موجودی: ${toFaNum(prod.stock,0)} عدد` : null,
     prod.catalogDescription && prod.catalogDescription.trim() ? `توضیح فعلی (اگه هست، برای الهام‌گیری): ${prod.catalogDescription.trim()}` : null,
   ].filter(Boolean).join('\n');
 
