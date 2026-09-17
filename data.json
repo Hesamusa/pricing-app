@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T15:18:58.546Z",
+  "updatedAt": "2026-09-17T15:22:03.142Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -635,13 +635,7 @@
       "marginR": 85,
       "stock": 0,
       "category": "g_mtqsahf4t778",
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788787726489xvrd0.jpg?v=1788787802061",
-          "path": "product-images/p_1788787726489xvrd0.jpg",
-          "sha": "bdee9a309f828a89a8246fdb66d36caf4c4fcbd5"
-        }
-      ],
+      "images": [],
       "telegramMessageId": null,
       "telegramMessageIds": [
         160
@@ -662,6 +656,11 @@
       "category": "g_mtqsahf4t778",
       "images": [
         {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658330155_0.jpg?v=1789658336788",
+          "path": "product-images/p_1788757924479oy27y_1789658330155_0.jpg",
+          "sha": "c52279db907970e7ecff68c66efd103d689a1b34"
+        },
+        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658192568_0.jpg?v=1789658200234",
           "path": "product-images/p_1788757924479oy27y_1789658192568_0.jpg",
           "sha": "6278a06d8182ad0d91966ed340c576053f62360d"
@@ -675,18 +674,14 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658204661_2.jpg?v=1789658216760",
           "path": "product-images/p_1788757924479oy27y_1789658204661_2.jpg",
           "sha": "18fa4bb4dbdaeae721a9d0782e9f44ab8eb55ee9"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658330155_0.jpg?v=1789658336788",
-          "path": "product-images/p_1788757924479oy27y_1789658330155_0.jpg",
-          "sha": "c52279db907970e7ecff68c66efd103d689a1b34"
         }
       ],
       "telegramMessageId": null,
       "telegramMessageIds": [
-        176,
-        177,
-        178
+        179,
+        180,
+        181,
+        182
       ],
       "catalogDescription": "یه همراه رویایی و بامزه که کیفت رو از سادگی درمیاره! این آویزِ فوق‌العاده سبک، بدون اینکه کیفت رو سنگین کنه، یه حال‌وهوای فانتزی و خاص به استایل روزمره‌ت می‌ده تا هر جا می‌ری لبخند رو به لبت بیاره. ✨"
     }
