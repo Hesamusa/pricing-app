@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T04:11:13.706Z",
+  "updatedAt": "2026-09-17T04:11:21.140Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -54,7 +54,7 @@
     {
       "id": "p_1789618251372m5urd",
       "name": "توپ",
-      "weight": 50,
+      "weight": 20,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
