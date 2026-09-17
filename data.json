@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T17:02:23.066Z",
+  "updatedAt": "2026-09-17T17:02:43.015Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -366,14 +366,14 @@
       "marginR": null,
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664518542_0.jpg?v=1789664524282",
-          "path": "product-images/p_1789318632241mto8f_1789664518542_0.jpg",
-          "sha": "2f0585b745ac9dd5fb1c477a5f512bd621341a1b"
-        },
-        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664524381_1.jpg?v=1789664531474",
           "path": "product-images/p_1789318632241mto8f_1789664524381_1.jpg",
           "sha": "2168110f90756cc51df7c816800c3700e8dd1b0a"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664518542_0.jpg?v=1789664524282",
+          "path": "product-images/p_1789318632241mto8f_1789664518542_0.jpg",
+          "sha": "2f0585b745ac9dd5fb1c477a5f512bd621341a1b"
         },
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664531591_2.jpg?v=1789664541307",
@@ -385,7 +385,9 @@
       "category": "g_mtreb2q5k4dk",
       "telegramMessageId": null,
       "telegramMessageIds": [
-        216
+        217,
+        218,
+        219
       ],
       "catalogDescription": "همون گربه دوست‌داشتنی بچگی‌هامون این‌بار با یه استایل خفن و امروزی اومده تا نمای اتاقت رو کلاً عوض کنه!\nیه فیگور بزرگ و سنگین‌وزن که با جزئیات بالا پرینت شده و حسابی روی میز کار یا توی ویترینت جلب‌توجه می‌کنه.\nاگه دنبال یه دکوری خاص و متفاوت برای کلکسیونت می‌گردی، این تک‌نسخه جذاب رو اصلاً از دست نده. 😎"
     },
