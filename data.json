@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T07:39:15.692Z",
+  "updatedAt": "2026-09-17T07:39:25.039Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -53,7 +53,7 @@
   "products": [
     {
       "id": "p_17896307539150tvyy",
-      "name": "محصول جدید",
+      "name": "محصولتوپ بسکتبال جدید",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
