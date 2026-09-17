@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T15:33:22.701Z",
+  "updatedAt": "2026-09-17T15:37:50.372Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -241,6 +241,16 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789473578478_0.jpg?v=1789473580134",
           "path": "product-images/p_1789473468341u6rm9_1789473578478_0.jpg",
           "sha": "7f8047f6ea6ea11f2fd23c8864a3765ce08e737a"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659466164_0.jpg?v=1789659468613",
+          "path": "product-images/p_1789473468341u6rm9_1789659466164_0.jpg",
+          "sha": "ae6a8681f5c13948d9ccdf3e0b1d64b137faf0b2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659468677_1.jpg?v=1789659470151",
+          "path": "product-images/p_1789473468341u6rm9_1789659468677_1.jpg",
+          "sha": "f12e06b41c6f23692f448dc53ed7ff3657c70e03"
         }
       ],
       "stock": 0,
@@ -593,14 +603,14 @@
       "category": "g_mtreb2q5k4dk",
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw_1789659153016_2.jpg?v=1789659155845",
-          "path": "product-images/p_1788794902491u6nxw_1789659153016_2.jpg",
-          "sha": "1c69f5d8af9c7f46ea332342d707ba861b0e7834"
-        },
-        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw_1789659148379_0.jpg?v=1789659151136",
           "path": "product-images/p_1788794902491u6nxw_1789659148379_0.jpg",
           "sha": "f2ab5258572ad64ecf1ce74e923e249e81c1e099"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw_1789659153016_2.jpg?v=1789659155845",
+          "path": "product-images/p_1788794902491u6nxw_1789659153016_2.jpg",
+          "sha": "1c69f5d8af9c7f46ea332342d707ba861b0e7834"
         },
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw_1789659151171_1.jpg?v=1789659152988",
@@ -610,10 +620,9 @@
       ],
       "telegramMessageId": null,
       "telegramMessageIds": [
-        192,
-        193,
-        194,
-        195
+        196,
+        197,
+        198
       ],
       "catalogDescription": "اگه دنیای بریکینگ بد برات جذابه، جای خالی این کاراکتر اسطوره‌ای روی میزت شدیداً حس می‌شه. جزئیات ظریف این فیگور، حس‌وحال بی‌نظیر سریال رو درست وسط اتاقت زنده می‌کنه. کلاً همین یه دونه ازش آماده‌ست، پس تا از دست نرفته مال خودتش کن! 🧪"
     },
