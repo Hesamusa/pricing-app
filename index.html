@@ -331,6 +331,9 @@
   }
   .desc-textarea:focus{outline:2px solid var(--orange); outline-offset:0;}
 
+  /* کادر قوانین کپشن: بلندتر از توضیح معمولی، چون متن چندخطی و طولانی توش نوشته می‌شه */
+  .rules-textarea{min-height:170px;}
+
   .jalali-date-row{display:flex; gap:6px;}
   .jalali-date-select{
     flex:1; min-width:0; border:none; background:var(--bg); border-radius:14px; padding:14px 6px;
@@ -1110,7 +1113,7 @@
         <div class="hint" style="color:var(--red);">⚠️ چون این تماس مستقیم از داخل مرورگر به سرور سرویس هوش مصنوعی زده می‌شه، کلید توی کد صفحه (Network tab) قابل دیدنه. این کلیدها فقط روی همین گوشی ذخیره می‌شن و هیچ‌وقت داخل مخزن گیت‌هاب قرار نمی‌گیرن؛ فقط روی دستگاه شخصی خودت واردشون کن و با کسی به اشتراک نذار.</div>
         <div class="field">
           <label>قوانین سفارشی نوشتن کپشن (اختیاری)</label>
-          <textarea class="gh-field" id="s_aiCaptionRules" rows="4" placeholder="مثلاً: لحن رسمی باشه، از ایموجی استفاده نشه، همیشه با یه سوال تموم بشه، به مشتری‌ها با «شما» خطاب کن..."></textarea>
+          <textarea class="desc-textarea rules-textarea" id="s_aiCaptionRules" rows="8" placeholder="مثلاً: لحن رسمی باشه، از ایموجی استفاده نشه، همیشه با یه سوال تموم بشه، به مشتری‌ها با «شما» خطاب کن..."></textarea>
           <div class="hint" style="line-height:1.8;">هر قانون یا سلیقه‌ای که اینجا بنویسی، به دستور اصلی هوش مصنوعی (چه کلود چه جمینای) اضافه می‌شه و روی هر توضیحی که از این پس تولید می‌کنه اثر می‌ذاره. مثلاً می‌تونی طول متن، لحن، ایموجی‌ها یا نکاتی که همیشه باید یا نباید بیاد رو مشخص کنی.</div>
         </div>
         <div class="field">
