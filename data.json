@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T07:40:59.217Z",
+  "updatedAt": "2026-09-17T07:41:03.193Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -55,7 +55,7 @@
       "id": "p_17896307539150tvyy",
       "name": "جا کلیدی توپ بسکتبال",
       "weight": 13,
-      "printHours": 3,
+      "printHours": 1,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
