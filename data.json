@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T15:32:37.609Z",
+  "updatedAt": "2026-09-17T15:32:45.043Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -593,14 +593,14 @@
       "category": "g_mtreb2q5k4dk",
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw.jpg?v=1788795277219",
-          "path": "product-images/p_1788794902491u6nxw.jpg",
-          "sha": "1b703f6138faeff10ba4ef217408342dca51a50a"
-        },
-        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw_1789659148379_0.jpg?v=1789659151136",
           "path": "product-images/p_1788794902491u6nxw_1789659148379_0.jpg",
           "sha": "f2ab5258572ad64ecf1ce74e923e249e81c1e099"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw.jpg?v=1788795277219",
+          "path": "product-images/p_1788794902491u6nxw.jpg",
+          "sha": "1b703f6138faeff10ba4ef217408342dca51a50a"
         },
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788794902491u6nxw_1789659151171_1.jpg?v=1789659152988",
@@ -615,7 +615,10 @@
       ],
       "telegramMessageId": null,
       "telegramMessageIds": [
-        156
+        192,
+        193,
+        194,
+        195
       ],
       "catalogDescription": "اگه دنیای بریکینگ بد برات جذابه، جای خالی این کاراکتر اسطوره‌ای روی میزت شدیداً حس می‌شه. جزئیات ظریف این فیگور، حس‌وحال بی‌نظیر سریال رو درست وسط اتاقت زنده می‌کنه. کلاً همین یه دونه ازش آماده‌ست، پس تا از دست نرفته مال خودتش کن! 🧪"
     },
