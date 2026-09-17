@@ -304,6 +304,16 @@
     background:rgba(255,255,255,0.14); color:#fff; font-size:18px;
     display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
+  .photo-lightbox-nav{
+    position:fixed; top:50%; transform:translateY(-50%); z-index:201;
+    width:46px; height:46px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.14); color:#fff; font-size:20px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .photo-lightbox-nav:active{background:rgba(255,255,255,0.28);}
+  .photo-lightbox-nav.prev{left:calc(10px + env(safe-area-inset-left));}
+  .photo-lightbox-nav.next{right:calc(10px + env(safe-area-inset-right));}
+  .photo-lightbox-nav[hidden]{display:none;}
   .photo-lightbox-dots{position:absolute; bottom:calc(28px + env(safe-area-inset-bottom)); left:0; right:0; display:flex; gap:7px; justify-content:center;}
   .photo-lightbox-dots .dot{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.35);}
   .photo-lightbox-dots .dot.active{background:#fff; width:18px; border-radius:4px;}
@@ -1122,6 +1132,11 @@
           <input type="password" class="gh-field" id="s_aiKeyGemini" placeholder="AIza..." autocomplete="off" style="direction:ltr; text-align:left;">
           <div class="hint">از <span dir="ltr" style="unicode-bidi:plaintext;">aistudio.google.com/apikey</span> یه کلید API رایگان بساز.</div>
         </div>
+        <div class="field" id="aiProxyField_gemini" style="display:none;">
+          <label>آدرس پراکسی جمینای (اختیاری)</label>
+          <input type="text" class="gh-field" id="s_aiGeminiProxy" placeholder="https://your-worker.workers.dev" autocomplete="off" style="direction:ltr; text-align:left;">
+          <div class="hint" style="line-height:1.8;">چون سرور گوگل به درخواست‌های مستقیم از داخل ایران جواب نمی‌ده (خطای «User location is not supported»)، اگه یه Cloudflare Worker به‌عنوان پراکسی ساختی، آدرسش رو اینجا بذار تا درخواست‌ها از اونجا رد بشن؛ خالی بذاری، مستقیم به گوگل زده می‌شه.</div>
+        </div>
         <div class="hint" style="color:var(--red);">⚠️ چون این تماس مستقیم از داخل مرورگر به سرور سرویس هوش مصنوعی زده می‌شه، کلید توی کد صفحه (Network tab) قابل دیدنه. این کلیدها فقط روی همین گوشی ذخیره می‌شن و هیچ‌وقت داخل مخزن گیت‌هاب قرار نمی‌گیرن؛ فقط روی دستگاه شخصی خودت واردشون کن و با کسی به اشتراک نذار.</div>
         <div class="field">
           <label>قوانین سفارشی نوشتن کپشن (اختیاری)</label>
@@ -1824,6 +1839,8 @@
 <!-- ویوئر تمام‌صفحه و سوایپ‌شونده‌ی عکس‌های محصول -->
 <div id="photo-lightbox" class="photo-lightbox" onclick="if(event.target===this) closePhotoLightbox()">
   <button type="button" class="photo-lightbox-close" onclick="closePhotoLightbox()">✕</button>
+  <button type="button" class="photo-lightbox-nav prev" id="lbPrevBtn" onclick="event.stopPropagation(); lightboxStep(-1)">‹</button>
+  <button type="button" class="photo-lightbox-nav next" id="lbNextBtn" onclick="event.stopPropagation(); lightboxStep(1)">›</button>
   <div class="photo-lightbox-inner" onclick="if(event.target===this) closePhotoLightbox()">
     <img id="photo-lightbox-img" class="photo-lightbox-img" alt=""
       onclick="onLightboxImgClick(event)"
@@ -1858,7 +1875,7 @@ const DEFAULT_SETTINGS = {
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
   telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true,
-  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiCaptionRules: '',
+  aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiGeminiProxyUrl: '', aiCaptionRules: '',
   aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true, aiSendImage: true
 };
 let settings = {...DEFAULT_SETTINGS};
@@ -2571,6 +2588,8 @@ function renderSettings(){
   if(aiKeyEl) aiKeyEl.value = settings.aiApiKey || '';
   const aiKeyGeminiEl = document.getElementById('s_aiKeyGemini');
   if(aiKeyGeminiEl) aiKeyGeminiEl.value = settings.aiApiKeyGemini || '';
+  const aiGeminiProxyEl = document.getElementById('s_aiGeminiProxy');
+  if(aiGeminiProxyEl && document.activeElement !== aiGeminiProxyEl) aiGeminiProxyEl.value = settings.aiGeminiProxyUrl || '';
   const aiProviderEl = document.getElementById('s_aiProvider');
   if(aiProviderEl) aiProviderEl.value = settings.aiProvider || 'anthropic';
   const aiCaptionRulesEl = document.getElementById('s_aiCaptionRules');
@@ -2650,6 +2669,13 @@ function bindTelegramInputs(){
       persist();
     });
   }
+  const aiGeminiProxyEl = document.getElementById('s_aiGeminiProxy');
+  if(aiGeminiProxyEl){
+    aiGeminiProxyEl.addEventListener('input', ()=>{
+      settings.aiGeminiProxyUrl = aiGeminiProxyEl.value;
+      persist();
+    });
+  }
   const aiProviderEl = document.getElementById('s_aiProvider');
   if(aiProviderEl){
     aiProviderEl.addEventListener('change', ()=>{
@@ -2679,8 +2705,10 @@ function updateAiProviderFieldsUI(){
   const provider = settings.aiProvider || 'anthropic';
   const anthropicField = document.getElementById('aiKeyField_anthropic');
   const geminiField = document.getElementById('aiKeyField_gemini');
+  const geminiProxyField = document.getElementById('aiProxyField_gemini');
   if(anthropicField) anthropicField.style.display = provider === 'gemini' ? 'none' : '';
   if(geminiField) geminiField.style.display = provider === 'gemini' ? '' : 'none';
+  if(geminiProxyField) geminiProxyField.style.display = provider === 'gemini' ? '' : 'none';
 }
 function onTelegramEnabledChange(checked){
   settings.telegramCatalogEnabled = !!checked;
@@ -3438,6 +3466,11 @@ function renderLightbox(){
       ? prod.images.map((_,i)=>`<span class="dot${i===lightboxIndex?' active':''}"></span>`).join('')
       : '';
   }
+  const prevBtn = document.getElementById('lbPrevBtn');
+  const nextBtn = document.getElementById('lbNextBtn');
+  const hasMultiple = prod.images.length > 1;
+  if(prevBtn) prevBtn.hidden = !hasMultiple;
+  if(nextBtn) nextBtn.hidden = !hasMultiple;
   const toolbar = document.getElementById('photo-lightbox-toolbar');
   if(toolbar) toolbar.style.display = isAdmin ? 'flex' : 'none';
   const moveLeftBtn = document.getElementById('lbMoveLeftBtn');
@@ -3452,6 +3485,14 @@ function renderLightbox(){
     thumbBtn.classList.toggle('active-thumb', isThumb);
   }
 }
+
+document.addEventListener('keydown', function(e){
+  const overlay = document.getElementById('photo-lightbox');
+  if(!overlay || !overlay.classList.contains('show')) return;
+  if(e.key === 'ArrowRight'){ e.preventDefault(); lightboxStep(1); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); lightboxStep(-1); }
+  else if(e.key === 'Escape'){ e.preventDefault(); closePhotoLightbox(); }
+});
 
 function onLightboxImgClick(e){
   if(lbScale > 1.01) return; // وقتی زوم شده، تپ ساده رفتار ناوبری نداره
@@ -3697,37 +3738,17 @@ function setTelegramSyncStatus(text, kind){
 }
 
 const telegramSyncTimers = {};
-const telegramSyncInFlight = {}; // id -> true وقتی یه سینک واقعاً در حال ارسال/ویرایشه (جلوی همپوشانی دو درخواست همزمان رو می‌گیره)
-const telegramSyncPending = {};  // id -> true یعنی وضعیت محصول در حین یه سینک در حال اجرا دوباره عوض شده و باید بعدش یه سینک تازه بزنیم
 // هر ویرایشی (قیمت، وزن، عکس) این تابع رو صدا می‌زنه؛ به‌جای سینک فوری، چند ثانیه صبر
 // می‌کنه تا ویرایش‌های پشت‌سرهم توی یک درخواست جمع بشن و به تلگرام فشار نیاره.
 function queueTelegramSync(id){
   if(!telegramConfigured()) return;
   clearTimeout(telegramSyncTimers[id]);
-  telegramSyncTimers[id] = setTimeout(() => runTelegramSync(id), 2500);
-}
-
-// فقط یه سینک هم‌زمان برای هر محصول اجرا می‌شه؛ اگه یکی در حال اجراست و دوباره صدا زده بشیم
-// (مثلاً کاربر پشت‌سرهم چند تا عکس رو جابجا/حذف کرد)، صبر می‌کنیم همون یکی تموم بشه و بعد
-// یه سینک تازه (با آخرین وضعیت محصول) می‌زنیم — وگرنه ممکنه دو تا درخواست هم‌زمان با هم قاطی بشن و یه پست تکراری بسازن.
-async function runTelegramSync(id){
-  if(telegramSyncInFlight[id]){
-    telegramSyncPending[id] = true;
-    return;
-  }
-  telegramSyncInFlight[id] = true;
-  try{
-    await syncProductToTelegram(id);
-  }catch(err){
-    console.error(err);
-    setTelegramSyncStatus('همگام‌سازی خودکار با تلگرام ناموفق بود: ' + err.message, 'error');
-  }finally{
-    telegramSyncInFlight[id] = false;
-    if(telegramSyncPending[id]){
-      telegramSyncPending[id] = false;
-      runTelegramSync(id);
-    }
-  }
+  telegramSyncTimers[id] = setTimeout(() => {
+    syncProductToTelegram(id).catch(err => {
+      console.error(err);
+      setTelegramSyncStatus('همگام‌سازی خودکار با تلگرام ناموفق بود: ' + err.message, 'error');
+    });
+  }, 2500);
 }
 
 // آیدی پست‌های قبلیِ این محصول توی کانال رو برمی‌گردونه؛ از فرمت قدیمی (یک آیدی تکی) هم پشتیبانی می‌کنه
@@ -3750,23 +3771,11 @@ async function telegramCall(method, body){
   }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
   return data;
 }
-// یک یا چند پست قدیمی رو از کانال پاک می‌کنه. اگه پیامی از قبل (مثلاً دستی) پاک شده باشه نادیده می‌گیریم،
-// ولی اگه حذفش به یه دلیل واقعی (قطعی، محدودیت و ...) شکست بخوره، خطا می‌دیم و جلوی ادامه رو می‌گیریم —
-// وگرنه ممکنه کد فکر کنه پاک شده و یه پست تازه هم بفرسته، و همون پست قبلی حذف‌نشده باعث تکراری دیده شدن محصول بشه.
+// یک یا چند پست قدیمی رو از کانال پاک می‌کنه؛ خطاها رو نادیده می‌گیره (best-effort)
 async function deleteTelegramMessages(channel, ids){
-  const failures = [];
   for(const messageId of (ids || [])){
-    try{
-      const data = await telegramCall('deleteMessage', { chat_id: channel, message_id: messageId });
-      if(!data.ok && !isStaleTelegramMessageError(data.description)){
-        failures.push(data.description || ('پیام ' + messageId));
-      }
-    }catch(e){
-      failures.push(e.message);
-    }
-  }
-  if(failures.length){
-    throw new Error('حذف پست(های) قبلی کانال ناموفق بود: ' + failures[0]);
+    try{ await telegramCall('deleteMessage', { chat_id: channel, message_id: messageId }); }
+    catch(e){ /* best-effort */ }
   }
 }
 // وقتی ویرایش/حذف یه پست با این خطاها مواجه می‌شه، یعنی اون پست دیگه معتبر نیست
@@ -3927,7 +3936,8 @@ ${productInfo}`;
       const geminiParts = [];
       if(imageData) geminiParts.push({ inline_data: { mime_type: imageData.mimeType, data: imageData.base64 } });
       geminiParts.push({ text: prompt });
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`, {
+      const geminiBase = (settings.aiGeminiProxyUrl || '').trim().replace(/\/+$/, '') || 'https://generativelanguage.googleapis.com';
+      const res = await fetch(`${geminiBase}/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: geminiParts }] }),
@@ -4381,7 +4391,7 @@ function addProduct(){
 function deleteProduct(id){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
-  if(prod) deleteProductTelegramPost(prod).catch(()=>{}); // best-effort، منتظرش نمی‌مونیم
+  if(prod) deleteProductTelegramPost(prod); // best-effort، منتظرش نمی‌مونیم
   products = products.filter(p=>p.id!==id);
   if(openProductId===id) openProductId=null;
   renderProducts();
