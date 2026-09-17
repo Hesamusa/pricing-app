@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T05:08:59.524Z",
+  "updatedAt": "2026-09-17T07:39:15.692Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -51,6 +51,21 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_17896307539150tvyy",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_1789547212385khl84",
       "name": "اسپایدرمن ونوم",
