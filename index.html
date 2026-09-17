@@ -3045,6 +3045,7 @@ function renderProducts(){
             <span>عمده: <b id="pv_w_${prod.id}">${fmt(c.priceW)}</b></span>
             <span>خرده: <b id="pv_r_${prod.id}">${fmt(c.priceR)}</b></span>
             <span>موجودی: <b id="stockBadge_${prod.id}" style="${(prod.stock||0)<=0?'color:var(--red)':''}">${fa.format(prod.stock||0)}</b></span>
+            ${productConsignedQty(prod.id) > 0 ? `<span>امانی: <b id="consignBadge_${prod.id}" style="color:var(--blue);">${fa.format(productConsignedQty(prod.id))}</b></span>` : ''}
           </div>
         </div>
         <div class="head-thumb" id="headThumb_${prod.id}" onclick="event.stopPropagation(); headThumbClick('${prod.id}')" style="cursor:pointer;">${(prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32)}</div>
@@ -5726,6 +5727,12 @@ function makeConsignment(storeName, contactName, contactPhone, address, hasStand
 function consignRemaining(it){
   return Math.max(0, (it.deliveredQty||0) - (it.soldQty||0) - (it.returnedQty||0));
 }
+function productConsignedQty(productId){
+  return consignments.reduce((sum, c) => {
+    const it = (c.items||[]).find(x => x.productId === productId);
+    return sum + (it ? consignRemaining(it) : 0);
+  }, 0);
+}
 function consignRestockQty(it){
   const target = it.targetQty || 0;
   if(target <= 0) return 0;
@@ -6779,6 +6786,7 @@ function filteredConsignments(){
 function renderConsignTab(){
   const formWrap = document.getElementById('consign-form-wrap');
   const emptyHint = document.getElementById('consign-empty-hint');
+  if(document.getElementById('products-list')) renderProducts();
   if(!formWrap || !emptyHint) return;
   formWrap.style.display = products.length ? 'block' : 'none';
   emptyHint.style.display = products.length ? 'none' : 'block';
