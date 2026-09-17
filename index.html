@@ -57,7 +57,7 @@
   body{
     font-family:'Vazirmatn', sans-serif;
     -webkit-font-smoothing:antialiased;
-    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
     min-height:100vh;
     font-size:17px;
     line-height:1.5;
@@ -65,41 +65,42 @@
   .mono{font-family:'IBM Plex Mono','Vazirmatn',monospace; direction:ltr; unicode-bidi:plaintext;}
 
   header{
-    padding: calc(20px + env(safe-area-inset-top)) 20px 18px;
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
     background: var(--bg);
     position: sticky; top:0; z-index:5;
+    border-bottom:1px solid var(--line);
   }
-  .header-row{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-  .brand{display:flex; align-items:center; gap:12px; min-width:0; flex:1;}
+  .header-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .brand{display:flex; align-items:center; gap:10px; min-width:0; flex:1;}
   .brand-text{min-width:0; flex:1;}
-  .brand-text h1{font-size:26px; font-weight:800; margin:0; letter-spacing:-0.3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 
   /* Company logo / brand uploader */
-  .brand-custom{display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0;}
-  .brand-custom-top{display:flex; align-items:center; gap:8px;}
+  .brand-custom{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .brand-custom-top{display:flex; align-items:center; gap:6px;}
   .theme-toggle-btn{
-    width:32px; height:32px; border-radius:50%; flex-shrink:0;
+    width:30px; height:30px; border-radius:50%; flex-shrink:0;
     background:var(--card); border:1px solid var(--line); color:var(--ink-soft);
     display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0;
   }
   .theme-toggle-btn:active{opacity:0.7;}
   .company-logo{
-    width:96px; height:96px; border-radius:50%; overflow:hidden; flex-shrink:0;
+    width:40px; height:40px; border-radius:50%; overflow:hidden; flex-shrink:0;
     background:var(--card); display:flex; align-items:center; justify-content:center;
-    color:var(--ink-soft); cursor:pointer; border:2px dashed var(--line); padding:3px;
+    color:var(--ink-soft); cursor:pointer; border:1.5px dashed var(--line); padding:0;
   }
+  .company-logo svg{width:18px; height:18px;}
   .company-logo.has-logo{border-style:solid; border-color:var(--orange); box-shadow:0 0 0 2px var(--card);}
   .company-logo img{width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;}
   .company-logo:active{opacity:0.7;}
   .company-name-input{
-    display:block; width:100%; max-width:100%; border:none; background:transparent; color:var(--ink-soft);
-    font-family:'Vazirmatn',sans-serif; font-size:14px; font-weight:600;
-    text-align:right; direction:rtl; padding:4px 0 0; margin-top:2px; height:auto;
+    display:block; width:100%; max-width:100%; border:none; background:transparent; color:var(--ink);
+    font-family:'Vazirmatn',sans-serif; font-size:17px; font-weight:700;
+    text-align:right; direction:rtl; padding:0; margin:0; height:auto;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
-  .company-name-input::placeholder{color:var(--ink-soft); font-weight:500;}
+  .company-name-input::placeholder{color:var(--ink-soft); font-weight:600;}
   .company-name-input:focus{outline:none; color:var(--ink);}
-  .company-logo-status{font-size:11px; color:var(--ink-soft); font-weight:600; margin-top:2px; text-align:left;}
+  .company-logo-status{font-size:10px; color:var(--ink-soft); font-weight:600; margin-top:1px; text-align:right;}
   .company-logo-status.error{color:var(--red);}
   .company-logo-status.success{color:var(--green);}
 
@@ -364,6 +365,12 @@
   }
   .jalali-date-select:focus{outline:2px solid var(--orange); outline-offset:0;}
 
+  .products-count-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:6px 6px 12px; padding:10px 14px; background:var(--card); border-radius:12px;
+  }
+  .products-count-row span{font-size:13px; font-weight:600; color:var(--ink-soft);}
+  .products-count-row b{font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:16px; font-weight:700; color:var(--ink); direction:ltr;}
   .search-box{position:relative; margin:0 6px 14px;}
   .search-box input{
     width:100%; border:none; background:var(--card); box-shadow:inset 0 0 0 1.5px var(--line);
@@ -491,19 +498,19 @@
     display:flex; gap:2px; width:100%; max-width:560px;
     background:rgba(var(--card-rgb),0.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
     border-top:1px solid var(--line);
-    border-radius:22px 22px 0 0;
-    padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    border-radius:16px 16px 0 0;
+    padding:4px 6px calc(4px + env(safe-area-inset-bottom));
     box-shadow:0 -6px 24px rgba(0,0,0,0.14);
   }
   nav button{
-    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
-    background:none; border:none; padding:8px 4px; border-radius:22px;
-    color:var(--ink-soft); font-family:'Vazirmatn'; font-size:12px; font-weight:600;
-    min-height:56px; justify-content:center;
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:none; border:none; padding:5px 4px; border-radius:16px;
+    color:var(--ink-soft); font-family:'Vazirmatn'; font-size:10.5px; font-weight:600;
+    min-height:40px; justify-content:center;
     transition:background-color .25s ease, color .25s ease;
   }
   nav button.active{color:var(--orange); background:var(--orange-soft);}
-  nav button svg{width:24px; height:24px;}
+  nav button svg{width:20px; height:20px;}
 
   /* منوی «بیشتر» — بقیه‌ی تب‌های کم‌استفاده‌تر (مشتریان/تنظیمات/فروشنده‌ها) که برای خلوت موندن
      نوار پایین، به جای دکمه‌ی مستقل، پشت یک دکمه‌ی «بیشتر» جمع شدن؛ هیچ قابلیتی حذف نشده. */
@@ -811,23 +818,20 @@
 <header>
   <div class="header-row">
     <div class="brand">
+      <div class="company-logo" id="companyLogo" onclick="triggerCompanyLogoUpload()" ondblclick="event.stopPropagation(); removeCompanyLogo()" title="برای آپلود لوگو کلیک کن؛ برای حذف، دو بار کلیک کن"></div>
+      <input type="file" accept="image/*" id="companyLogoFile" style="display:none" onchange="handleCompanyLogoFile(this)">
       <div class="brand-text">
-        <h1>دفترچه قیمت‌گذاری</h1>
         <input type="text" id="companyNameInput" class="company-name-input" placeholder="نام برند شما" oninput="onCompanyNameInput(this.value)">
       </div>
     </div>
     <div class="brand-custom">
-      <div class="brand-custom-top">
-        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="تغییر حالت تاریک و روشن">
-          <svg id="themeToggleIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
-        </button>
-        <button type="button" class="mode-badge" id="modeBadge" onclick="onModeBadgeClick()">
-          <svg id="modeBadgeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span id="modeBadgeText">کاربر</span>
-        </button>
-      </div>
-      <div class="company-logo" id="companyLogo" onclick="triggerCompanyLogoUpload()" ondblclick="event.stopPropagation(); removeCompanyLogo()" title="برای آپلود لوگو کلیک کن؛ برای حذف، دو بار کلیک کن"></div>
-      <input type="file" accept="image/*" id="companyLogoFile" style="display:none" onchange="handleCompanyLogoFile(this)">
+      <button type="button" class="mode-badge" id="modeBadge" onclick="onModeBadgeClick()">
+        <svg id="modeBadgeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span id="modeBadgeText">کاربر</span>
+      </button>
+      <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" aria-label="تغییر حالت تاریک و روشن">
+        <svg id="themeToggleIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+      </button>
     </div>
   </div>
 </header>
@@ -1319,6 +1323,10 @@
     <div class="locked-note" id="products-locked-note" style="display:none;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       مشاهده فقط؛ ویرایش محصولات مخصوص مدیره
+    </div>
+    <div class="products-count-row" id="products-count-row" style="display:none;">
+      <span>تعداد کل محصولات</span>
+      <b id="products-count-value">۰</b>
     </div>
     <div class="search-box" id="product-search-box">
       <input type="text" id="product_search" placeholder="جستجوی نام محصول…" oninput="onProductSearch(this.value)" style="direction:rtl; text-align:right;">
@@ -2970,13 +2978,18 @@ function migrateProductImages(){
 function renderProducts(){
   migrateProductImages();
   const list = document.getElementById('products-list');
+  const countRow = document.getElementById('products-count-row');
+  const countValue = document.getElementById('products-count-value');
+  if(countValue) countValue.textContent = fa.format(products.length);
   if(products.length === 0){
+    if(countRow) countRow.style.display = 'none';
     list.innerHTML = `<div class="empty">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--ink-soft)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <p>هنوز محصولی اضافه نکرده‌اید.<br>با دکمه پایین اولین محصول را اضافه کنید.</p>
     </div>`;
     return;
   }
+  if(countRow) countRow.style.display = '';
   const searchBox = document.getElementById('product-search-box');
   if(searchBox) searchBox.style.display = '';
 
@@ -3208,7 +3221,7 @@ function setCompanyLogoStatus(text, kind){
     el = document.createElement('div');
     el.id = 'companyLogoStatus';
     el.className = 'company-logo-status';
-    const wrap = document.querySelector('.brand-custom');
+    const wrap = document.querySelector('.brand-text');
     if(wrap) wrap.appendChild(el);
   }
   el.textContent = text || '';
