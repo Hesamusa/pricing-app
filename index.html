@@ -1147,6 +1147,14 @@
               <span class="slider"></span>
             </label>
           </div>
+          <div class="switch-row">
+            <span class="switch-label">عکس اول محصول (دیدن ظاهر واقعی)</span>
+            <label class="switch">
+              <input type="checkbox" id="s_aiSendImage">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="hint" style="line-height:1.8;">اگه روشن باشه، عکس اول محصول هم همراه اطلاعات برای هوش مصنوعی فرستاده می‌شه تا توضیح رو با ظاهر واقعی محصول (رنگ، شکل، حس‌وحال) هماهنگ‌تر بنویسه. کمی زمان بیشتری برای نوشتن می‌بره.</div>
         </div>
       </div>
         </div>
@@ -1833,7 +1841,7 @@ const DEFAULT_SETTINGS = {
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
   telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true,
   aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiCaptionRules: '',
-  aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true
+  aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true, aiSendImage: true
 };
 let settings = {...DEFAULT_SETTINGS};
 let products = [];
@@ -2557,6 +2565,8 @@ function renderSettings(){
   if(aiSendWeightEl) aiSendWeightEl.checked = settings.aiSendWeight !== false;
   const aiSendStockEl = document.getElementById('s_aiSendStock');
   if(aiSendStockEl) aiSendStockEl.checked = settings.aiSendStock !== false;
+  const aiSendImageEl = document.getElementById('s_aiSendImage');
+  if(aiSendImageEl) aiSendImageEl.checked = settings.aiSendImage !== false;
   updateAiProviderFieldsUI();
   const igEl = document.getElementById('s_instagram');
   if(igEl) igEl.value = settings.instagramUrl || '';
@@ -2637,7 +2647,7 @@ function bindTelegramInputs(){
       persist();
     });
   }
-  const AI_SEND_TOGGLES = {s_aiSendPrice:'aiSendPrice', s_aiSendCategory:'aiSendCategory', s_aiSendWeight:'aiSendWeight', s_aiSendStock:'aiSendStock'};
+  const AI_SEND_TOGGLES = {s_aiSendPrice:'aiSendPrice', s_aiSendCategory:'aiSendCategory', s_aiSendWeight:'aiSendWeight', s_aiSendStock:'aiSendStock', s_aiSendImage:'aiSendImage'};
   Object.keys(AI_SEND_TOGGLES).forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -3778,6 +3788,23 @@ async function deleteProductTelegramPost(prod){
 }
 
 // --- نوشتن خودکار توضیح کاتالوگ با هوش مصنوعی (کلود) ---
+
+// عکس محصول رو از آدرسش می‌گیره و به base64 تبدیل می‌کنه تا بشه همراه متن برای هوش مصنوعی فرستاد.
+// اگه هر مرحله‌ش شکست بخوره (اینترنت، فیلترینگ، عکس حذف‌شده و ...)، خطا می‌ده و نوشتن توضیح بدون عکس (فقط با متن) ادامه پیدا می‌کنه.
+async function imageUrlToBase64(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('دریافت عکس محصول ناموفق بود');
+  const blob = await res.blob();
+  const mimeType = blob.type || 'image/jpeg';
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = () => reject(new Error('تبدیل عکس محصول ناموفق بود'));
+    reader.readAsDataURL(blob);
+  });
+  return { mimeType, base64 };
+}
+
 async function generateAIDescription(id){
   const prod = products.find(p => p.id === id);
   if(!prod) return;
@@ -3809,7 +3836,19 @@ async function generateAIDescription(id){
   ].filter(Boolean).join('\n');
 
   const customRules = (settings.aiCaptionRules || '').trim();
-  const prompt = `تو یه کپی‌رایتر حرفه‌ای فارسی‌نویس برای یه کانال تلگرامی فروش محصولات پرینت سه‌بعدی هستی. برای محصول زیر یه توضیح تبلیغاتی کوتاه (۲ تا ۴ خط)، جذاب و صمیمی به زبان فارسی بنویس که زیر قیمت توی پست کانال بیاد. از تکرار اسم و قیمت محصول (که جدا نشون داده می‌شن) خودداری کن؛ فقط روی حس‌وحال، کاربرد یا نکته‌ی جذاب محصول تمرکز کن. از ایموجی متنوع و بامزه استفاده کن تا پست سرزنده‌تر به نظر برسه (حدود ۲ تا ۳ ایموجی، نه بیشتر و نه به‌شکل تکراری). یکی-دو تا از مهم‌ترین کلمه یا عبارت‌های جذاب متن (مثلاً یه ویژگی خاص یا حسی که القا می‌کنه) رو با گذاشتنش بین دو ستاره مشخص کن، این‌جوری: **کلمه‌ی مهم**؛ همین باعث می‌شه توی پست کانال به‌صورت بولد (پررنگ) دیده بشه. زیاده‌روی نکن؛ حداکثر ۱ یا ۲ تا از این بولدها توی کل متن کافیه. فقط متن توضیح رو برگردون، بدون هیچ مقدمه یا گیومه یا توضیح اضافه.${customRules ? `
+
+  let imageData = null;
+  const wantsImage = settings.aiSendImage !== false && prod.images && prod.images.length && prod.images[0].url;
+  if(wantsImage){
+    setStatus('در حال خوندن عکس محصول...', '');
+    try{
+      imageData = await imageUrlToBase64(prod.images[0].url);
+    }catch(err){
+      imageData = null; // عکس نرسید؟ بی‌خیالش می‌شیم و فقط با متن توضیح می‌نویسیم
+    }
+  }
+
+  const prompt = `تو یه کپی‌رایتر حرفه‌ای فارسی‌نویس برای یه کانال تلگرامی فروش محصولات پرینت سه‌بعدی هستی. برای محصول زیر یه توضیح تبلیغاتی کوتاه (۲ تا ۴ خط)، جذاب و صمیمی به زبان فارسی بنویس که زیر قیمت توی پست کانال بیاد. از تکرار اسم و قیمت محصول (که جدا نشون داده می‌شن) خودداری کن؛ فقط روی حس‌وحال، کاربرد یا نکته‌ی جذاب محصول تمرکز کن. از ایموجی متنوع و بامزه استفاده کن تا پست سرزنده‌تر به نظر برسه (حدود ۲ تا ۳ ایموجی، نه بیشتر و نه به‌شکل تکراری). یکی-دو تا از مهم‌ترین کلمه یا عبارت‌های جذاب متن (مثلاً یه ویژگی خاص یا حسی که القا می‌کنه) رو با گذاشتنش بین دو ستاره مشخص کن، این‌جوری: **کلمه‌ی مهم**؛ همین باعث می‌شه توی پست کانال به‌صورت بولد (پررنگ) دیده بشه. زیاده‌روی نکن؛ حداکثر ۱ یا ۲ تا از این بولدها توی کل متن کافیه.${imageData ? ' یه عکس واقعی از این محصول هم برات پیوست شده؛ حتماً بهش نگاه کن و توضیحت رو با رنگ، شکل، متریال و حس‌وحال واقعی‌ای که توی عکس می‌بینی هماهنگ کن، نه فقط بر اساس اسم محصول.' : ''} فقط متن توضیح رو برگردون، بدون هیچ مقدمه یا گیومه یا توضیح اضافه.${customRules ? `
 
 قوانین و سلیقه‌ی اضافیِ صاحب کانال که حتماً باید رعایت کنی (این‌ها روی قوانین بالا اولویت دارن):
 ${customRules}` : ''}
@@ -3822,10 +3861,13 @@ ${productInfo}`;
   try{
     let generated;
     if(provider === 'gemini'){
+      const geminiParts = [];
+      if(imageData) geminiParts.push({ inline_data: { mime_type: imageData.mimeType, data: imageData.base64 } });
+      geminiParts.push({ text: prompt });
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKey.trim())}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        body: JSON.stringify({ contents: [{ parts: geminiParts }] }),
       });
       const data = await res.json().catch(() => ({}));
       if(!res.ok){
@@ -3834,6 +3876,9 @@ ${productInfo}`;
       const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
       generated = parts && parts.length ? parts.map(p => p.text || '').join('').trim() : '';
     }else{
+      const claudeContent = [];
+      if(imageData) claudeContent.push({ type: 'image', source: { type: 'base64', media_type: imageData.mimeType, data: imageData.base64 } });
+      claudeContent.push({ type: 'text', text: prompt });
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -3845,7 +3890,7 @@ ${productInfo}`;
         body: JSON.stringify({
           model: 'claude-sonnet-5',
           max_tokens: 300,
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: 'user', content: claudeContent }],
         }),
       });
       const data = await res.json().catch(() => ({}));
