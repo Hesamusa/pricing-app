@@ -307,6 +307,18 @@
   .photo-lightbox-dots{position:absolute; bottom:calc(28px + env(safe-area-inset-bottom)); left:0; right:0; display:flex; gap:7px; justify-content:center;}
   .photo-lightbox-dots .dot{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.35);}
   .photo-lightbox-dots .dot.active{background:#fff; width:18px; border-radius:4px;}
+  .photo-lightbox-toolbar{
+    position:absolute; bottom:calc(58px + env(safe-area-inset-bottom)); left:0; right:0; z-index:201;
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:0 16px;
+  }
+  .lb-tool-btn{
+    border:1.5px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:#fff;
+    border-radius:11px; padding:9px 13px; font-size:12.5px; font-weight:600;
+    font-family:'Vazirmatn',sans-serif; cursor:pointer; white-space:nowrap;
+  }
+  .lb-tool-btn:disabled{opacity:0.35; cursor:default;}
+  .lb-tool-btn.danger{color:#ff8a8a; border-color:rgba(255,138,138,0.55); background:rgba(255,80,80,0.1);}
+  .lb-tool-btn.active-thumb{color:var(--orange); border-color:var(--orange); background:rgba(255,255,255,0.16);}
 
   .stock-field{margin-bottom:20px;}
   .stock-stepper{display:flex; align-items:center; gap:10px;}
@@ -1819,6 +1831,12 @@
       ontouchmove="onLightboxTouchMove(event)"
       ontouchend="onLightboxTouchEnd(event)">
     <div class="photo-lightbox-dots" id="photo-lightbox-dots"></div>
+    <div class="photo-lightbox-toolbar" id="photo-lightbox-toolbar" onclick="event.stopPropagation();">
+      <button type="button" class="lb-tool-btn" id="lbMoveLeftBtn" onclick="moveProductImage(lightboxProductId, lightboxIndex, -1)">◀ جابجا</button>
+      <button type="button" class="lb-tool-btn" id="lbThumbBtn" onclick="setProductThumbnail(lightboxProductId, lightboxIndex)">تنظیم به‌عنوان تامبنیل</button>
+      <button type="button" class="lb-tool-btn" id="lbMoveRightBtn" onclick="moveProductImage(lightboxProductId, lightboxIndex, 1)">جابجا ▶</button>
+      <button type="button" class="lb-tool-btn danger" id="lbDeleteBtn" onclick="removeProductImage(lightboxProductId, lightboxIndex)">حذف عکس</button>
+    </div>
   </div>
 </div>
 
@@ -3420,6 +3438,19 @@ function renderLightbox(){
       ? prod.images.map((_,i)=>`<span class="dot${i===lightboxIndex?' active':''}"></span>`).join('')
       : '';
   }
+  const toolbar = document.getElementById('photo-lightbox-toolbar');
+  if(toolbar) toolbar.style.display = isAdmin ? 'flex' : 'none';
+  const moveLeftBtn = document.getElementById('lbMoveLeftBtn');
+  const moveRightBtn = document.getElementById('lbMoveRightBtn');
+  const thumbBtn = document.getElementById('lbThumbBtn');
+  if(moveLeftBtn) moveLeftBtn.disabled = lightboxIndex <= 0;
+  if(moveRightBtn) moveRightBtn.disabled = lightboxIndex >= prod.images.length - 1;
+  if(thumbBtn){
+    const isThumb = lightboxIndex === 0;
+    thumbBtn.disabled = isThumb;
+    thumbBtn.textContent = isThumb ? 'تامبنیل فعلیه ✓' : 'تنظیم به‌عنوان تامبنیل';
+    thumbBtn.classList.toggle('active-thumb', isThumb);
+  }
 }
 
 function onLightboxImgClick(e){
@@ -4099,12 +4130,13 @@ async function handleImageFile(id, inputEl){
   if(uploadedCount > 0) queueTelegramSync(id);
 }
 
-async function removeProductImage(id){
+async function removeProductImage(id, idxParam){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(!prod || !Array.isArray(prod.images) || !prod.images.length) return;
-  const idx = Math.min(productCarouselIndex[id]||0, prod.images.length-1);
+  const idx = (idxParam!=null) ? idxParam : Math.min(productCarouselIndex[id]||0, prod.images.length-1);
   const img = prod.images[idx];
+  if(!img) return;
   if(!await customConfirm('این عکس حذف بشه؟')) return;
 
   const cleanupLocal = () => {
@@ -4112,7 +4144,16 @@ async function removeProductImage(id){
     if((productCarouselIndex[id]||0) >= prod.images.length) productCarouselIndex[id] = Math.max(prod.images.length-1, 0);
     persist();
     updateProductPhotoUI(id);
-    if(idx === 0) queueTelegramSync(id); // عکس اول عوض شد، پست کانال هم باید سینک بشه
+    if(lightboxProductId === id){
+      if(!prod.images.length){
+        closePhotoLightbox();
+      }else{
+        lightboxIndex = Math.min(lightboxIndex, prod.images.length-1);
+        lbResetZoom(false);
+        renderLightbox();
+      }
+    }
+    if(idx === 0) queueTelegramSync(id); // عکس اول (تامبنیل) عوض شد، پست کانال هم باید سینک بشه
   };
 
   if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path || !img.sha){
@@ -4135,6 +4176,44 @@ async function removeProductImage(id){
     cleanupLocal();
     setPhotoStatus(id, 'عکس حذف شد ولی حذف کامل از گیت‌هاب با خطا مواجه شد', 'error');
   });
+}
+
+// جابجایی ترتیب عکس‌ها (dir: ۱- برای چپ، ۱ برای راست)
+function moveProductImage(id, index, dir){
+  if(!isAdmin) return;
+  const prod = products.find(p=>p.id===id);
+  if(!prod || !Array.isArray(prod.images)) return;
+  const newIndex = index + dir;
+  if(newIndex < 0 || newIndex >= prod.images.length) return;
+  const touchesFirst = index === 0 || newIndex === 0; // اگه عکس اول (تامبنیل) عوض بشه، پست کانال هم باید سینک بشه
+  const tmp = prod.images[index];
+  prod.images[index] = prod.images[newIndex];
+  prod.images[newIndex] = tmp;
+  persist();
+  productCarouselIndex[id] = newIndex;
+  updateProductPhotoUI(id);
+  if(lightboxProductId === id){
+    lightboxIndex = newIndex;
+    renderLightbox();
+  }
+  if(touchesFirst) queueTelegramSync(id);
+}
+
+// انتخاب یه عکس به‌عنوان تامبنیل (عکس اول): می‌ندازتش اول لیست
+function setProductThumbnail(id, index){
+  if(!isAdmin) return;
+  const prod = products.find(p=>p.id===id);
+  if(!prod || !Array.isArray(prod.images) || index <= 0 || index >= prod.images.length) return;
+  const [chosen] = prod.images.splice(index, 1);
+  prod.images.unshift(chosen);
+  persist();
+  productCarouselIndex[id] = 0;
+  updateProductPhotoUI(id);
+  if(lightboxProductId === id){
+    lightboxIndex = 0;
+    renderLightbox();
+  }
+  queueTelegramSync(id);
 }
 
 function toggleProduct(id){
