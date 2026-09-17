@@ -3697,17 +3697,37 @@ function setTelegramSyncStatus(text, kind){
 }
 
 const telegramSyncTimers = {};
+const telegramSyncInFlight = {}; // id -> true وقتی یه سینک واقعاً در حال ارسال/ویرایشه (جلوی همپوشانی دو درخواست همزمان رو می‌گیره)
+const telegramSyncPending = {};  // id -> true یعنی وضعیت محصول در حین یه سینک در حال اجرا دوباره عوض شده و باید بعدش یه سینک تازه بزنیم
 // هر ویرایشی (قیمت، وزن، عکس) این تابع رو صدا می‌زنه؛ به‌جای سینک فوری، چند ثانیه صبر
 // می‌کنه تا ویرایش‌های پشت‌سرهم توی یک درخواست جمع بشن و به تلگرام فشار نیاره.
 function queueTelegramSync(id){
   if(!telegramConfigured()) return;
   clearTimeout(telegramSyncTimers[id]);
-  telegramSyncTimers[id] = setTimeout(() => {
-    syncProductToTelegram(id).catch(err => {
-      console.error(err);
-      setTelegramSyncStatus('همگام‌سازی خودکار با تلگرام ناموفق بود: ' + err.message, 'error');
-    });
-  }, 2500);
+  telegramSyncTimers[id] = setTimeout(() => runTelegramSync(id), 2500);
+}
+
+// فقط یه سینک هم‌زمان برای هر محصول اجرا می‌شه؛ اگه یکی در حال اجراست و دوباره صدا زده بشیم
+// (مثلاً کاربر پشت‌سرهم چند تا عکس رو جابجا/حذف کرد)، صبر می‌کنیم همون یکی تموم بشه و بعد
+// یه سینک تازه (با آخرین وضعیت محصول) می‌زنیم — وگرنه ممکنه دو تا درخواست هم‌زمان با هم قاطی بشن و یه پست تکراری بسازن.
+async function runTelegramSync(id){
+  if(telegramSyncInFlight[id]){
+    telegramSyncPending[id] = true;
+    return;
+  }
+  telegramSyncInFlight[id] = true;
+  try{
+    await syncProductToTelegram(id);
+  }catch(err){
+    console.error(err);
+    setTelegramSyncStatus('همگام‌سازی خودکار با تلگرام ناموفق بود: ' + err.message, 'error');
+  }finally{
+    telegramSyncInFlight[id] = false;
+    if(telegramSyncPending[id]){
+      telegramSyncPending[id] = false;
+      runTelegramSync(id);
+    }
+  }
 }
 
 // آیدی پست‌های قبلیِ این محصول توی کانال رو برمی‌گردونه؛ از فرمت قدیمی (یک آیدی تکی) هم پشتیبانی می‌کنه
@@ -3730,11 +3750,23 @@ async function telegramCall(method, body){
   }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
   return data;
 }
-// یک یا چند پست قدیمی رو از کانال پاک می‌کنه؛ خطاها رو نادیده می‌گیره (best-effort)
+// یک یا چند پست قدیمی رو از کانال پاک می‌کنه. اگه پیامی از قبل (مثلاً دستی) پاک شده باشه نادیده می‌گیریم،
+// ولی اگه حذفش به یه دلیل واقعی (قطعی، محدودیت و ...) شکست بخوره، خطا می‌دیم و جلوی ادامه رو می‌گیریم —
+// وگرنه ممکنه کد فکر کنه پاک شده و یه پست تازه هم بفرسته، و همون پست قبلی حذف‌نشده باعث تکراری دیده شدن محصول بشه.
 async function deleteTelegramMessages(channel, ids){
+  const failures = [];
   for(const messageId of (ids || [])){
-    try{ await telegramCall('deleteMessage', { chat_id: channel, message_id: messageId }); }
-    catch(e){ /* best-effort */ }
+    try{
+      const data = await telegramCall('deleteMessage', { chat_id: channel, message_id: messageId });
+      if(!data.ok && !isStaleTelegramMessageError(data.description)){
+        failures.push(data.description || ('پیام ' + messageId));
+      }
+    }catch(e){
+      failures.push(e.message);
+    }
+  }
+  if(failures.length){
+    throw new Error('حذف پست(های) قبلی کانال ناموفق بود: ' + failures[0]);
   }
 }
 // وقتی ویرایش/حذف یه پست با این خطاها مواجه می‌شه، یعنی اون پست دیگه معتبر نیست
@@ -4349,7 +4381,7 @@ function addProduct(){
 function deleteProduct(id){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
-  if(prod) deleteProductTelegramPost(prod); // best-effort، منتظرش نمی‌مونیم
+  if(prod) deleteProductTelegramPost(prod).catch(()=>{}); // best-effort، منتظرش نمی‌مونیم
   products = products.filter(p=>p.id!==id);
   if(openProductId===id) openProductId=null;
   renderProducts();
