@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T04:23:04.797Z",
+  "updatedAt": "2026-09-17T04:27:23.260Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -93,7 +93,7 @@
           "sha": "e7aa639f4a97085e26a65898111ff4faf830add5"
         }
       ],
-      "stock": 8,
+      "stock": 7,
       "category": "g_mu0mydrdz7a1",
       "telegramMessageId": null,
       "telegramMessageIds": [
