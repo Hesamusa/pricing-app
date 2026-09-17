@@ -4016,7 +4016,7 @@ async function handleImageFile(id, inputEl){
     const file = toUpload[i];
     setPhotoStatus(id, toUpload.length>1 ? `در حال آپلود عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}...` : 'در حال فشرده‌سازی و آپلود عکس...', 'uploading');
     try{
-      const base64 = await resizeImageToBase64(file, 480, 0.82, true);
+      const base64 = await resizeImageToBase64(file, 1280, 0.9, true);
       const path = `${folder}/${id}_${Date.now()}_${i}.jpg`;
       const apiUrl = githubContentsUrl(path);
 
