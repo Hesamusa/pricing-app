@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T04:11:34.996Z",
+  "updatedAt": "2026-09-17T04:12:06.408Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -51,22 +51,6 @@
     "adminPin": "373763"
   },
   "products": [
-    {
-      "id": "p_1789618251372m5urd",
-      "name": "توپ",
-      "weight": 50,
-      "printHours": 1,
-      "manualHours": 0,
-      "paintHours": 0,
-      "accessoryCost": 0,
-      "marginW": null,
-      "marginR": null,
-      "images": [],
-      "stock": 1,
-      "catalogDescription": "",
-      "telegramMessageIds": [],
-      "category": "g_mu0mydrdz7a1"
-    },
     {
       "id": "p_1789547212385khl84",
       "name": "اسپایدرمن ونوم",
