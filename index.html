@@ -1044,6 +1044,14 @@
             <span class="slider"></span>
           </label>
         </div>
+        <div class="switch-row">
+          <span class="switch-label">نمایش قیمت روی پست کانال</span>
+          <label class="switch">
+            <input type="checkbox" id="s_tgShowPrice">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="hint" style="margin:-6px 0 10px; line-height:1.8;">اگه خاموشش کنی، خط قیمت از زیر اسم محصول توی پست کانال حذف می‌شه (فقط اسم و توضیح باقی می‌مونه). بعد از تغییرش، برای این‌که پست‌های قبلاً ارسال‌شده هم به‌روز بشن، یه بار «همگام‌سازی همه محصولات با کانال» رو بزن.</div>
         <div class="field">
           <label>آیدی یا لینک کانال</label>
           <input type="text" class="gh-field" id="s_tgChannel" placeholder="مثلاً @mycatalog یا -100xxxxxxxxxx" style="direction:ltr; text-align:left;">
@@ -1822,7 +1830,7 @@ const DEFAULT_SETTINGS = {
   instagramUrl: '',
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
-  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '',
+  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true,
   aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiCaptionRules: '',
   aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true
 };
@@ -2524,6 +2532,8 @@ function renderSettings(){
   document.getElementById('s_ghToken').value = settings.githubToken || '';
   const tgEnabledEl = document.getElementById('s_tgEnabled');
   if(tgEnabledEl) tgEnabledEl.checked = !!settings.telegramCatalogEnabled;
+  const tgShowPriceEl = document.getElementById('s_tgShowPrice');
+  if(tgShowPriceEl) tgShowPriceEl.checked = settings.telegramShowPrice !== false;
   const tgChannelEl = document.getElementById('s_tgChannel');
   if(tgChannelEl) tgChannelEl.value = settings.telegramChannelId || '';
   const tgTokenEl = document.getElementById('s_tgToken');
@@ -2590,6 +2600,13 @@ function bindTelegramInputs(){
       persist();
     });
   });
+  const tgShowPriceEl = document.getElementById('s_tgShowPrice');
+  if(tgShowPriceEl){
+    tgShowPriceEl.addEventListener('change', ()=>{
+      settings.telegramShowPrice = tgShowPriceEl.checked;
+      persist();
+    });
+  }
   const aiKeyEl = document.getElementById('s_aiKey');
   if(aiKeyEl){
     aiKeyEl.addEventListener('input', ()=>{
@@ -3612,7 +3629,10 @@ function telegramCaption(prod){
   const RLM = '\u200f'; // نشانه‌ی راست‌به‌چپ نامرئی
   const RLE = '\u202b', PDF = '\u202c'; // شروع/پایان صریح جهت راست‌به‌چپ — تلگرام گاهی توی کپشن عکس/آلبوم تنها به RLM بسنده نمی‌کنه، این دوتا با هم قوی‌تر و مطمئن‌ترن
   const rtl = line => RLE + RLM + line + PDF;
-  let text = `${rtl(`<b>${escapeHtml(prod.name || 'محصول')}</b>`)}\n${rtl(`${fmt(c.priceR)} تومان`)}`;
+  let text = rtl(`<b>${escapeHtml(prod.name || 'محصول')}</b>`);
+  if(settings.telegramShowPrice !== false){
+    text += `\n${rtl(`${fmt(c.priceR)} تومان`)}`;
+  }
   if(prod.catalogDescription && prod.catalogDescription.trim()){
     const descLines = prod.catalogDescription.trim().split('\n').map(line => rtl(escapeHtml(line))).join('\n');
     text += `\n\n${descLines}`;
