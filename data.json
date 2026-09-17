@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T13:38:47.070Z",
+  "updatedAt": "2026-09-17T13:39:42.488Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -564,6 +564,11 @@
       "category": "g_mu0mydrdz7a1",
       "images": [
         {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol_1789652291790_0.jpg?v=1789652307400",
+          "path": "product-images/p_17887945861715k5ol_1789652291790_0.jpg",
+          "sha": "0fd737dd595fd5b4b0f243bbe0bb69e18e3bc188"
+        },
+        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol_1789652307506_1.jpg?v=1789652318817",
           "path": "product-images/p_17887945861715k5ol_1789652307506_1.jpg",
           "sha": "044c9f8fdcd96937d5ec62e4c490687990716739"
@@ -572,11 +577,6 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol.jpg?v=1788794736875",
           "path": "product-images/p_17887945861715k5ol.jpg",
           "sha": "463014a8364f11ad7801afdf2d2125d76818f87d"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887945861715k5ol_1789652291790_0.jpg?v=1789652307400",
-          "path": "product-images/p_17887945861715k5ol_1789652291790_0.jpg",
-          "sha": "0fd737dd595fd5b4b0f243bbe0bb69e18e3bc188"
         }
       ],
       "telegramMessageId": null,
@@ -585,7 +585,7 @@
         100,
         101
       ],
-      "catalogDescription": "این شکم قلمبه‌ی دوست‌داشتنی اومده تا نگهبان جدید کلیدا و کوله‌پشتیت بشه! یه آویز سبک و باکیفیت که هربار نگاهش می‌کنی، کلی انرژی مثبت و لبخند بهت هدیه میده. اگه دنبال یه همراه بانمک برای وسایل هرروزت می‌گردی، دقیقاً همینه. 🐾"
+      "catalogDescription": "این **شکم قلمبه** و بانمک با اون **پدهای صورتی** زیر پاش اومده تا هربار نگاهش می‌کنی بی‌اختیار لبخند بزنی! یه همراه فسقلی و خوش‌ساخت که هم برای وسایلت یه آویز خاصه، هم می‌تونه روی میز کارت کلی انرژی مثبت بده 🐾\nاگه دوست داری این تپلی دوست‌داشتنی مال تو بشه، برامون پیام بفرست؛ برای دیدن مدل‌های جدیدتر هم همراه کانالمون باش 😉"
     },
     {
       "id": "p_1788787726489xvrd0",
