@@ -813,6 +813,10 @@
     font-size:12px; font-weight:600; color:var(--ink-soft);
     background:var(--orange-soft); border-radius:12px; padding:8px 10px; margin:0 0 14px;
   }
+  /* ابعاد محصول (طول × عرض × ارتفاع) */
+  .dim-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .dim-item label{display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; text-align:center;}
+  .dim-item input.num-input{width:100%; min-width:0; text-align:center;}
 </style>
 </head>
 <body>
@@ -1067,7 +1071,7 @@
         <div class="settings-section-body">
       <div class="card">
         <div class="hint" style="margin-bottom:14px; line-height:1.8;">
-          با فعال‌کردن این بخش، هر محصول به‌صورت یک پست (عکس اول محصول + نام و قیمت خرده) توی کانال تلگرامی‌ت ثبت می‌شه. با تغییر قیمت یا عکس اول، همون پست ویرایش می‌شه (نه پست جدید)، و با حذف محصول، پستش هم از کانال پاک می‌شه.
+          با فعال‌کردن این بخش، هر محصول به‌صورت یک پست (عکس اول محصول + نام، قیمت خرده و ابعاد) توی کانال تلگرامی‌ت ثبت می‌شه. با تغییر قیمت یا عکس اول، همون پست ویرایش می‌شه (نه پست جدید)، و با حذف محصول، پستش هم از کانال پاک می‌شه.
         </div>
         <div class="switch-row">
           <span class="switch-label">فعال بودن کاتالوگ تلگرام</span>
@@ -1084,6 +1088,14 @@
           </label>
         </div>
         <div class="hint" style="margin:-6px 0 10px; line-height:1.8;">اگه خاموشش کنی، خط قیمت از زیر اسم محصول توی پست کانال حذف می‌شه (فقط اسم و توضیح باقی می‌مونه). بعد از تغییرش، برای این‌که پست‌های قبلاً ارسال‌شده هم به‌روز بشن، یه بار «همگام‌سازی همه محصولات با کانال» رو بزن.</div>
+        <div class="switch-row">
+          <span class="switch-label">نمایش ابعاد (طول × عرض × ارتفاع) روی پست کانال</span>
+          <label class="switch">
+            <input type="checkbox" id="s_tgShowSize">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="hint" style="margin:-6px 0 10px; line-height:1.8;">اگه خاموشش کنی، خط ابعاد از پست کانال حذف می‌شه. محصولاتی که ابعادشون رو وارد نکردی هم به‌طور خودکار خط ابعاد ندارن. بعد از تغییرش، یه بار «همگام‌سازی همه محصولات با کانال» رو بزن تا پست‌های قبلی هم به‌روز بشن.</div>
         <div class="field">
           <label>آیدی یا لینک کانال</label>
           <input type="text" class="gh-field" id="s_tgChannel" placeholder="مثلاً @mycatalog یا -100xxxxxxxxxx" style="direction:ltr; text-align:left;">
@@ -1885,7 +1897,7 @@ const DEFAULT_SETTINGS = {
   instagramUrl: '',
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
-  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true,
+  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true, telegramShowSize: true,
   aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiGeminiProxyUrl: '', aiCaptionRules: '',
   aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true, aiSendImage: true
 };
@@ -2161,6 +2173,7 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
     id: 'p_' + Date.now() + Math.random().toString(36).slice(2,7),
     name, weight, printHours, manualHours, paintHours,
     accessoryCost: 0,
+    sizeL: 0, sizeW: 0, sizeH: 0, // ابعاد محصول به سانتی‌متر: طول، عرض، ارتفاع (اختیاری)
     marginW: null, marginR: null, // null = use global default
     images: [],
     stock: 0,
@@ -2589,6 +2602,8 @@ function renderSettings(){
   if(tgEnabledEl) tgEnabledEl.checked = !!settings.telegramCatalogEnabled;
   const tgShowPriceEl = document.getElementById('s_tgShowPrice');
   if(tgShowPriceEl) tgShowPriceEl.checked = settings.telegramShowPrice !== false;
+  const tgShowSizeEl = document.getElementById('s_tgShowSize');
+  if(tgShowSizeEl) tgShowSizeEl.checked = settings.telegramShowSize !== false;
   const tgChannelEl = document.getElementById('s_tgChannel');
   if(tgChannelEl) tgChannelEl.value = settings.telegramChannelId || '';
   const tgTokenEl = document.getElementById('s_tgToken');
@@ -2663,6 +2678,13 @@ function bindTelegramInputs(){
   if(tgShowPriceEl){
     tgShowPriceEl.addEventListener('change', ()=>{
       settings.telegramShowPrice = tgShowPriceEl.checked;
+      persist();
+    });
+  }
+  const tgShowSizeEl = document.getElementById('s_tgShowSize');
+  if(tgShowSizeEl){
+    tgShowSizeEl.addEventListener('change', ()=>{
+      settings.telegramShowSize = tgShowSizeEl.checked;
       persist();
     });
   }
@@ -3112,6 +3134,23 @@ function renderProducts(){
             <div class="field">
               <label>هزینه متعلقات (زنجیر، قلاب و...)</label>
               <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="numeric" value="${groupDigits(prod.accessoryCost||0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, (n)=>updateProduct('${prod.id}','accessoryCost',n))" onblur="formatNumField(this,0)">
+            </div>
+            <div class="field" style="grid-column:1 / -1;">
+              <label>ابعاد محصول (سانتی‌متر) — اختیاری</label>
+              <div class="dim-grid">
+                <div class="dim-item">
+                  <label>طول</label>
+                  <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" placeholder="—" value="${prod.sizeL ? toFaNum(prod.sizeL,2) : ''}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','sizeL',Math.max(0,n)))" onblur="formatNumField(this,2)">
+                </div>
+                <div class="dim-item">
+                  <label>عرض</label>
+                  <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" placeholder="—" value="${prod.sizeW ? toFaNum(prod.sizeW,2) : ''}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','sizeW',Math.max(0,n)))" onblur="formatNumField(this,2)">
+                </div>
+                <div class="dim-item">
+                  <label>ارتفاع</label>
+                  <input type="text" class="num-input ${lkClass}" ${lkAttr} inputmode="decimal" placeholder="—" value="${prod.sizeH ? toFaNum(prod.sizeH,2) : ''}" onclick="event.stopPropagation()" oninput="handleDecimalInput(this, (n)=>updateProduct('${prod.id}','sizeH',Math.max(0,n)))" onblur="formatNumField(this,2)">
+                </div>
+              </div>
             </div>
             <div class="field" style="grid-column:1 / -1;">
               <label>زمان پرینت (ساعت و دقیقه)</label>
@@ -3734,6 +3773,15 @@ function telegramApi(method){
     : 'https://api.telegram.org';
   return `${base}/bot${settings.telegramBotToken.trim()}/${method}`;
 }
+// خط ابعاد محصول برای نمایش توی پست؛ اگه هیچ‌کدوم از سه عدد پر نباشه رشته‌ی خالی برمی‌گردونه
+function productSizeText(prod){
+  const parts = [];
+  if(prod.sizeL > 0) parts.push(`طول ${toFaNum(prod.sizeL,2)}`);
+  if(prod.sizeW > 0) parts.push(`عرض ${toFaNum(prod.sizeW,2)}`);
+  if(prod.sizeH > 0) parts.push(`ارتفاع ${toFaNum(prod.sizeH,2)}`);
+  if(!parts.length) return '';
+  return `ابعاد: ${parts.join(' × ')} سانتی‌متر`;
+}
 function telegramCaption(prod){
   const c = calc(prod);
   const RLM = '\u200f'; // نشانه‌ی راست‌به‌چپ نامرئی
@@ -3742,6 +3790,10 @@ function telegramCaption(prod){
   let text = rtl(`<b>${escapeHtml(prod.name || 'محصول')}</b>`);
   if(settings.telegramShowPrice !== false){
     text += `\n${rtl(`${fmt(c.priceR)} تومان`)}`;
+  }
+  if(settings.telegramShowSize !== false){
+    const sizeLine = productSizeText(prod);
+    if(sizeLine) text += `\n${rtl(sizeLine)}`;
   }
   if(prod.catalogDescription && prod.catalogDescription.trim()){
     const descLines = prod.catalogDescription.trim().split('\n').map(line => rtl(escapeHtmlKeepBold(line))).join('\n');
