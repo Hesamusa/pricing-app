@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:09:41.374Z",
+  "updatedAt": "2026-09-18T18:09:51.565Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -73,6 +73,11 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754977547_1.jpg?v=1789754979620",
           "path": "product-images/p_1789754876369ry8py_1789754977547_1.jpg",
           "sha": "73f4e5974d31caf962e32d519e1e17973d08b1ad"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754987933_0.jpg?v=1789754989801",
+          "path": "product-images/p_1789754876369ry8py_1789754987933_0.jpg",
+          "sha": "7ca1a89ad09860ac7bf3babe77ebc0ec5677b94f"
         }
       ],
       "stock": 0,
