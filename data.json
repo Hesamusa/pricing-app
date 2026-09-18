@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:12:28.389Z",
+  "updatedAt": "2026-09-18T18:15:01.852Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -53,6 +53,21 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789755299953t7rtq",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_1789754876369ry8py",
       "name": "پنجه گربه مفصلی",
