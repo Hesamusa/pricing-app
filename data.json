@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T20:14:10.175Z",
+  "updatedAt": "2026-09-18T20:17:49.301Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -513,7 +513,7 @@
     },
     {
       "id": "p_17887965710100v1nz",
-      "name": "تیرکس مکانیکی",
+      "name": "تیرکس مکانیکی مفصل ",
       "weight": 45,
       "printHours": 4.5,
       "manualHours": 0,
