@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17T17:11:00.436Z",
+  "updatedAt": "2026-09-18T17:55:51.247Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -53,6 +53,21 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789754149401xhtqx",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_17896307539150tvyy",
       "name": "جا کلیدی توپ بسکتبال",
