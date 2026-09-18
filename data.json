@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:00:27.384Z",
+  "updatedAt": "2026-09-18T18:01:14.286Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -65,14 +65,14 @@
       "marginR": null,
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754207959_0.jpg?v=1789754209937",
-          "path": "product-images/p_1789754149401xhtqx_1789754207959_0.jpg",
-          "sha": "938ce5537c221fceb462870c79a1ff03205e84c3"
-        },
-        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754188096_0.jpg?v=1789754190168",
           "path": "product-images/p_1789754149401xhtqx_1789754188096_0.jpg",
           "sha": "cc93a13c931f6664c2df11e1dfaafb2d2a26d639"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754207959_0.jpg?v=1789754209937",
+          "path": "product-images/p_1789754149401xhtqx_1789754207959_0.jpg",
+          "sha": "938ce5537c221fceb462870c79a1ff03205e84c3"
         },
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754190329_1.jpg?v=1789754192106",
