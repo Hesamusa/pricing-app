@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T17:57:11.913Z",
+  "updatedAt": "2026-09-18T17:57:25.054Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
     {
       "id": "p_1789754149401xhtqx",
       "name": "محصول جدیدگربه تمیزکار",
-      "weight": 30,
+      "weight": 25,
       "printHours": 1,
       "manualHours": 0,
       "paintHours": 0,
