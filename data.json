@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:09:07.668Z",
+  "updatedAt": "2026-09-18T18:09:22.075Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -55,7 +55,7 @@
   "products": [
     {
       "id": "p_1789754876369ry8py",
-      "name": "پنجه گربه ",
+      "name": "پنجه گربه مفص",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
