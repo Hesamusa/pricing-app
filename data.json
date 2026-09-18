@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:32:33.077Z",
+  "updatedAt": "2026-09-18T18:32:39.004Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -803,7 +803,7 @@
       "paintHours": 0.5,
       "accessoryCost": 10000,
       "marginW": null,
-      "marginR": 85,
+      "marginR": 120,
       "stock": 0,
       "category": "g_mtqsahf4t778",
       "images": [
@@ -830,11 +830,10 @@
       ],
       "telegramMessageId": null,
       "telegramMessageIds": [
-        183,
-        184,
-        185,
-        186,
-        187
+        244,
+        245,
+        246,
+        247
       ],
       "catalogDescription": "کیفت رو از سادگی دربیار! این آویز فانتزی و دوست‌داشتنی انقدر سبک و باکیفیته که سریع میشه رفیق فابریک کوله‌پشتیت. یه همراه کوچک و خاص که استایلت رو متفاوت می‌کنه و هر بار می‌بینیش، حس خوب بهت می‌ده. 🖤"
     },
