@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:15:01.852Z",
+  "updatedAt": "2026-09-18T18:15:10.452Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -55,7 +55,7 @@
   "products": [
     {
       "id": "p_1789755299953t7rtq",
-      "name": "محصول جدید",
+      "name": "پنجه ",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
