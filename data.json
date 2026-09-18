@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:17:28.766Z",
+  "updatedAt": "2026-09-18T18:17:33.713Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -57,7 +57,7 @@
       "id": "p_1789755299953t7rtq",
       "name": "پنجه گربه فلت ",
       "weight": 8,
-      "printHours": 3,
+      "printHours": 1,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
