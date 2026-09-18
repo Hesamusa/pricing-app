@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-18T18:18:33.916Z",
+  "updatedAt": "2026-09-18T18:28:14.275Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -103,7 +103,7 @@
       "printHours": 1,
       "manualHours": 0,
       "paintHours": 0,
-      "accessoryCost": 0,
+      "accessoryCost": 10000,
       "marginW": null,
       "marginR": null,
       "images": [
