@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-19T09:08:19.599Z",
+  "updatedAt": "2026-09-19T09:37:43.471Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -54,6 +54,24 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789810661693swjgy",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_1789755299953t7rtq",
       "name": "پنجه گربه فلت ",
