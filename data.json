@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-19T09:38:10.878Z",
+  "updatedAt": "2026-09-19T09:38:13.686Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
   "products": [
     {
       "id": "p_1789810661693swjgy",
-      "name": "ابر بامزه ب",
+      "name": "ابر بامزه ",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
