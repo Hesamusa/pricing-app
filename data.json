@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-19T09:37:57.154Z",
+  "updatedAt": "2026-09-19T09:38:04.034Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
   "products": [
     {
       "id": "p_1789810661693swjgy",
-      "name": "",
+      "name": "ابر ",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
@@ -72,6 +72,11 @@
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810673753_0.jpg?v=1789810675380",
           "path": "product-images/p_1789810661693swjgy_1789810673753_0.jpg",
           "sha": "b5384740fe87bbcf8cbd02b3ff3fc2946e483431"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810675443_1.jpg?v=1789810677159",
+          "path": "product-images/p_1789810661693swjgy_1789810675443_1.jpg",
+          "sha": "bb3f802e77e9b7db9275e3cf9ce041bb639ba14b"
         }
       ],
       "stock": 0,
