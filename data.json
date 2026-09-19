@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-19T09:39:39.795Z",
+  "updatedAt": "2026-09-19T09:39:42.989Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -58,7 +58,7 @@
       "id": "p_1789810661693swjgy",
       "name": "چارم بگ ابر بامزه با پاهای مفصلی",
       "weight": 10,
-      "printHours": 3,
+      "printHours": 1,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
