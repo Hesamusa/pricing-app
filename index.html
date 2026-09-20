@@ -1723,6 +1723,10 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
         </div>
         <div class="hint" id="sale_stock_hint"></div>
       </div>
+      <div class="field" id="sale_color_field" style="display:none;">
+        <label>رنگ محصول</label>
+        <select class="gh-field" id="sale_color" onchange="onSaleColorChange(this.value)"></select>
+      </div>
       <div class="field">
         <label>نوع فروش</label>
         <div class="sale-type-row" id="sale-type-row">
@@ -1826,6 +1830,10 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
             <div class="product-picker-list" id="order_item_picker_list"></div>
           </div>
         </div>
+      </div>
+      <div class="field" id="order_color_field" style="display:none;">
+        <label>رنگ محصول</label>
+        <select class="gh-field" id="order_item_color" onchange="orderItemColorId=this.value"></select>
       </div>
       <div class="grid-2">
         <div class="field">
@@ -2271,6 +2279,7 @@ let consignFormHasStand = true;
 let consignTableMissing = false;
 let currentOrderItems = [];
 let orderItemProductId = null;
+let orderItemColorId = null;
 let orderItemPickerQuery = '';
 let ordersFilter = 'all';
 let openProductId = null;
@@ -2283,6 +2292,7 @@ let productStockFilter = false;
 let customerSearchQuery = '';
 let salesSearchQuery = '';
 let saleProductId = null;
+let saleColorId = null;
 let productPickerQuery = '';
 let ready = false;
 let isAdmin = false;
@@ -3418,6 +3428,7 @@ function migrateProductImages(){
     // محصولات قدیمی رنگ نداشتن؛ آرایه/آبجکت خالی می‌ذاریم تا کدهای بعدی مطمئن باشن این فیلدها هست.
     if(!Array.isArray(p.colors)) p.colors = [];
     if(!p.colorStock || typeof p.colorStock !== 'object') p.colorStock = {};
+    if(p.colors && p.colors.length) syncProductStockFromColors(p); else p.stock=Math.max(0,Number(p.stock)||0);
   });
 }
 
@@ -4883,6 +4894,7 @@ function adjustStock(id, delta){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(!prod) return;
+  if(prod.colors && prod.colors.length){ customAlert('این محصول رنگ‌بندی دارد؛ موجودی را از بخش هر رنگ تغییر بده.'); return; }
   const newVal = Math.max(0, (prod.stock||0) + delta);
   prod.stock = newVal;
   updateProductDisplay(id);
@@ -5417,11 +5429,19 @@ function currentSaleProductId(){
 }
 
 function updateProductPickerLabel(){
-  const label = document.getElementById('product_picker_label');
-  if(!label) return;
+  const label = document.getElementById('product_picker_label'); if(!label) return;
   const prod = products.find(p => p.id === saleProductId);
   label.textContent = prod ? prod.name : (products.length ? '— انتخاب محصول —' : 'ابتدا یک محصول اضافه کن');
+  updateSaleColorPicker();
 }
+function updateSaleColorPicker(){
+  const field=document.getElementById('sale_color_field'), select=document.getElementById('sale_color'); if(!field||!select)return;
+  const prod=products.find(p=>p.id===currentSaleProductId());
+  if(!prod || !prod.colors || !prod.colors.length){field.style.display='none';select.innerHTML='';saleColorId=null;return;}
+  field.style.display='block'; if(!prod.colors.some(c=>c.id===saleColorId)) saleColorId=prod.colors[0].id;
+  select.innerHTML=prod.colors.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)} — ${fa.format(productColorStock(prod,c.id))} عدد</option>`).join(''); select.value=saleColorId||'';
+}
+function onSaleColorChange(v){saleColorId=v||null;updateSaleStockHint();}
 
 function toggleProductPicker(){
   const picker = document.getElementById('product_picker');
@@ -5459,7 +5479,7 @@ function renderProductPickerList(){
   listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===saleProductId?'active':''}" onclick="selectSaleProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
 }
 function selectSaleProduct(id){
-  saleProductId = id;
+  saleProductId = id; saleColorId = null;
   updateProductPickerLabel();
   closeProductPicker();
   onSaleProductChange();
@@ -5472,13 +5492,10 @@ function onSaleProductChange(){
 }
 
 function updateSaleStockHint(){
-  const hintEl = document.getElementById('sale_stock_hint');
-  if(!hintEl) return;
-  const prod = products.find(p => p.id === currentSaleProductId());
-  if(!prod){ hintEl.textContent = ''; return; }
-  const stock = prod.stock || 0;
-  hintEl.textContent = 'موجودی فعلی: ' + fa.format(stock) + ' عدد';
-  hintEl.style.color = stock <= 0 ? 'var(--red)' : '';
+  const hintEl=document.getElementById('sale_stock_hint'); if(!hintEl)return;
+  const prod=products.find(p=>p.id===currentSaleProductId()); if(!prod){hintEl.textContent='';return;}
+  const stock=(saleColorId&&prod.colors&&prod.colors.length)?productColorStock(prod,saleColorId):(prod.stock||0);
+  hintEl.textContent=(saleColorId?'موجودی این رنگ: ':'موجودی فعلی: ')+fa.format(stock)+' عدد'; hintEl.style.color=stock<=0?'var(--red)':'';
 }
 
 // حداقل و حداکثر مجاز برای قیمت فروش نسبت به قیمتی که مدیر در بخش
@@ -5779,11 +5796,9 @@ async function submitSale(){
     return;
   }
   const qty = Math.max(1, Math.round(parseNum(document.getElementById('sale_qty').value)) || 1);
-  const currentStock = prod.stock || 0;
-  if(qty > currentStock){
-    const ok = await customConfirm('موجودی انبار این محصول ' + fa.format(currentStock) + ' عدد است، کمتر از تعداد فروش (' + fa.format(qty) + ' عدد).\nموجودی بعد از ثبت این فروش منفی می‌شه. ادامه بدم؟');
-    if(!ok) return;
-  }
+  if(prod.colors && prod.colors.length && !saleColorId){ await customAlert('برای این محصول اول رنگ را انتخاب کن.'); return; }
+  const currentStock=(saleColorId && prod.colors && prod.colors.length)?productColorStock(prod,saleColorId):(prod.stock||0);
+  if(qty > currentStock){ await customAlert('موجودی کافی نیست. موجودی قابل فروش: '+fa.format(currentStock)+' عدد.'); return; }
   clampSalePrice();
   const price = parseNum(document.getElementById('sale_price').value);
   const dateVal = document.getElementById('sale_date').value || jalaliToIso(...todayJalali());
@@ -5792,7 +5807,8 @@ async function submitSale(){
   const buyerPhone = normalizeDigits(phoneEl.value);
   const type = document.getElementById('sale_price').dataset.type || 'retail';
   const c = calc(prod);
-  const saleData = makeSale(prod.id, prod.name, qty, price, c.total, type, note, dateVal, buyerName, buyerPhone);
+  const saleData=makeSale(prod.id,prod.name,qty,price,c.total,type,note,dateVal,buyerName,buyerPhone);
+  saleData.colorId=saleColorId||null; saleData.colorName=saleColorId&&prod.colors&&prod.colors.length?(((prod.colors||[]).find(c=>c.id===saleColorId)||{}).name||''):'';
   saleData.sellerEmail = currentUser.email;
   saleData.sellerName = currentUser.name || currentUser.email;
   let insertedRow;
@@ -5802,7 +5818,7 @@ async function submitSale(){
     insertedRow = data;
   }catch(e){ await customAlert('ثبت فروش ناموفق بود؛ اتصال رو چک کن.'); return; }
   sales.unshift({ ...saleData, id: insertedRow.id, sellerId: currentUser.id });
-  prod.stock = currentStock - qty;
+  if(saleColorId && prod.colors && prod.colors.length){ prod.colorStock=prod.colorStock||{}; prod.colorStock[saleColorId]=Math.max(0,(prod.colorStock[saleColorId]||0)-qty); syncProductStockFromColors(prod); } else prod.stock=Math.max(0,(prod.stock||0)-qty);
   if(buyerName || buyerPhone){
     await upsertCustomer(buyerName, buyerPhone);
     renderCustomersTab();
@@ -5811,6 +5827,7 @@ async function submitSale(){
   persist();
   resetSaleForm();
   renderSalesTab();
+  renderSummary();
 }
 
 async function deleteSale(id){
@@ -5824,10 +5841,11 @@ async function deleteSale(id){
   sales = sales.filter(s => s.id !== id);
   if(sale){
     const prod = products.find(p => p.id === sale.productId);
-    if(prod){ prod.stock = (prod.stock||0) + sale.qty; updateProductDisplay(prod.id); }
+    if(prod){ if(sale.colorId && prod.colors && prod.colors.length){prod.colorStock=prod.colorStock||{};prod.colorStock[sale.colorId]=(prod.colorStock[sale.colorId]||0)+sale.qty;syncProductStockFromColors(prod);}else prod.stock=(prod.stock||0)+sale.qty; updateProductDisplay(prod.id); }
   }
   persist();
   renderSalesTab();
+  renderSummary();
 }
 
 function renderSalesTab(){
@@ -5931,9 +5949,10 @@ async function editOrderTotalPrice(id){
   if(!order) return;
   const input = prompt('قیمت کل سفارش (تومان):', order.totalPrice ? String(order.totalPrice) : '');
   if(input === null) return;
-  const prevVal = order.totalPrice;
-  const val = parseNum(input);
-  order.totalPrice = val > 0 ? val : 0;
+  const prevVal=order.totalPrice;
+  const val=parseNum(input);
+  if(val<orderPaidTotal(order)){await customAlert('قیمت کل سفارش نمی‌تواند کمتر از مبلغ پرداخت‌شده باشد.');return;}
+  order.totalPrice=val>0?val:0;
   renderOrdersTab();
   renderSummary();
   const ok = await syncOrderToSupabase(order);
@@ -5945,9 +5964,10 @@ async function addOrderPayment(id){
   if(!order) return;
   const input = prompt('مبلغ پرداخت جدید (تومان):');
   if(input === null) return;
-  const amount = parseNum(input);
-  if(!amount || amount <= 0){ await customAlert('مبلغ نامعتبره.'); return; }
-  if(!Array.isArray(order.payments)) order.payments = [];
+  const amount=parseNum(input);
+  if(!amount || amount<=0){await customAlert('مبلغ نامعتبره.');return;}
+  if(amount>orderRemaining(order)){await customAlert('پرداخت نمی‌تواند از مانده سفارش بیشتر باشد.');return;}
+  if(!Array.isArray(order.payments)) order.payments=[];
   const payment = makePayment(amount);
   order.payments.push(payment);
   renderOrdersTab();
@@ -6005,7 +6025,7 @@ function renderOrderItemPickerList(){
   listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===orderItemProductId?'active':''}" onclick="selectOrderItemProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
 }
 function selectOrderItemProduct(id){
-  orderItemProductId = id;
+  orderItemProductId=id; orderItemColorId=null;
   updateOrderItemPickerLabel();
   closeOrderItemPicker();
 }
@@ -6014,6 +6034,12 @@ function updateOrderItemPickerLabel(){
   if(!label) return;
   const prod = products.find(p => p.id === orderItemProductId);
   label.textContent = prod ? prod.name : (products.length ? '— انتخاب محصول —' : 'ابتدا یک محصول اضافه کن');
+}
+function updateOrderColorPicker(){
+  const field=document.getElementById('order_color_field'),select=document.getElementById('order_item_color');if(!field||!select)return;
+  const prod=products.find(p=>p.id===orderItemProductId);if(!prod||!prod.colors||!prod.colors.length){field.style.display='none';select.innerHTML='';orderItemColorId=null;return;}
+  field.style.display='block';if(!prod.colors.some(c=>c.id===orderItemColorId))orderItemColorId=prod.colors[0].id;
+  select.innerHTML=prod.colors.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)} — ${fa.format(productColorStock(prod,c.id))} عدد</option>`).join('');select.value=orderItemColorId||'';
 }
 
 async function addItemToOrder(){
@@ -6025,9 +6051,11 @@ async function addItemToOrder(){
   if(!prod){ await customAlert('اول یک محصول رو انتخاب کن.'); return; }
   const qtyEl = document.getElementById('order_item_qty');
   const qty = Math.max(1, Math.round(parseNum(qtyEl.value)) || 1);
-  const existing = currentOrderItems.find(it => it.productId === prod.id);
-  if(existing){ existing.qty += qty; }
-  else{ currentOrderItems.push({productId: prod.id, productName: prod.name, qty}); }
+  if(prod.colors && prod.colors.length && !orderItemColorId){await customAlert('برای این محصول اول رنگ را انتخاب کن.');return;}
+  const available=orderItemColorId?productColorStock(prod,orderItemColorId):(prod.stock||0);
+  const existing=currentOrderItems.find(it=>it.productId===prod.id&&(it.colorId||null)===(orderItemColorId||null));
+  if(available<qty || (existing && available<existing.qty+qty)){await customAlert('موجودی کافی نیست.');return;}
+  if(existing) existing.qty+=qty; else currentOrderItems.push({productId:prod.id,productName:prod.name,colorId:orderItemColorId||null,colorName:orderItemColorId&&prod.colors&&prod.colors.length?(((prod.colors||[]).find(c=>c.id===orderItemColorId)||{}).name||''):'',qty});
   qtyEl.value = '۱';
   renderOrderItemsList();
 }
@@ -6044,7 +6072,7 @@ function renderOrderItemsList(){
   }
   el.innerHTML = currentOrderItems.map((it, i) => `
     <div class="order-item-row">
-      <span class="order-item-row-name">${escapeHtml(it.productName)}</span>
+      <span class="order-item-row-name">${escapeHtml(it.productName)}${it.colorName ? ' · '+escapeHtml(it.colorName) : ''}</span>
       <span class="order-item-row-qty mono">× ${fa.format(it.qty)}</span>
       <button type="button" class="order-item-row-del" onclick="removeOrderItem(${i})">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
@@ -6055,6 +6083,7 @@ function renderOrderItemsList(){
 function resetOrderForm(){
   currentOrderItems = [];
   orderItemProductId = null;
+  orderItemColorId = null;
   updateOrderItemPickerLabel();
   closeOrderItemPicker();
   renderOrderItemsList();
@@ -6094,6 +6123,7 @@ async function submitOrder(){
   const dueDate = document.getElementById('order_due_date').value || null;
   const totalPrice = parseNum(document.getElementById('order_total_price').value);
   const prepayment = parseNum(document.getElementById('order_prepayment').value);
+  if(prepayment > totalPrice){ await customAlert('پیش‌پرداخت نمی‌تواند از مبلغ کل سفارش بیشتر باشد.'); return; }
   const payments = prepayment > 0 ? [makePayment(prepayment, 'پیش‌پرداخت اولیه')] : [];
   const orderData = makeOrder(currentOrderItems.slice(), name, phone, dueDate, notes, totalPrice, payments);
   orderData.creatorEmail = currentUser.email;
@@ -6114,14 +6144,20 @@ async function submitOrder(){
   renderSummary();
 }
 
-async function setOrderStatus(id, status){
-  const order = orders.find(o => o.id === id);
-  if(!order) return;
-  const prevStatus = order.status;
-  order.status = status;
-  renderOrdersTab();
-  const ok = await syncOrderToSupabase(order);
-  if(!ok){ order.status = prevStatus; renderOrdersTab(); }
+async function setOrderStatus(id,status){
+  const order=orders.find(o=>o.id===id);if(!order)return;const prevStatus=order.status;if(prevStatus===status)return;
+  const items=Array.isArray(order.items)?order.items:[];
+  if(status==='done'&&prevStatus!=='done'){
+    for(const it of items){const prod=products.find(p=>p.id===it.productId);const available=prod?(it.colorId?productColorStock(prod,it.colorId):(prod.stock||0)):0;if(!prod||available<it.qty){await customAlert('موجودی کافی برای «'+(it.productName||'محصول')+'» وجود ندارد.');return;}}
+    items.forEach(it=>applyItemStockDelta(it.productId,it.colorId||null,-it.qty));
+  }else if(prevStatus==='done'&&status!=='done'){items.forEach(it=>applyItemStockDelta(it.productId,it.colorId||null,it.qty));}
+  order.status=status;renderOrdersTab();renderProducts();renderSummary();
+  const ok=await syncOrderToSupabase(order);
+  if(!ok){
+    if(status==='done'&&prevStatus!=='done')items.forEach(it=>applyItemStockDelta(it.productId,it.colorId||null,it.qty));
+    else if(prevStatus==='done'&&status!=='done')items.forEach(it=>applyItemStockDelta(it.productId,it.colorId||null,-it.qty));
+    order.status=prevStatus;renderOrdersTab();renderProducts();renderSummary();
+  }else persist();
 }
 
 async function deleteOrder(id){
@@ -6131,8 +6167,10 @@ async function deleteOrder(id){
     const { error } = await sb.from('orders').delete().eq('id', id);
     if(error){ await customAlert('حذف سفارش روی سرور ناموفق بود: ' + error.message); return; }
   }catch(e){ await customAlert('حذف سفارش ناموفق بود؛ اتصال رو چک کن.'); return; }
+  const order = orders.find(o=>o.id===id);
+  if(order && order.status==='done') (order.items||[]).forEach(it=>applyItemStockDelta(it.productId,it.colorId||null,it.qty));
   orders = orders.filter(o => o.id !== id);
-  renderOrdersTab();
+  renderOrdersTab(); renderProducts(); renderSummary(); persist();
   renderSummary();
 }
 
