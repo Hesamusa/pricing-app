@@ -343,6 +343,27 @@
   }
   .stock-btn:active{opacity:0.6;}
   .stock-input{flex:1; text-align:center;}
+
+  .color-chip-list{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .color-chip{display:flex; align-items:center; gap:6px; background:var(--bg); border-radius:14px; padding:6px 6px 6px 10px;}
+  .color-swatch{width:22px; height:22px; border-radius:50%; flex-shrink:0; box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.12);}
+  .color-swatch-mini{display:inline-block; width:12px; height:12px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); margin-inline-end:3px;}
+  .head-color-dots{display:inline-flex; align-items:center;}
+  .color-chip-name{font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; max-width:90px; overflow:hidden; text-overflow:ellipsis;}
+  .color-chip-stock{display:flex; align-items:center; gap:4px; background:var(--card); border-radius:10px; padding:2px 4px;}
+  .color-chip-stock b{font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:13px; min-width:16px; text-align:center; direction:ltr;}
+  .color-stock-btn{width:24px; height:24px; border-radius:8px; border:none; background:transparent; color:var(--ink-soft); font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:'Vazirmatn',sans-serif;}
+  .color-stock-btn:active{opacity:.6;}
+  .color-chip-remove{width:22px; height:22px; border-radius:50%; border:none; background:transparent; color:var(--ink-soft); font-size:13px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;}
+  .color-chip-remove:active{color:var(--red);}
+  .color-add-row{display:flex; align-items:center; gap:8px; margin:0 0 10px;}
+  .color-pick-input{width:44px; height:44px; padding:2px; border:none; border-radius:12px; background:var(--bg); cursor:pointer; flex-shrink:0;}
+  .color-name-input{flex:1; min-width:0; border:none; background:var(--bg); border-radius:12px; padding:0 12px; height:44px; font-size:14px; color:var(--ink); font-family:'Vazirmatn',sans-serif; direction:rtl; text-align:right;}
+  .color-name-input:focus{outline:2px solid var(--orange); outline-offset:0;}
+  .color-option-row{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0;}
+  .color-option-chip{display:flex; align-items:center; gap:6px; background:var(--bg); border:1.5px solid transparent; border-radius:14px; padding:8px 12px; cursor:pointer; font-family:'Vazirmatn',sans-serif; font-size:13px; font-weight:700; color:var(--ink);}
+  .color-option-chip.active{border-color:var(--blue); background:var(--blue-soft); color:var(--blue);}
+  .color-option-chip .color-swatch-mini{width:16px; height:16px; margin-inline-end:0;}
   .gh-field{
     width:100%; border:none; background:var(--bg); border-radius:14px; padding:14px;
     font-size:16px; color:var(--ink); height:var(--tap);
@@ -1806,6 +1827,10 @@
         </div>
         <div class="hint" id="consign_item_stock_hint"></div>
       </div>
+      <div class="field" id="consign_item_color_field" style="display:none;">
+        <label>رنگ</label>
+        <div class="color-option-row" id="consign_item_color_row"></div>
+      </div>
       <div class="grid-2">
         <div class="field">
           <label>تعداد تحویلی</label>
@@ -1909,6 +1934,7 @@ let orders = [];
 let consignments = [];
 let currentConsignItems = [];
 let consignItemProductId = null;
+let consignItemColorId = null;
 let consignItemPickerQuery = '';
 let consignFilter = 'all';
 let consignHistoryOpen = new Set();
@@ -2177,10 +2203,92 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
     marginW: null, marginR: null, // null = use global default
     images: [],
     stock: 0,
+    colors: [], // [{id, name, hex}] — رنگ‌های این محصول (اگه محصول رنگی نباشه، خالی می‌مونه)
+    colorStock: {}, // {colorId: qty} — موجودی به تفکیک رنگ؛ prod.stock همیشه جمع همینه وقتی رنگ تعریف شده
     catalogDescription: '', // توضیح جذاب مخصوص این محصول، برای پست کانال تلگرام
     telegramMessageIds: [] // شناسه‌ی پست(های) این محصول توی کانال تلگرام کاتالوگ (اگه فعال باشه) — اگه چند عکس داشته باشه، یه آلبومه و چند آیدی داره
   };
 }
+
+// ————— رنگ‌های محصول: هر محصول می‌تونه چند رنگ داشته باشه، هر رنگ موجودی جدای خودش رو داره —————
+function newColorId(){ return 'col_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function productColorStock(prod, colorId){ return (prod.colorStock && prod.colorStock[colorId]) || 0; }
+// موجودی قابل‌استفاده‌ی یه محصول: اگه colorId داده بشه و محصول همچین رنگی داشته باشه، فقط موجودی همون رنگ؛ وگرنه جمع کل
+function productAvailableStock(prod, colorId){
+  if(!prod) return 0;
+  if(colorId && prod.colors && prod.colors.some(c => c.id === colorId)) return productColorStock(prod, colorId);
+  return prod.stock || 0;
+}
+// جمع موجودی رنگ‌ها رو با prod.stock سینک می‌کنه — همیشه بعد از هر تغییر توی colorStock صدا زده می‌شه
+function syncProductStockFromColors(prod){
+  if(!prod.colors || !prod.colors.length) return;
+  prod.colorStock = prod.colorStock || {};
+  prod.stock = prod.colors.reduce((s,c) => s + (prod.colorStock[c.id]||0), 0);
+}
+function submitAddProductColor(id){
+  if(!isAdmin) return;
+  const prod = products.find(p=>p.id===id);
+  if(!prod) return;
+  const hexInput = document.getElementById('colorPickInput_'+id);
+  const nameInput = document.getElementById('colorNameInput_'+id);
+  const name = (nameInput && nameInput.value.trim()) || '';
+  if(!name){ if(nameInput) nameInput.focus(); return; }
+  const hex = (hexInput && hexInput.value) || '#c0392b';
+  if(!prod.colors) prod.colors = [];
+  if(!prod.colorStock) prod.colorStock = {};
+  const cid = newColorId();
+  prod.colors.push({id: cid, name, hex});
+  prod.colorStock[cid] = 0;
+  syncProductStockFromColors(prod);
+  persist();
+  renderProducts();
+  setTimeout(() => {
+    const card = document.getElementById('card_'+id);
+    if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 30);
+}
+async function removeProductColor(id, colorId){
+  if(!isAdmin) return;
+  const prod = products.find(p=>p.id===id);
+  if(!prod) return;
+  const col = (prod.colors||[]).find(c=>c.id===colorId);
+  if(!col) return;
+  const stockHeld = productColorStock(prod, colorId);
+  const msg = stockHeld > 0
+    ? 'رنگ «' + col.name + '» الان ' + fa.format(stockHeld) + ' عدد موجودی داره. حذفش کنم؟ (این عدد از موجودی کم می‌شه)'
+    : 'رنگ «' + col.name + '» حذف بشه؟';
+  if(!await customConfirm(msg)) return;
+  prod.colors = (prod.colors||[]).filter(c=>c.id!==colorId);
+  if(prod.colorStock) delete prod.colorStock[colorId];
+  syncProductStockFromColors(prod);
+  persist();
+  renderProducts();
+}
+function adjustColorStock(id, colorId, delta){
+  if(!isAdmin) return;
+  const prod = products.find(p=>p.id===id);
+  if(!prod) return;
+  prod.colorStock = prod.colorStock || {};
+  prod.colorStock[colorId] = Math.max(0, (prod.colorStock[colorId]||0) + delta);
+  syncProductStockFromColors(prod);
+  updateProductDisplay(id);
+  persist();
+}
+// موجودی یه محصول رو تغییر می‌ده؛ اگه colorId مشخص و معتبر باشه فقط موجودی همون رنگ عوض می‌شه، وگرنه موجودی کلی
+function applyItemStockDelta(productId, colorId, delta){
+  const prod = products.find(p=>p.id===productId);
+  if(!prod) return;
+  if(colorId && prod.colors && prod.colors.some(c=>c.id===colorId)){
+    prod.colorStock = prod.colorStock || {};
+    prod.colorStock[colorId] = Math.max(0, (prod.colorStock[colorId]||0) + delta);
+    syncProductStockFromColors(prod);
+  }else{
+    prod.stock = Math.max(0, (prod.stock||0) + delta);
+  }
+  updateProductDisplay(productId);
+}
+// کلید یکتا برای هر ترکیب محصول+رنگ (رنگ نداشته باشه یعنی '')
+function ciKey(productId, colorId){ return productId + '::' + (colorId || ''); }
 
 let saveTimer;
 function persist(opts){
@@ -2997,6 +3105,9 @@ function migrateProductImages(){
       p.images = p.imageUrl ? [{url: p.imageUrl, path: p.imagePath||null, sha: p.imageSha||null}] : [];
       delete p.imageUrl; delete p.imagePath; delete p.imageSha;
     }
+    // محصولات قدیمی رنگ نداشتن؛ آرایه/آبجکت خالی می‌ذاریم تا کدهای بعدی مطمئن باشن این فیلدها هست.
+    if(!Array.isArray(p.colors)) p.colors = [];
+    if(!p.colorStock || typeof p.colorStock !== 'object') p.colorStock = {};
   });
 }
 
@@ -3073,6 +3184,7 @@ function renderProducts(){
             <span>خرده: <b id="pv_r_${prod.id}">${fmt(c.priceR)}</b></span>
             <span>موجودی: <b id="stockBadge_${prod.id}" style="${(prod.stock||0)<=0?'color:var(--red)':''}">${fa.format(prod.stock||0)}</b></span>
             ${productConsignedQty(prod.id) > 0 ? `<span>امانی: <b id="consignBadge_${prod.id}" style="color:var(--blue);">${fa.format(productConsignedQty(prod.id))}</b></span>` : ''}
+            ${(prod.colors && prod.colors.length) ? `<span class="head-color-dots">${prod.colors.map(col=>`<span class="color-swatch-mini" style="background:${escapeHtml(col.hex)}" title="${escapeHtml(col.name)}"></span>`).join('')}</span>` : ''}
           </div>
         </div>
         <div class="head-thumb" id="headThumb_${prod.id}" onclick="event.stopPropagation(); headThumbClick('${prod.id}')" style="cursor:pointer;">${(prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32)}</div>
@@ -3115,7 +3227,23 @@ function renderProducts(){
           </div>
 
           <div class="stock-field">
-            <label>موجودی در انبار</label>
+            <label>رنگ‌ها و موجودی در انبار</label>
+            ${(prod.colors && prod.colors.length) ? `
+            <div class="color-chip-list" id="colorList_${prod.id}">
+              ${prod.colors.map(col => `
+                <div class="color-chip">
+                  <span class="color-swatch" style="background:${escapeHtml(col.hex)}"></span>
+                  <span class="color-chip-name">${escapeHtml(col.name)}</span>
+                  <span class="color-chip-stock">
+                    <button type="button" class="color-stock-btn" ${lkAttr} onclick="event.stopPropagation(); adjustColorStock('${prod.id}','${col.id}',-1)">−</button>
+                    <b id="colorStockVal_${prod.id}_${col.id}">${fa.format(productColorStock(prod,col.id))}</b>
+                    <button type="button" class="color-stock-btn" ${lkAttr} onclick="event.stopPropagation(); adjustColorStock('${prod.id}','${col.id}',1)">+</button>
+                  </span>
+                  ${lk ? '' : `<button type="button" class="color-chip-remove" onclick="event.stopPropagation(); removeProductColor('${prod.id}','${col.id}')">✕</button>`}
+                </div>`).join('')}
+            </div>
+            <div class="hint" style="margin:0 0 10px;">جمع کل موجودی (از روی رنگ‌ها): <b id="stockBadge2_${prod.id}">${fa.format(prod.stock||0)}</b> عدد</div>
+            ` : `
             <div class="stock-stepper">
               <button type="button" class="stock-btn" ${lkAttr} onclick="event.stopPropagation(); adjustStock('${prod.id}', -1)" ${lk?'style="opacity:.4;pointer-events:none;"':''}>−</button>
               <input type="text" class="num-input stock-input ${lkClass}" ${lkAttr} id="stockInput_${prod.id}" inputmode="numeric"
@@ -3124,7 +3252,14 @@ function renderProducts(){
               <button type="button" class="stock-btn" ${lkAttr} onclick="event.stopPropagation(); adjustStock('${prod.id}', 1)" ${lk?'style="opacity:.4;pointer-events:none;"':''}>+</button>
               <span class="unit">عدد</span>
             </div>
-            <div class="hint">با ثبت فروش از تب «فروش»، این عدد خودکار کم می‌شه.</div>
+            `}
+            ${lk ? '' : `
+            <div class="color-add-row">
+              <input type="color" class="color-pick-input" id="colorPickInput_${prod.id}" value="#c0392b" onclick="event.stopPropagation()">
+              <input type="text" class="color-name-input" id="colorNameInput_${prod.id}" placeholder="اسم رنگ جدید (مثلاً قرمز)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitAddProductColor('${prod.id}');}">
+              <button type="button" class="add-btn" style="width:auto; margin:0; padding:0 16px; min-height:44px; background:var(--blue);" onclick="event.stopPropagation(); submitAddProductColor('${prod.id}')">+ رنگ</button>
+            </div>`}
+            <div class="hint">با ثبت فروش از تب «فروش»، این عدد خودکار کم می‌شه. اگه محصولت چند رنگه، از همین‌جا رنگ‌هاش رو تعریف کن تا توی واگذاری امانی و فروش هم بشه رنگ رو مشخص کرد.</div>
           </div>
           <div class="grid-2">
             <div class="field">
@@ -4425,6 +4560,12 @@ function updateProductDisplay(id){
   const stock = prod.stock||0;
   const badge = document.getElementById('stockBadge_'+id);
   if(badge){ badge.textContent = fa.format(stock); badge.style.color = stock<=0 ? 'var(--red)' : ''; }
+  const badge2 = document.getElementById('stockBadge2_'+id);
+  if(badge2) badge2.textContent = fa.format(stock);
+  (prod.colors||[]).forEach(col => {
+    const cel = document.getElementById('colorStockVal_'+id+'_'+col.id);
+    if(cel) cel.textContent = fa.format(productColorStock(prod, col.id));
+  });
   updateSaleStockHint();
 }
 
@@ -5793,11 +5934,14 @@ function renderOrderAccountingBlock(o){
 //   موجودی فعلی نزد فروشگاه = delivered − sold − returned
 //   نیاز به شارژ = ظرفیت مطلوب − موجودی فعلی
 
-function makeConsignItem(prod, qty, unitPrice, targetQty){
+function makeConsignItem(prod, qty, unitPrice, targetQty, colorId, colorName, colorHex){
   const c = calc(prod);
   return {
     productId: prod.id,
     productName: prod.name,
+    colorId: colorId || null, // اگه محصول رنگی باشه، شناسه‌ی همون رنگ؛ وگرنه null
+    colorName: colorName || null,
+    colorHex: colorHex || null,
     deliveredQty: Math.max(0, Math.round(qty) || 0), // جمع کل تحویلی (واگذاری اولیه + شارژهای بعدی) — مبنای محاسبه‌ی «نزد فروشگاه»
     rechargedQty: 0, // فقط جمع شارژهای بعدیه، نه واگذاری اولیه؛ همیشه از صفر شروع می‌شه
     soldQty: 0,
@@ -5819,7 +5963,7 @@ function makeConsignment(storeName, contactName, contactPhone, address, hasStand
     hasStand: !!hasStand,
     standCode: (standCode||'').trim(),
     items: items || [],
-    deliveries: [{ id: 'dl_'+Date.now(), date: today, items: (items||[]).map(it => ({productId: it.productId, qty: it.deliveredQty})), note: 'واگذاری اولیه' }],
+    deliveries: [{ id: 'dl_'+Date.now(), date: today, items: (items||[]).map(it => ({productId: it.productId, qty: it.deliveredQty, colorId: it.colorId||null, colorName: it.colorName||null})), note: 'واگذاری اولیه' }],
     saleLogs: [], // {id, date, items:[{productId, qty, unitPrice}], total}
     payments: [], // {id, amount, date, note}
     status: 'active', // 'active' | 'closed'
@@ -5917,6 +6061,7 @@ function openNewStoreModal(){
   updateConsignItemPickerLabel();
   closeConsignItemPicker();
   renderConsignItemsList();
+  renderConsignItemColorOptions();
   updateConsignItemHints();
   setConsignType(consignFormHasStand);
   const storeEl = document.getElementById('consign_store_name');
@@ -5973,6 +6118,7 @@ function renderConsignItemPickerList(){
 }
 function selectConsignItemProduct(id){
   consignItemProductId = id;
+  consignItemColorId = null;
   updateConsignItemPickerLabel();
   closeConsignItemPicker();
   // قیمت پیشنهادی عمده رو به‌عنوان پیش‌فرض قیمت تسویه با فروشگاه می‌ذاریم
@@ -5981,6 +6127,29 @@ function selectConsignItemProduct(id){
   if(prod && priceEl && !priceEl.value.trim()){
     priceEl.value = toFaNum(calc(prod).priceW, 0);
   }
+  renderConsignItemColorOptions();
+  updateConsignItemHints();
+}
+function renderConsignItemColorOptions(){
+  const field = document.getElementById('consign_item_color_field');
+  const row = document.getElementById('consign_item_color_row');
+  if(!field || !row) return;
+  const prod = products.find(p => p.id === consignItemProductId);
+  const colors = (prod && prod.colors) || [];
+  if(!colors.length){
+    field.style.display = 'none';
+    row.innerHTML = '';
+    return;
+  }
+  field.style.display = '';
+  row.innerHTML = colors.map(col => `
+    <button type="button" class="color-option-chip${col.id===consignItemColorId?' active':''}" onclick="event.stopPropagation(); selectConsignItemColor('${col.id}')">
+      <span class="color-swatch-mini" style="background:${escapeHtml(col.hex)}"></span>${escapeHtml(col.name)}
+    </button>`).join('');
+}
+function selectConsignItemColor(colorId){
+  consignItemColorId = colorId;
+  renderConsignItemColorOptions();
   updateConsignItemHints();
 }
 function updateConsignItemPickerLabel(){
@@ -5993,7 +6162,15 @@ function updateConsignItemHints(){
   const stockHint = document.getElementById('consign_item_stock_hint');
   const priceHint = document.getElementById('consign_item_price_hint');
   const prod = products.find(p => p.id === consignItemProductId);
-  if(stockHint) stockHint.textContent = prod ? ('موجودی انبار: ' + fa.format(prod.stock||0) + ' عدد') : '';
+  if(stockHint){
+    if(prod && prod.colors && prod.colors.length && !consignItemColorId){
+      stockHint.textContent = 'اول یکی از رنگ‌های زیر رو انتخاب کن.';
+    }else if(prod){
+      stockHint.textContent = 'موجودی انبار: ' + fa.format(productAvailableStock(prod, consignItemColorId)) + ' عدد';
+    }else{
+      stockHint.textContent = '';
+    }
+  }
   if(priceHint){
     if(prod){
       const c = calc(prod);
@@ -6008,9 +6185,15 @@ async function addItemToConsign(){
   if(!consignItemProductId && products.length){
     consignItemProductId = products[0].id;
     updateConsignItemPickerLabel();
+    renderConsignItemColorOptions();
   }
   const prod = products.find(p => p.id === consignItemProductId);
   if(!prod){ await customAlert('اول یک محصول رو انتخاب کن.'); return; }
+  if(prod.colors && prod.colors.length && !consignItemColorId){
+    await customAlert('این محصول چند رنگه؛ اول یکی از رنگ‌هاش رو انتخاب کن.');
+    return;
+  }
+  const col = consignItemColorId ? (prod.colors||[]).find(c=>c.id===consignItemColorId) : null;
   const qtyEl = document.getElementById('consign_item_qty');
   const priceEl = document.getElementById('consign_item_price');
   const targetEl = document.getElementById('consign_item_target');
@@ -6018,17 +6201,20 @@ async function addItemToConsign(){
   const price = Math.max(0, Math.round(parseNum(priceEl.value)) || 0);
   if(price <= 0){ await customAlert('قیمت واحد تسویه با فروشگاه رو وارد کن.'); priceEl.focus(); return; }
   const target = Math.max(0, Math.round(parseNum(targetEl.value)) || 0);
-  const existing = currentConsignItems.find(it => it.productId === prod.id);
+  const existing = currentConsignItems.find(it => it.productId === prod.id && (it.colorId||null) === (consignItemColorId||null));
   if(existing){
     existing.deliveredQty += qty;
     existing.unitPrice = price;
     if(target > 0) existing.targetQty = target;
   }else{
-    currentConsignItems.push(makeConsignItem(prod, qty, price, target > 0 ? target : qty));
+    currentConsignItems.push(makeConsignItem(prod, qty, price, target > 0 ? target : qty, consignItemColorId, col?col.name:null, col?col.hex:null));
   }
   qtyEl.value = '۱';
   priceEl.value = '';
   targetEl.value = '';
+  consignItemColorId = null;
+  renderConsignItemColorOptions();
+  updateConsignItemHints();
   renderConsignItemsList();
 }
 function removeConsignFormItem(index){
@@ -6044,7 +6230,7 @@ function renderConsignItemsList(){
   }
   el.innerHTML = currentConsignItems.map((it, i) => `
     <div class="order-item-row">
-      <span class="order-item-row-name">${escapeHtml(it.productName)}</span>
+      <span class="order-item-row-name">${it.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(it.colorHex)}"></span>` : ''}${escapeHtml(it.productName)}${it.colorName ? ' — ' + escapeHtml(it.colorName) : ''}</span>
       <span class="order-item-row-qty mono">× ${fa.format(it.deliveredQty)} — ${fmt(it.unitPrice)}</span>
       <button type="button" class="order-item-row-del" onclick="removeConsignFormItem(${i})">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
@@ -6054,9 +6240,11 @@ function renderConsignItemsList(){
 function resetConsignForm(){
   currentConsignItems = [];
   consignItemProductId = null;
+  consignItemColorId = null;
   updateConsignItemPickerLabel();
   closeConsignItemPicker();
   renderConsignItemsList();
+  renderConsignItemColorOptions();
   updateConsignItemHints();
   ['consign_store_name','consign_contact_name','consign_contact_phone','consign_address','consign_stand_code','consign_notes','consign_item_price','consign_item_target'].forEach(id => {
     const el = document.getElementById(id);
@@ -6090,12 +6278,12 @@ async function submitConsignment(){
   // هشدار کمبود موجودی انبار، دقیقاً مثل ثبت فروش
   const shortages = currentConsignItems.filter(it => {
     const prod = products.find(p => p.id === it.productId);
-    return prod && it.deliveredQty > (prod.stock||0);
+    return prod && it.deliveredQty > productAvailableStock(prod, it.colorId);
   });
   if(shortages.length){
     const lines = shortages.map(it => {
       const prod = products.find(p => p.id === it.productId);
-      return '• ' + it.productName + ': موجودی ' + fa.format(prod.stock||0) + ' — تحویلی ' + fa.format(it.deliveredQty);
+      return '• ' + it.productName + (it.colorName?' — '+it.colorName:'') + ': موجودی ' + fa.format(productAvailableStock(prod, it.colorId)) + ' — تحویلی ' + fa.format(it.deliveredQty);
     }).join('\n');
     const ok = await customConfirm('موجودی انبار این محصول‌ها کمتر از تعداد تحویلیه و بعد از ثبت منفی می‌شه:\n' + lines + '\nادامه بدم؟');
     if(!ok) return;
@@ -6120,10 +6308,9 @@ async function submitConsignment(){
   }catch(e){ await customAlert('ثبت واگذاری ناموفق بود؛ اتصال رو چک کن.'); return; }
 
   consignments.unshift({ ...data, id: insertedRow.id, ownerId: currentUser.id });
-  // کم کردن از موجودی انبار
+  // کم کردن از موجودی انبار (به تفکیک رنگ اگه محصول رنگی باشه)
   data.items.forEach(it => {
-    const prod = products.find(p => p.id === it.productId);
-    if(prod){ prod.stock = (prod.stock||0) - it.deliveredQty; updateProductDisplay(prod.id); }
+    applyItemStockDelta(it.productId, it.colorId, -it.deliveredQty);
   });
   persist();
   await upsertCustomer(contactName, phone);
@@ -6241,15 +6428,15 @@ async function recordConsignSale(id){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
     value: 0
   }));
   if(!rows.length){ await customAlert('الان هیچ قلمی نزد این فروشگاه نمونده که فروش بره.'); return; }
   const res = await openConsignQtyModal({
     title: 'ثبت فروش فروشگاه',
-    sub: 'تعدادی که ' + (c.storeName || 'این فروشگاه') + ' از هر محصول فروخته رو وارد کن. مبلغش به حساب طلب شما از این فروشگاه اضافه می‌شه.',
+    sub: 'تعدادی که ' + (c.storeName || 'این فروشگاه') + ' از هر محصول (و رنگ) فروخته رو وارد کن. مبلغش به حساب طلب شما از این فروشگاه اضافه می‌شه.',
     rows, okLabel: 'ثبت فروش'
   });
   if(!res) return;
@@ -6257,17 +6444,19 @@ async function recordConsignSale(id){
   if(!entries.length){ return; }
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
   const logItems = [];
-  for(const [pid, qty] of entries){
-    const it = (c.items||[]).find(x => x.productId === pid);
+  for(const [key, qty] of entries){
+    const [pid, colorId] = key.split('::');
+    const cid = colorId || null;
+    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
     if(!it) continue;
     const avail = consignRemaining(it);
     const q = Math.min(qty, avail);
     if(q <= 0) continue;
     if(qty > avail){
-      await customAlert('برای «' + it.productName + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود؛ همون مقدار ثبت شد.');
+      await customAlert('برای «' + it.productName + (it.colorName?' — '+it.colorName:'') + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود؛ همون مقدار ثبت شد.');
     }
     it.soldQty = (it.soldQty||0) + q;
-    logItems.push({productId: pid, productName: it.productName, qty: q, unitPrice: it.unitPrice||0});
+    logItems.push({productId: pid, productName: it.productName, colorId: cid, colorName: it.colorName||null, qty: q, unitPrice: it.unitPrice||0});
   }
   if(!logItems.length) return;
   if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
@@ -6295,9 +6484,9 @@ async function restockConsign(id){
     const prod = products.find(p => p.id === it.productId);
     const suggested = consignRestockQty(it);
     return {
-      key: it.productId,
-      name: it.productName,
-      hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | انبار: ' + fa.format(prod ? (prod.stock||0) : 0) + (suggested>0 ? ' | پیشنهاد شارژ: ' + fa.format(suggested) : ''),
+      key: ciKey(it.productId, it.colorId),
+      name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
+      hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | انبار: ' + fa.format(prod ? productAvailableStock(prod, it.colorId) : 0) + (suggested>0 ? ' | پیشنهاد شارژ: ' + fa.format(suggested) : ''),
       fields: [
         { role:'sold', label:'فروش‌رفته', value: 0 },
         { role:'recharge', label:'شارژ جدید', value: 0 }
@@ -6315,24 +6504,28 @@ async function restockConsign(id){
   if(!soldEntries.length && !rechargeEntries.length) return;
 
   // هشدار فروش بیشتر از چیزی که نزد فروشگاه بوده (شاید شارژ قبلی درست ثبت نشده)
-  for(const [pid, qty] of soldEntries){
-    const it = (c.items||[]).find(x => x.productId === pid);
+  for(const [key, qty] of soldEntries){
+    const [pid, colorId] = key.split('::');
+    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === (colorId||null));
     if(!it) continue;
     const avail = consignRemaining(it);
     if(qty > avail){
-      const ok = await customConfirm('برای «' + it.productName + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود ولی ' + fa.format(qty) + ' عدد فروش رفته ثبت کردی. ادامه بدم؟');
+      const ok = await customConfirm('برای «' + it.productName + (it.colorName?' — '+it.colorName:'') + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود ولی ' + fa.format(qty) + ' عدد فروش رفته ثبت کردی. ادامه بدم؟');
       if(!ok) return;
     }
   }
   // هشدار کمبود انبار برای شارژ
-  const shortages = rechargeEntries.filter(([pid, q]) => {
+  const shortages = rechargeEntries.filter(([key, q]) => {
+    const [pid, colorId] = key.split('::');
     const prod = products.find(p => p.id === pid);
-    return prod && q > (prod.stock||0);
+    return prod && q > productAvailableStock(prod, colorId||null);
   });
   if(shortages.length){
-    const lines = shortages.map(([pid,q]) => {
+    const lines = shortages.map(([key,q]) => {
+      const [pid, colorId] = key.split('::');
       const prod = products.find(p => p.id === pid);
-      return '• ' + prod.name + ': موجودی ' + fa.format(prod.stock||0) + ' — شارژ ' + fa.format(q);
+      const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === (colorId||null));
+      return '• ' + prod.name + (it&&it.colorName?' — '+it.colorName:'') + ': موجودی ' + fa.format(productAvailableStock(prod, colorId||null)) + ' — شارژ ' + fa.format(q);
     }).join('\n');
     const ok = await customConfirm('موجودی انبار این محصول‌ها بعد از شارژ منفی می‌شه:\n' + lines + '\nادامه بدم؟');
     if(!ok) return;
@@ -6340,19 +6533,23 @@ async function restockConsign(id){
 
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries, saleLogs: c.saleLogs}));
   const soldLogItems = [];
-  soldEntries.forEach(([pid, qty]) => {
-    const it = (c.items||[]).find(x => x.productId === pid);
+  soldEntries.forEach(([key, qty]) => {
+    const [pid, colorId] = key.split('::');
+    const cid = colorId || null;
+    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
     if(!it) return;
     it.soldQty = (it.soldQty||0) + qty;
-    soldLogItems.push({productId: pid, productName: it.productName, qty, unitPrice: it.unitPrice||0});
+    soldLogItems.push({productId: pid, productName: it.productName, colorId: cid, colorName: it.colorName||null, qty, unitPrice: it.unitPrice||0});
   });
   const deliveredItems = [];
-  rechargeEntries.forEach(([pid, qty]) => {
-    const it = (c.items||[]).find(x => x.productId === pid);
+  rechargeEntries.forEach(([key, qty]) => {
+    const [pid, colorId] = key.split('::');
+    const cid = colorId || null;
+    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
     if(!it) return;
     it.deliveredQty = (it.deliveredQty||0) + qty;
     it.rechargedQty = (it.rechargedQty||0) + qty;
-    deliveredItems.push({productId: pid, productName: it.productName, qty});
+    deliveredItems.push({productId: pid, productName: it.productName, colorId: cid, colorName: it.colorName||null, qty});
   });
   if(!soldLogItems.length && !deliveredItems.length) return;
 
@@ -6380,8 +6577,7 @@ async function restockConsign(id){
   const ok = await syncConsignmentToSupabase(c);
   if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; c.saleLogs = snapshot.saleLogs; renderConsignTab(); renderSummary(); return; }
   deliveredItems.forEach(d => {
-    const prod = products.find(p => p.id === d.productId);
-    if(prod){ prod.stock = (prod.stock||0) - d.qty; updateProductDisplay(prod.id); }
+    applyItemStockDelta(d.productId, d.colorId, -d.qty);
   });
   persist();
   renderConsignTab();
@@ -6394,8 +6590,8 @@ async function returnConsign(id){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
     value: 0
   }));
@@ -6410,21 +6606,22 @@ async function returnConsign(id){
   if(!entries.length) return;
   const snapshot = JSON.parse(JSON.stringify(c.items));
   const returned = [];
-  for(const [pid, qty] of entries){
-    const it = (c.items||[]).find(x => x.productId === pid);
+  for(const [key, qty] of entries){
+    const [pid, colorId] = key.split('::');
+    const cid = colorId || null;
+    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
     if(!it) continue;
     const q = Math.min(qty, consignRemaining(it));
     if(q <= 0) continue;
     it.returnedQty = (it.returnedQty||0) + q;
-    returned.push({productId: pid, qty});
+    returned.push({productId: pid, colorId: cid, qty: q});
   }
   if(!returned.length) return;
   renderConsignTab();
   const ok = await syncConsignmentToSupabase(c);
   if(!ok){ c.items = snapshot; renderConsignTab(); return; }
   returned.forEach(r => {
-    const prod = products.find(p => p.id === r.productId);
-    if(prod){ prod.stock = (prod.stock||0) + r.qty; updateProductDisplay(prod.id); }
+    applyItemStockDelta(r.productId, r.colorId, r.qty);
   });
   persist();
   renderConsignTab();
@@ -6437,20 +6634,21 @@ async function editConsignTargets(id){
   const c = consignments.find(x => x.id === id);
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'فعلی: ' + fa.format(it.targetQty||0),
     value: it.targetQty||0
   }));
   const res = await openConsignQtyModal({
     title: 'ظرفیت مطلوب هر قلم',
-    sub: 'یعنی دوست داری همیشه چند عدد از هر محصول توی این فروشگاه باشه. صفر یعنی برای این قلم پیشنهاد شارژ داده نشه.',
+    sub: 'یعنی دوست داری همیشه چند عدد از هر محصول (و رنگ) توی این فروشگاه باشه. صفر یعنی برای این قلم پیشنهاد شارژ داده نشه.',
     rows, okLabel: 'ذخیره'
   });
   if(!res) return;
   const snapshot = JSON.parse(JSON.stringify(c.items));
   c.items.forEach(it => {
-    if(res[it.productId] !== undefined) it.targetQty = res[it.productId];
+    const key = ciKey(it.productId, it.colorId);
+    if(res[key] !== undefined) it.targetQty = res[key];
   });
   renderConsignTab();
   const ok = await syncConsignmentToSupabase(c);
@@ -6463,8 +6661,8 @@ async function editConsignPrices(id){
   const c = consignments.find(x => x.id === id);
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'تومان',
     value: it.unitPrice||0
   }));
@@ -6476,7 +6674,8 @@ async function editConsignPrices(id){
   if(!res) return;
   const snapshot = JSON.parse(JSON.stringify(c.items));
   c.items.forEach(it => {
-    if(res[it.productId] !== undefined) it.unitPrice = res[it.productId];
+    const key = ciKey(it.productId, it.colorId);
+    if(res[key] !== undefined) it.unitPrice = res[key];
   });
   renderConsignTab();
   renderSummary();
@@ -6488,27 +6687,35 @@ async function editConsignPrices(id){
 async function addProductsToConsign(id){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
-  const existingIds = new Set((c.items||[]).map(it => it.productId));
-  const candidates = products.filter(p => !existingIds.has(p.id));
-  if(!candidates.length){ await customAlert('همه‌ی محصول‌ها از قبل توی لیست این فروشگاه هستن. برای اضافه‌کردن تعداد، از «شارژ مجدد» استفاده کن.'); return; }
-  const rows = candidates.map(p => ({
-    key: p.id,
-    name: p.name,
-    hint: 'انبار: ' + fa.format(p.stock||0),
-    value: 0
-  }));
+  const existingKeys = new Set((c.items||[]).map(it => ciKey(it.productId, it.colorId)));
+  const rows = [];
+  products.forEach(p => {
+    if(p.colors && p.colors.length){
+      p.colors.forEach(col => {
+        const key = ciKey(p.id, col.id);
+        if(existingKeys.has(key)) return;
+        rows.push({ key, name: p.name + ' — ' + col.name, hint: 'انبار: ' + fa.format(productColorStock(p, col.id)), value: 0 });
+      });
+    }else{
+      const key = ciKey(p.id, null);
+      if(existingKeys.has(key)) return;
+      rows.push({ key, name: p.name, hint: 'انبار: ' + fa.format(p.stock||0), value: 0 });
+    }
+  });
+  if(!rows.length){ await customAlert('همه‌ی محصول‌ها (و رنگ‌هاشون) از قبل توی لیست این فروشگاه هستن. برای اضافه‌کردن تعداد، از «شارژ مجدد» استفاده کن.'); return; }
   const res = await openConsignQtyModal({
     title: 'افزودن محصول به این فروشگاه',
-    sub: 'تعداد تحویلی هر محصول رو وارد کن. قیمت تسویه اولش برابر قیمت پیشنهادی عمده گذاشته می‌شه و ظرفیت مطلوب هم برابر همین تعداد؛ بعداً می‌تونی تغییرشون بدی.',
+    sub: 'تعداد تحویلی هر محصول (یا رنگ) رو وارد کن. قیمت تسویه اولش برابر قیمت پیشنهادی عمده گذاشته می‌شه و ظرفیت مطلوب هم برابر همین تعداد؛ بعداً می‌تونی تغییرشون بدی.',
     rows, okLabel: 'افزودن'
   });
   if(!res) return;
   const entries = Object.entries(res).filter(([,q]) => q > 0);
   if(!entries.length) return;
 
-  const shortages = entries.filter(([pid,q]) => {
+  const shortages = entries.filter(([key,q]) => {
+    const [pid, colorId] = key.split('::');
     const prod = products.find(p => p.id === pid);
-    return prod && q > (prod.stock||0);
+    return prod && q > productAvailableStock(prod, colorId||null);
   });
   if(shortages.length){
     const ok = await customConfirm('موجودی انبار بعضی از این محصول‌ها کمتر از تعداد تحویلیه و منفی می‌شه. ادامه بدم؟');
@@ -6517,11 +6724,14 @@ async function addProductsToConsign(id){
 
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
   const added = [];
-  entries.forEach(([pid, qty]) => {
+  entries.forEach(([key, qty]) => {
+    const [pid, colorId] = key.split('::');
+    const cid = colorId || null;
     const prod = products.find(p => p.id === pid);
     if(!prod) return;
-    c.items.push(makeConsignItem(prod, qty, calc(prod).priceW, qty));
-    added.push({productId: pid, productName: prod.name, qty});
+    const col = cid ? (prod.colors||[]).find(c=>c.id===cid) : null;
+    c.items.push(makeConsignItem(prod, qty, calc(prod).priceW, qty, cid, col?col.name:null, col?col.hex:null));
+    added.push({productId: pid, productName: prod.name, colorId: cid, colorName: col?col.name:null, qty});
   });
   if(!added.length) return;
   if(!Array.isArray(c.deliveries)) c.deliveries = [];
@@ -6535,8 +6745,7 @@ async function addProductsToConsign(id){
   const ok = await syncConsignmentToSupabase(c);
   if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
   added.forEach(a => {
-    const prod = products.find(p => p.id === a.productId);
-    if(prod){ prod.stock = (prod.stock||0) - a.qty; updateProductDisplay(prod.id); }
+    applyItemStockDelta(a.productId, a.colorId, -a.qty);
   });
   persist();
   renderConsignTab();
@@ -6588,11 +6797,11 @@ async function deleteConsignSaleLog(consignId, logId){
   if(!c) return;
   const log = (c.saleLogs||[]).find(l => l.id === logId);
   if(!log) return;
-  const desc = (log.items||[]).map(it => it.productName + ' × ' + fa.format(it.qty)).join('، ');
+  const desc = (log.items||[]).map(it => it.productName + (it.colorName?' — '+it.colorName:'') + ' × ' + fa.format(it.qty)).join('، ');
   if(!await customConfirm('این گزارش فروش حذف بشه؟\n' + desc + '\nبعد از حذف، اگه لازمه دوباره با عدد درست ثبتش کن.')) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
   (log.items||[]).forEach(it => {
-    const item = (c.items||[]).find(x => x.productId === it.productId);
+    const item = (c.items||[]).find(x => x.productId === it.productId && (x.colorId||null) === (it.colorId||null));
     if(item) item.soldQty = Math.max(0, (item.soldQty||0) - it.qty);
   });
   c.saleLogs = (c.saleLogs||[]).filter(l => l.id !== logId);
@@ -6611,11 +6820,11 @@ async function deleteConsignDelivery(consignId, deliveryId){
   const delivery = (c.deliveries||[]).find(d => d.id === deliveryId);
   if(!delivery) return;
   if(delivery.note === 'واگذاری اولیه'){ await customAlert('واگذاری اولیه از اینجا حذف نمی‌شه. برای اصلاح اون، خود واگذاری رو حذف و دوباره درست ثبت کن.'); return; }
-  const desc = (delivery.items||[]).map(it => it.productName + ' × ' + fa.format(it.qty)).join('، ');
+  const desc = (delivery.items||[]).map(it => it.productName + (it.colorName?' — '+it.colorName:'') + ' × ' + fa.format(it.qty)).join('، ');
   if(!await customConfirm('این گزارش شارژ حذف بشه؟ تعداد به موجودی انبار برمی‌گرده.\n' + desc)) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
   (delivery.items||[]).forEach(it => {
-    const item = (c.items||[]).find(x => x.productId === it.productId);
+    const item = (c.items||[]).find(x => x.productId === it.productId && (x.colorId||null) === (it.colorId||null));
     if(item){
       item.deliveredQty = Math.max(0, (item.deliveredQty||0) - it.qty);
       if(delivery.isRecharge) item.rechargedQty = Math.max(0, (item.rechargedQty||0) - it.qty);
@@ -6626,8 +6835,7 @@ async function deleteConsignDelivery(consignId, deliveryId){
   const ok = await syncConsignmentToSupabase(c);
   if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
   (delivery.items||[]).forEach(it => {
-    const prod = products.find(p => p.id === it.productId);
-    if(prod){ prod.stock = (prod.stock||0) + it.qty; updateProductDisplay(prod.id); }
+    applyItemStockDelta(it.productId, it.colorId||null, it.qty);
   });
   persist();
   renderConsignTab();
@@ -6643,8 +6851,8 @@ async function editConsignSaleLog(consignId, logId){
   const log = (c.saleLogs||[]).find(l => l.id === logId);
   if(!log || !(log.items||[]).length) return;
   const rows = log.items.map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'فروش‌رفته', value: it.qty }]
   }));
   const res = await openConsignMultiFieldModal({
@@ -6655,11 +6863,12 @@ async function editConsignSaleLog(consignId, logId){
   if(!res || !res.qty) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
   log.items.forEach(it => {
-    const newQty = res.qty[it.productId];
+    const key = ciKey(it.productId, it.colorId);
+    const newQty = res.qty[key];
     if(newQty === undefined) return;
     const delta = newQty - it.qty;
     if(delta === 0) return;
-    const item = (c.items||[]).find(x => x.productId === it.productId);
+    const item = (c.items||[]).find(x => x.productId === it.productId && (x.colorId||null) === (it.colorId||null));
     if(item) item.soldQty = Math.max(0, (item.soldQty||0) + delta);
     it.qty = newQty;
   });
@@ -6682,8 +6891,8 @@ async function editConsignDelivery(consignId, deliveryId){
   if(!delivery || !(delivery.items||[]).length) return;
   if(delivery.note === 'واگذاری اولیه'){ await customAlert('واگذاری اولیه از اینجا ویرایش نمی‌شه. برای اصلاح اون، خود واگذاری رو حذف و دوباره درست ثبت کن.'); return; }
   const rows = delivery.items.map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'شارژ', value: it.qty }]
   }));
   const res = await openConsignMultiFieldModal({
@@ -6695,16 +6904,17 @@ async function editConsignDelivery(consignId, deliveryId){
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
   const stockDeltas = [];
   delivery.items.forEach(it => {
-    const newQty = res.qty[it.productId];
+    const key = ciKey(it.productId, it.colorId);
+    const newQty = res.qty[key];
     if(newQty === undefined) return;
     const delta = newQty - it.qty;
     if(delta === 0) return;
-    const item = (c.items||[]).find(x => x.productId === it.productId);
+    const item = (c.items||[]).find(x => x.productId === it.productId && (x.colorId||null) === (it.colorId||null));
     if(item){
       item.deliveredQty = Math.max(0, (item.deliveredQty||0) + delta);
       if(delivery.isRecharge) item.rechargedQty = Math.max(0, (item.rechargedQty||0) + delta);
     }
-    stockDeltas.push({ productId: it.productId, delta });
+    stockDeltas.push({ productId: it.productId, colorId: it.colorId||null, delta });
     it.qty = newQty;
   });
   delivery.items = delivery.items.filter(it => it.qty > 0);
@@ -6712,9 +6922,8 @@ async function editConsignDelivery(consignId, deliveryId){
   renderConsignTab();
   const ok = await syncConsignmentToSupabase(c);
   if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
-  stockDeltas.forEach(({productId, delta}) => {
-    const prod = products.find(p => p.id === productId);
-    if(prod){ prod.stock = (prod.stock||0) - delta; updateProductDisplay(prod.id); }
+  stockDeltas.forEach(({productId, colorId, delta}) => {
+    applyItemStockDelta(productId, colorId, -delta);
   });
   persist();
   renderConsignTab();
@@ -6729,8 +6938,8 @@ async function editConsignItemTotals(id){
   const c = consignments.find(x => x.id === id);
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
-    key: it.productId,
-    name: it.productName,
+    key: ciKey(it.productId, it.colorId),
+    name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه فعلی: ' + fa.format(consignRemaining(it)),
     fields: [
       { role:'recharged', label:'شارژ شده', value: it.rechargedQty||0 },
@@ -6749,9 +6958,10 @@ async function editConsignItemTotals(id){
   const deliveryFixItems = [];
   const stockDeltas = [];
   c.items.forEach(it => {
-    const newRecharged = res.recharged ? res.recharged[it.productId] : undefined;
-    const newSold = res.sold ? res.sold[it.productId] : undefined;
-    const newReturned = res.returned ? res.returned[it.productId] : undefined;
+    const key = ciKey(it.productId, it.colorId);
+    const newRecharged = res.recharged ? res.recharged[key] : undefined;
+    const newSold = res.sold ? res.sold[key] : undefined;
+    const newReturned = res.returned ? res.returned[key] : undefined;
     const oldRecharged = it.rechargedQty||0, oldSold = it.soldQty||0, oldReturned = it.returnedQty||0;
     const dRecharged = newRecharged !== undefined ? newRecharged - oldRecharged : 0;
     const dSold = newSold !== undefined ? newSold - oldSold : 0;
@@ -6763,10 +6973,10 @@ async function editConsignItemTotals(id){
     }
     if(newSold !== undefined) it.soldQty = Math.max(0, newSold);
     if(newReturned !== undefined) it.returnedQty = Math.max(0, newReturned);
-    if(dSold !== 0) saleFixItems.push({productId: it.productId, productName: it.productName, qty: dSold, unitPrice: it.unitPrice||0});
-    if(dRecharged !== 0) deliveryFixItems.push({productId: it.productId, productName: it.productName, qty: dRecharged});
+    if(dSold !== 0) saleFixItems.push({productId: it.productId, productName: it.productName, colorId: it.colorId||null, colorName: it.colorName||null, qty: dSold, unitPrice: it.unitPrice||0});
+    if(dRecharged !== 0) deliveryFixItems.push({productId: it.productId, productName: it.productName, colorId: it.colorId||null, colorName: it.colorName||null, qty: dRecharged});
     const stockDelta = dReturned - dRecharged; // شارژ بیشتر یعنی انبار کمتر؛ مرجوعی بیشتر یعنی انبار بیشتر
-    if(stockDelta !== 0) stockDeltas.push({productId: it.productId, delta: stockDelta});
+    if(stockDelta !== 0) stockDeltas.push({productId: it.productId, colorId: it.colorId||null, delta: stockDelta});
   });
   if(!saleFixItems.length && !deliveryFixItems.length){ return; }
   if(saleFixItems.length){
@@ -6793,9 +7003,8 @@ async function editConsignItemTotals(id){
   renderSummary();
   const ok = await syncConsignmentToSupabase(c);
   if(!ok){ c.items = snapshot.items; c.saleLogs = snapshot.saleLogs; c.deliveries = snapshot.deliveries; renderConsignTab(); renderSummary(); return; }
-  stockDeltas.forEach(({productId, delta}) => {
-    const prod = products.find(p => p.id === productId);
-    if(prod){ prod.stock = (prod.stock||0) + delta; updateProductDisplay(prod.id); }
+  stockDeltas.forEach(({productId, colorId, delta}) => {
+    applyItemStockDelta(productId, colorId, delta);
   });
   persist();
   renderConsignTab();
@@ -6837,8 +7046,7 @@ async function deleteConsignment(id){
   (c.items||[]).forEach(it => {
     const remaining = consignRemaining(it);
     if(remaining <= 0) return;
-    const prod = products.find(p => p.id === it.productId);
-    if(prod){ prod.stock = (prod.stock||0) + remaining; updateProductDisplay(prod.id); }
+    applyItemStockDelta(it.productId, it.colorId||null, remaining);
   });
   consignments = consignments.filter(x => x.id !== id);
   persist();
@@ -6945,7 +7153,7 @@ function renderConsignCard(c){
     totalRestockNeed += restock;
     return `
       <div class="consign-tr">
-        <span class="cname">${escapeHtml(it.productName)}</span>
+        <span class="cname">${it.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(it.colorHex)}"></span>` : ''}${escapeHtml(it.productName)}${it.colorName ? ' — ' + escapeHtml(it.colorName) : ''}</span>
         <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
         <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
         <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
@@ -6979,7 +7187,7 @@ function renderConsignCard(c){
         <div style="font-weight:700; margin-bottom:4px;">فروش‌ها</div>
         ${allSales.map(l => `
           <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
-            <span style="flex:1;">${formatDateFa(l.date)}${l.note ? ' — ' + escapeHtml(l.note) : ''} — ${escapeHtml(l.items.map(it=>it.productName+' × '+fa.format(it.qty)).join('، '))}</span>
+            <span style="flex:1;">${formatDateFa(l.date)}${l.note ? ' — ' + escapeHtml(l.note) : ''} — ${escapeHtml(l.items.map(it=>it.productName+(it.colorName?' ('+it.colorName+')':'')+' × '+fa.format(it.qty)).join('، '))}</span>
             ${isAdmin ? `<button type="button" onclick="event.stopPropagation(); editConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
             <button type="button" onclick="event.stopPropagation(); deleteConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
           </div>`).join('')}
@@ -6988,7 +7196,7 @@ function renderConsignCard(c){
         <div style="font-weight:700; margin-bottom:4px;">شارژ/تحویل‌ها</div>
         ${allDeliveries.map(d => `
           <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
-            <span style="flex:1;">${formatDateFa(d.date)}${d.note ? ' — ' + escapeHtml(d.note) : ''} — ${escapeHtml((d.items||[]).map(it=>it.productName+' × '+fa.format(it.qty)).join('، '))}</span>
+            <span style="flex:1;">${formatDateFa(d.date)}${d.note ? ' — ' + escapeHtml(d.note) : ''} — ${escapeHtml((d.items||[]).map(it=>it.productName+(it.colorName?' ('+it.colorName+')':'')+' × '+fa.format(it.qty)).join('، '))}</span>
             ${isAdmin && d.note !== 'واگذاری اولیه' ? `<button type="button" onclick="event.stopPropagation(); editConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
             <button type="button" onclick="event.stopPropagation(); deleteConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
           </div>`).join('')}
