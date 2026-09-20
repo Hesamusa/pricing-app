@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T17:04:20.764Z",
+  "updatedAt": "2026-09-20T17:04:46.105Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -272,10 +272,16 @@
           "id": "col_mua2g2dwby3k",
           "name": "مشکلی",
           "hex": "#000000"
+        },
+        {
+          "id": "col_mua2gs728zwd",
+          "name": "آبی پاستلی",
+          "hex": "#52d6fc"
         }
       ],
       "colorStock": {
-        "col_mua2g2dwby3k": 4
+        "col_mua2g2dwby3k": 4,
+        "col_mua2gs728zwd": 0
       }
     },
     {
