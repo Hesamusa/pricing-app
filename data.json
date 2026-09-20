@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T13:07:47.894Z",
+  "updatedAt": "2026-09-20T13:07:51.898Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -70,7 +70,8 @@
       "images": [],
       "stock": 0,
       "catalogDescription": "",
-      "telegramMessageIds": []
+      "telegramMessageIds": [],
+      "category": "g_mtqsahf4t778"
     },
     {
       "id": "p_1789904410869lh5mr",
