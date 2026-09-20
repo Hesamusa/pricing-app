@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T17:06:59.728Z",
+  "updatedAt": "2026-09-20T17:08:32.120Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -315,7 +315,7 @@
           "sha": "bb3f802e77e9b7db9275e3cf9ce041bb639ba14b"
         }
       ],
-      "stock": 6,
+      "stock": 0,
       "catalogDescription": "نگاه به پاهای آویزونش کن! فک کن این **چارم بگ ابر** خندون آویزون کیفت باشه و با هر حرکتت تکون بخوره. اون‌قدر سبک و بانمکه که کلی انرژی خوب به کیفت می‌ده و برای یه هدیه دوست‌داشتنی هم حرف نداره.\nتعدادش محدوده، اگه می‌خوایش همین الان پیام بده 😉 برای دیدن بقیه مدل‌ها هم عضو کانالمون شو!",
       "telegramMessageIds": [
         261,
@@ -323,8 +323,16 @@
       ],
       "telegramMessageId": null,
       "category": "g_mtqsahf4t778",
-      "colors": [],
-      "colorStock": {}
+      "colors": [
+        {
+          "id": "col_mua2lml2d2y2",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
+      "colorStock": {
+        "col_mua2lml2d2y2": 0
+      }
     },
     {
       "id": "p_1789755299953t7rtq",
