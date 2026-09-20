@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T04:07:44.754Z",
+  "updatedAt": "2026-09-20T04:07:49.828Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -57,7 +57,7 @@
     {
       "id": "p_17898772049865cor5",
       "name": "چارم بگ دمبل باشگاه",
-      "weight": 50,
+      "weight": 15,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
