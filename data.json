@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T04:22:13.347Z",
+  "updatedAt": "2026-09-20T04:22:38.339Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -54,6 +54,24 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789878156574uuqsa",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_17898772049865cor5",
       "name": "چارم بگ دمبل باشگاه",
