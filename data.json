@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T13:10:40.770Z",
+  "updatedAt": "2026-09-20T13:10:44.272Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -58,7 +58,7 @@
       "id": "p_1789909666043x7sfu",
       "name": "چارم بگ ابر با نخ پاراکورد",
       "weight": 20,
-      "printHours": 3,
+      "printHours": 1,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
