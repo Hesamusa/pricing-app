@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T11:41:05.959Z",
+  "updatedAt": "2026-09-20T11:44:40.309Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -58,7 +58,7 @@
       "id": "p_1789904410869lh5mr",
       "name": "پنجه گربه مینی کوچولو",
       "weight": 10,
-      "printHours": 3,
+      "printHours": 0.75,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 0,
@@ -67,7 +67,13 @@
       "sizeH": 0,
       "marginW": null,
       "marginR": null,
-      "images": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789904410869lh5mr_1789904675052_0.jpg?v=1789904678544",
+          "path": "product-images/p_1789904410869lh5mr_1789904675052_0.jpg",
+          "sha": "779b48fb5fda3cb9799480a48ba530a145b9f37f"
+        }
+      ],
       "stock": 2,
       "catalogDescription": "",
       "telegramMessageIds": [],
