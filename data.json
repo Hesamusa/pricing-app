@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T09:38:42.997Z",
+  "updatedAt": "2026-09-20T09:38:47.132Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -57,7 +57,7 @@
     {
       "id": "p_1789881229899p34e1",
       "name": "چارم بگ بطری شیکر باشگاه",
-      "weight": 50,
+      "weight": 8,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
