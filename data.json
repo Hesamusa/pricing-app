@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T16:08:56.528Z",
+  "updatedAt": "2026-09-20T16:09:05.521Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -626,7 +626,7 @@
       "id": "p_178941010031173kks",
       "name": "فلکسی بیبی گروت چوبی",
       "weight": 7,
-      "printHours": 1,
+      "printHours": 0.75,
       "manualHours": 0,
       "paintHours": 0,
       "accessoryCost": 10000,
