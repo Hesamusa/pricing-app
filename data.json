@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T17:00:54.776Z",
+  "updatedAt": "2026-09-20T17:01:01.081Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -141,7 +141,7 @@
           "sha": "7fefda1b82a29a752a8b156470031c50bb7468f0"
         }
       ],
-      "stock": 2,
+      "stock": 0,
       "catalogDescription": "اگه عاشق چیزای کیوتی، این **جاکلیدی پنجه گربه** رسماً دلتو می‌بره! اون‌قدر سبک و جمع‌وجوره که قشنگ روی کلید یا زیپ کیفت می‌شینه و کلی جذابش می‌کنه. کلاً ۲ تا دونه ازش داریم؛ اگه خوشت اومده پیام بده تا برات ثبتش کنیم 😉 عضو کانالمون هم بشو تا بقیه مدل‌ها رو از دست ندی.",
       "telegramMessageIds": [
         283,
@@ -149,8 +149,16 @@
       ],
       "category": "g_mu0mydrdz7a1",
       "telegramMessageId": null,
-      "colors": [],
-      "colorStock": {}
+      "colors": [
+        {
+          "id": "col_mua2byk8lt2k",
+          "name": "صورتی",
+          "hex": "#efcaff"
+        }
+      ],
+      "colorStock": {
+        "col_mua2byk8lt2k": 0
+      }
     },
     {
       "id": "p_1789881229899p34e1",
