@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T09:35:26.638Z",
+  "updatedAt": "2026-09-20T09:35:32.560Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
   "products": [
     {
       "id": "p_1789881229899p34e1",
-      "name": "45246",
+      "name": "4",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
@@ -70,7 +70,8 @@
       "images": [],
       "stock": 0,
       "catalogDescription": "",
-      "telegramMessageIds": []
+      "telegramMessageIds": [],
+      "category": "g_mtqsahf4t778"
     },
     {
       "id": "p_17898772049865cor5",
