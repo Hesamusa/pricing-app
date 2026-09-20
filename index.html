@@ -838,6 +838,61 @@
   .dim-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
   .dim-item label{display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; text-align:center;}
   .dim-item input.num-input{width:100%; min-width:0; text-align:center;}
+
+/* UI/UX refinement layer */
+:root{
+  --ui-focus: color-mix(in srgb, var(--orange) 16%, transparent);
+  --ui-border: color-mix(in srgb, currentColor 12%, transparent);
+}
+*{-webkit-tap-highlight-color:transparent}
+button,a,input,select,textarea{touch-action:manipulation}
+button{font-family:inherit}
+input[type=text],input[type=number],input[type=email],input[type=password],textarea,select{
+  border:1px solid color-mix(in srgb, currentColor 14%, transparent);
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+input[type=text]:focus,input[type=number]:focus,input[type=email]:focus,input[type=password]:focus,textarea:focus,select:focus{
+  outline:none;
+  border-color:var(--orange);
+  box-shadow:0 0 0 4px var(--ui-focus);
+}
+button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+.product-card{
+  overflow:hidden;
+  transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease,background .18s ease;
+}
+.product-card.open{
+  box-shadow:0 5px 18px color-mix(in srgb, var(--orange) 10%, transparent);
+}
+.product-card.open .product-header{background:color-mix(in srgb,var(--orange) 4%,transparent)}
+.product-header{transition:background .18s ease}
+.product-thumb{transition:transform .2s ease}
+.product-card:active .product-thumb{transform:scale(.98)}
+.search-wrap{position:relative}
+.search-wrap input{padding-inline-start:46px}
+.search-wrap:focus-within{filter:none}
+.add-btn{font-weight:700;letter-spacing:-.1px;box-shadow:0 5px 14px color-mix(in srgb,var(--orange) 18%,transparent);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+.add-btn:active{transform:translateY(1px);box-shadow:0 2px 8px color-mix(in srgb,var(--orange) 14%,transparent)}
+.bottom-nav{padding-bottom:max(8px,env(safe-area-inset-bottom));}
+.bottom-nav button{min-height:58px;transition:color .15s ease,background .15s ease,transform .15s ease}
+.bottom-nav button:active{transform:scale(.96)}
+.more-menu{border:1px solid color-mix(in srgb,currentColor 10%,transparent);box-shadow:0 14px 36px color-mix(in srgb,#000 16%,transparent)}
+.card,.section,.form-card,.profile-card{box-shadow:0 2px 10px color-mix(in srgb,#000 5%,transparent)}
+
+/* calmer visual hierarchy for long forms */
+.form-section,.settings-section{margin-bottom:14px}
+.form-section>h3,.settings-section>h3{margin-bottom:10px}
+
+/* compact status/count rows */
+.count-badge,.status-badge{font-variant-numeric:tabular-nums}
+
+@media (min-width:600px){
+  .product-card:hover{transform:translateY(-1px)}
+  .product-card:hover .product-thumb{transform:scale(1.015)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
