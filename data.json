@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T05:13:54.746Z",
+  "updatedAt": "2026-09-20T05:13:57.598Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
   "products": [
     {
       "id": "p_1789881229899p34e1",
-      "name": "محصول جدیدبیلبل",
+      "name": "لاییب",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
