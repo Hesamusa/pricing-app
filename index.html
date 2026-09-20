@@ -1065,6 +1065,86 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   .bottom-nav button{font-size:10px;}
 }
 
+
+/* =========================================================
+   SaaS UX 2.0 — task-first page hierarchy
+   ========================================================= */
+.tab-panel{padding-bottom:18px}
+.tab-panel>.section-title:first-child{margin-top:8px}
+
+/* Page rhythm: action first, context second, data third */
+#tab-products #addProductBtn{margin-top:2px;margin-bottom:14px}
+#tab-products #products-list{margin-top:2px}
+#tab-sales #sale-form-wrap,#tab-orders #order-form-wrap{position:relative}
+#tab-sales #sale-form-wrap::before,#tab-orders #order-form-wrap::before{
+  content:'اطلاعات اصلی';display:block;font-size:13px;font-weight:800;color:var(--ink);padding:14px 14px 0;
+}
+#tab-sales #sale-form-wrap .field:first-child,#tab-orders #order-form-wrap .field:first-child{padding-top:10px}
+
+/* Forms feel like one workflow instead of a pile of fields */
+#sale-form-wrap,#order-form-wrap{padding:0 4px 4px}
+#sale-form-wrap .add-btn,#order-form-wrap .add-btn{margin:8px 10px 10px;width:calc(100% - 20px)}
+#sale-form-wrap .section-title,#order-form-wrap .section-title{font-size:12px}
+#sale-form-wrap .grid-2,#order-form-wrap .grid-2{background:var(--saas-surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px 8px;margin:6px -4px}
+
+/* Reports: make numbers scan first */
+#sales-stats,#accounting-overview,#consign-summary-overview{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important}
+#sales-stats>* ,#accounting-overview>*,#consign-summary-overview>*{min-width:0}
+#sales-stats .stat-card,#accounting-overview .stat-card,#consign-summary-overview .stat-card{height:100%;}
+#sales-list,#orders-list,#consign-list,#customers-list{min-height:20px}
+
+/* Customers: action before directory */
+#tab-customers{display:flex;flex-direction:column}
+#tab-customers #customer-search-box{order:2}
+#tab-customers>.section-title:nth-of-type(1){order:3}
+#tab-customers #customers-list{order:4}
+#tab-customers>.section-title:nth-of-type(2){order:0;margin-top:8px}
+#tab-customers>.card{order:1;margin-bottom:8px}
+#tab-customers>.hint{order:5}
+#tab-customers>.section-title:nth-of-type(2)::after{content:'  ·  سریع و مستقیم';font-weight:600;color:var(--ink-soft)}
+
+/* Customer add form gets an intentional primary-action treatment */
+#tab-customers>.card{border-color:color-mix(in srgb,var(--orange) 20%,var(--line));box-shadow:0 4px 18px color-mix(in srgb,var(--orange) 6%,transparent)}
+#tab-customers>.card .add-btn{margin-top:4px}
+
+/* Summary becomes a compact dashboard */
+#tab-summary .section-title{margin-top:22px}
+#tab-summary #summary-content{display:grid;gap:10px}
+#tab-summary #accounting-customers{display:grid;gap:8px}
+#tab-summary #consign-summary-overview{margin-bottom:8px}
+#tab-summary .hint{max-width:58ch}
+
+/* Consignment: stats before filters is easier to scan */
+#tab-consign #consign-stats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px!important;margin-bottom:12px}
+#tab-consign #consign-list{margin-top:10px!important}
+
+/* Login gates become product-quality empty states */
+#sales-login-gate .card,#orders-login-gate .card,#consign-login-gate .card{border-radius:18px;box-shadow:var(--saas-shadow);border-color:var(--line)}
+#sales-login-gate .card p,#orders-login-gate .card p,#consign-login-gate .card p{font-size:14px;line-height:1.8;color:var(--ink)}
+
+/* More menu: clearer grouping and less visual noise */
+.more-menu button{font-weight:700}
+.more-menu button+button{border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent);border-radius:0}
+.more-menu button:first-child{border-radius:12px 12px 0 0}
+.more-menu button:last-child{border-radius:0 0 12px 12px}
+
+/* Desktop: use available width without turning the mobile product into a desktop dashboard */
+@media (min-width:700px){
+  main{max-width:760px}
+  #tab-products #products-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #tab-products .product-card{margin-bottom:0}
+  #tab-products .product-header{min-height:92px}
+  #tab-sales #sale-form-wrap,#tab-orders #order-form-wrap{padding-bottom:8px}
+  #tab-sales #sales-list,#tab-orders #orders-list,#tab-customers #customers-list,#tab-consign #consign-list{display:grid;gap:10px}
+  #tab-sales #sales-list .sale-item,#tab-orders #orders-list .order-card,#tab-customers #customers-list .customer-card,#tab-consign #consign-list .store-card{margin-bottom:0}
+}
+@media (max-width:520px){
+  #sales-stats,#accounting-overview,#consign-summary-overview,#tab-consign #consign-stats{grid-template-columns:1fr 1fr}
+}
+@media (max-width:360px){
+  #sales-stats,#accounting-overview,#consign-summary-overview,#tab-consign #consign-stats{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -7616,5 +7696,20 @@ bindTelegramInputs();
 loadTheme();
 loadState();
 </script>
+
+<script>
+/* SaaS UX 2.0: put the customer's primary creation action before the directory. */
+document.addEventListener('DOMContentLoaded', function(){
+  const tab=document.getElementById('tab-customers');
+  if(!tab) return;
+  const card=tab.querySelector('.card');
+  const search=tab.querySelector('#customer-search-box');
+  const firstTitle=tab.querySelector('.section-title');
+  if(card && search && firstTitle){
+    tab.insertBefore(card, search);
+  }
+});
+</script>
+
 </body>
 </html>
