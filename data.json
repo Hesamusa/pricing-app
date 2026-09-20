@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T11:40:59.207Z",
+  "updatedAt": "2026-09-20T11:41:05.959Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -57,7 +57,7 @@
     {
       "id": "p_1789904410869lh5mr",
       "name": "پنجه گربه مینی کوچولو",
-      "weight": 50,
+      "weight": 10,
       "printHours": 3,
       "manualHours": 0,
       "paintHours": 0,
@@ -68,7 +68,7 @@
       "marginW": null,
       "marginR": null,
       "images": [],
-      "stock": 0,
+      "stock": 2,
       "catalogDescription": "",
       "telegramMessageIds": [],
       "category": "g_mu0mydrdz7a1"
