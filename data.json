@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T04:06:55.141Z",
+  "updatedAt": "2026-09-20T04:06:57.283Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
   "products": [
     {
       "id": "p_17898772049865cor5",
-      "name": "چارم ب",
+      "name": "چارم بگ ",
       "weight": 50,
       "printHours": 3,
       "manualHours": 0,
