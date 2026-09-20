@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-20T17:04:52.382Z",
+  "updatedAt": "2026-09-20T17:05:13.909Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -277,11 +277,17 @@
           "id": "col_mua2gs728zwd",
           "name": "آبی پاستلی",
           "hex": "#52d6fc"
+        },
+        {
+          "id": "col_mua2hdn02pae",
+          "name": "صورتی",
+          "hex": "#efcaff"
         }
       ],
       "colorStock": {
         "col_mua2g2dwby3k": 4,
-        "col_mua2gs728zwd": 4
+        "col_mua2gs728zwd": 4,
+        "col_mua2hdn02pae": 0
       }
     },
     {
