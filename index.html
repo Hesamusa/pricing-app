@@ -3812,19 +3812,11 @@ function setTelegramSyncStatus(text, kind){
   el.style.color = kind === 'error' ? 'var(--red)' : kind === 'success' ? 'var(--green)' : 'var(--ink-soft)';
 }
 
+// توجه: قبلاً اینجا یه سینک خودکار (queueTelegramSync) بود که با هر ویرایش کوچیک
+// (حتی یک کاراکتر توی اسم) بعد از چند ثانیه خودش به تلگرام می‌فرستاد. طبق درخواست
+// کاربر حذف شد — الان ارسال به کانال فقط با زدن دکمه‌ی «ذخیره و ارسال» روی خود کارت
+// محصول (تابع saveAndSendProduct) یا با «همگام‌سازی همه» از تنظیمات انجام می‌شه.
 const telegramSyncTimers = {};
-// هر ویرایشی (قیمت، وزن، عکس) این تابع رو صدا می‌زنه؛ به‌جای سینک فوری، چند ثانیه صبر
-// می‌کنه تا ویرایش‌های پشت‌سرهم توی یک درخواست جمع بشن و به تلگرام فشار نیاره.
-function queueTelegramSync(id){
-  if(!telegramConfigured()) return;
-  clearTimeout(telegramSyncTimers[id]);
-  telegramSyncTimers[id] = setTimeout(() => {
-    syncProductToTelegram(id).catch(err => {
-      console.error(err);
-      setTelegramSyncStatus('همگام‌سازی خودکار با تلگرام ناموفق بود: ' + err.message, 'error');
-    });
-  }, 2500);
-}
 
 // آیدی پست‌های قبلیِ این محصول توی کانال رو برمی‌گردونه؛ از فرمت قدیمی (یک آیدی تکی) هم پشتیبانی می‌کنه
 function getTelegramMessageIds(prod){
@@ -3949,19 +3941,6 @@ async function saveAndSendProduct(id){
   }finally{
     if(btn) btn.disabled = false;
   }
-}
-
-// وقتی کاربر کارت یه محصول رو می‌بنده، اگه کاتالوگ تلگرام فعال باشه، به‌جای صبر برای تایمر
-// خودکار، همون لحظه (بدون نمایش وضعیت روی خود دکمه، چون کارت داره جمع می‌شه) به کانال سینک می‌کنه.
-function flushProductSync(id){
-  if(!isAdmin || !telegramConfigured()) return;
-  clearTimeout(telegramSyncTimers[id]);
-  syncProductToTelegram(id).then(() => {
-    showToast('محصول در کانال تلگرام به‌روزرسانی شد ✓', 'success', 1800);
-  }).catch(err => {
-    console.error(err);
-    showToast('همگام‌سازی با تلگرام ناموفق بود: ' + err.message, 'warn', 4000);
-  });
 }
 
 async function deleteProductTelegramPost(prod){
@@ -4124,7 +4103,6 @@ ${productInfo}`;
     prod.catalogDescription = generated;
     updateProductDisplay(id);
     persist();
-    queueTelegramSync(id);
     const el = document.getElementById('descTextarea_' + id);
     if(el) el.value = generated;
     setStatus('توضیح نوشته شد ✓', '');
@@ -4315,7 +4293,6 @@ async function handleImageFile(id, inputEl){
   setPhotoStatus(id, msg, 'success');
   setTimeout(()=>setPhotoStatus(id,'',''), 3500);
   inputEl.value = '';
-  if(uploadedCount > 0) queueTelegramSync(id);
 }
 
 async function removeProductImage(id, idxParam){
@@ -4341,7 +4318,6 @@ async function removeProductImage(id, idxParam){
         renderLightbox();
       }
     }
-    if(idx === 0) queueTelegramSync(id); // عکس اول (تامبنیل) عوض شد، پست کانال هم باید سینک بشه
   };
 
   if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path || !img.sha){
@@ -4384,7 +4360,6 @@ function moveProductImage(id, index, dir){
     lightboxIndex = newIndex;
     renderLightbox();
   }
-  if(touchesFirst) queueTelegramSync(id);
 }
 
 // انتخاب یه عکس به‌عنوان تامبنیل (عکس اول): می‌ندازتش اول لیست
@@ -4401,16 +4376,10 @@ function setProductThumbnail(id, index){
     lightboxIndex = 0;
     renderLightbox();
   }
-  queueTelegramSync(id);
 }
 
 function toggleProduct(id){
   const wasOpen = openProductId === id;
-  if(wasOpen){
-    // کارت داره بسته می‌شه: یعنی کاربر کارش با این محصول تمومه، پس همین الان
-    // (به‌جای صبر برای تایمر خودکار) به کانال تلگرام سینک کن.
-    flushProductSync(id);
-  }
   openProductId = wasOpen ? null : id;
   renderProducts();
   if(!wasOpen){
@@ -4480,7 +4449,6 @@ function updateProduct(id, field, value){
   // so the input the user is typing in never loses focus/keyboard.
   updateProductDisplay(id);
   persist();
-  queueTelegramSync(id);
 }
 
 function setProductGroupFilter(gid){
