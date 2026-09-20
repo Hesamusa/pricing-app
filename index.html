@@ -1069,6 +1069,9 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
 /* =========================================================
    SaaS UX 2.0 — task-first page hierarchy
    ========================================================= */
+/* Hard isolation: an inactive page must never become visible because a
+   page-specific rule later sets display:flex/grid/block on its container. */
+.tab-panel:not(.active){display:none!important;}
 .tab-panel{padding-bottom:18px}
 .tab-panel>.section-title:first-child{margin-top:8px}
 
