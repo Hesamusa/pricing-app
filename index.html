@@ -760,7 +760,10 @@
   .consign-tr.consign-total .cname{color:var(--ink-soft);}
   .consign-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
   .consign-actions .order-status-btn{flex:1 1 44%; min-width:130px;}
-  .consign-products-tools{display:flex; gap:8px; align-items:center; margin:10px 0 8px;}
+  .consign-tr .product-link{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:right;display:inline-flex;align-items:center;gap:5px;cursor:pointer;max-width:100%;font-weight:750;}
+.consign-tr .product-link:hover{color:var(--blue);}
+.consign-live-stock{display:block;font-size:9px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;}
+.consign-products-tools{display:flex; gap:8px; align-items:center; margin:10px 0 8px;}
   .consign-products-search{position:relative; flex:1; min-width:0;}
   .consign-products-search input{width:100%; height:44px; border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:10px 38px 10px 34px; font-size:14px; font-family:'Vazirmatn',sans-serif;}
   .consign-products-search svg{position:absolute; right:11px; top:50%; transform:translateY(-50%); color:var(--ink-soft); pointer-events:none;}
@@ -795,7 +798,13 @@
   .form-modal-body .card{padding:0; margin-bottom:0;}
   .consign-modal-title{font-size:17px; font-weight:800; color:var(--ink);}
   .consign-modal-sub{font-size:13px; font-weight:600; color:var(--ink-soft); line-height:1.8; margin:-4px 0 0;}
-  .consign-modal-list{overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:2px 0;}
+  .consign-modal-tools{display:flex;gap:8px;align-items:center;flex-shrink:0;margin:0 0 4px;}
+  .consign-modal-search{position:relative;flex:1;min-width:0;}
+  .consign-modal-search input{width:100%;height:42px;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:8px 36px 8px 30px;font-size:13px;font-family:'Vazirmatn',sans-serif;}
+  .consign-modal-search svg{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--ink-soft);pointer-events:none;}
+  .consign-modal-sort{height:42px;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:0 8px;font-size:12px;font-family:'Vazirmatn',sans-serif;color:var(--ink);min-width:112px;}
+  .consign-modal-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 2px 4px;max-height:min(52vh,430px);}
+  .consign-modal-list-empty{padding:18px 10px;text-align:center;color:var(--ink-soft);font-size:13px;font-weight:600;}
   .consign-qty-row{display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:14px; padding:10px 12px;}
   .consign-qty-row .qname{flex:1; min-width:0; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .consign-qty-row .qhint{font-size:11.5px; font-weight:600; color:var(--ink-soft); flex-shrink:0; white-space:nowrap;}
@@ -2623,6 +2632,33 @@ function applyItemStockDelta(productId, colorId, delta){
 }
 // کلید یکتا برای هر ترکیب محصول+رنگ (رنگ نداشته باشه یعنی '')
 function ciKey(productId, colorId){ return productId + '::' + (colorId || ''); }
+
+// اطلاعات نمایشی هر قلم امانی همیشه از رکورد اصلی محصول خوانده می‌شود.
+// نام/رنگ ذخیره‌شده داخل امانی فقط برای حفظ سابقه است؛ اگر محصول در تب «محصولات»
+// تغییر نام بدهد یا مشخصات رنگش تغییر کند، کارت امانی هم همان اطلاعات فعلی را نشان می‌دهد.
+function getLiveConsignItemMeta(it){
+  const prod = products.find(p => p.id === it.productId);
+  const color = prod && it.colorId ? (prod.colors||[]).find(c => c.id === it.colorId) : null;
+  const hasColor = !!(prod && prod.colors && prod.colors.length && it.colorId);
+  return {
+    prod,
+    color,
+    productName: prod ? prod.name : (it.productName || 'محصول حذف‌شده'),
+    colorName: color ? color.name : (it.colorName || ''),
+    colorHex: color ? color.hex : (it.colorHex || ''),
+    warehouseStock: prod ? productAvailableStock(prod, it.colorId || null) : 0,
+    priceW: prod ? calc(prod).priceW : 0,
+    linked: !!prod && (!hasColor || !!color)
+  };
+}
+
+function openProductFromConsign(productId){
+  if(!productId) return;
+  switchTab('products');
+  requestAnimationFrame(() => {
+    if(products.some(p => p.id === productId)) toggleProduct(productId);
+  });
+}
 
 let saveTimer;
 function persist(opts){
@@ -6699,18 +6735,57 @@ function openConsignQtyModal(opts){
     subEl.textContent = opts.sub || '';
     subEl.style.display = opts.sub ? '' : 'none';
     okBtn.textContent = opts.okLabel || 'تأیید';
-    listEl.innerHTML = (opts.rows||[]).map(r => `
-      <div class="consign-qty-row">
+    const rows = opts.rows || [];
+    const toolsHtml = rows.length > 8 ? `
+      <div class="consign-modal-tools">
+        <div class="consign-modal-search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.2-3.2"></path></svg>
+          <input id="consign_modal_search" type="text" placeholder="جستجوی محصول یا رنگ…" autocomplete="off">
+        </div>
+        <select id="consign_modal_sort" class="consign-modal-sort" aria-label="مرتب‌سازی">
+          <option value="name">نام: الفبا</option>
+          <option value="name_desc">نام: برعکس</option>
+          <option value="value_desc">مقدار: بیشتر</option>
+          <option value="value_asc">مقدار: کمتر</option>
+        </select>
+      </div>` : '';
+    listEl.innerHTML = toolsHtml + rows.map(r => `
+      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText(r.name||''))}" data-value="${Number(r.value)||0}">
         <span class="qname">${escapeHtml(r.name)}</span>
         ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
         <input type="text" inputmode="numeric" data-key="${escapeHtml(r.key)}" value="${r.value ? toFaNum(r.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
       </div>`).join('');
     overlay.classList.add('show');
+    const searchEl = document.getElementById('consign_modal_search');
+    const sortEl = document.getElementById('consign_modal_sort');
+    const applyListView = () => {
+      const q = normalizeFaText(searchEl ? searchEl.value : '');
+      const rowsEls = Array.from(listEl.querySelectorAll('[data-modal-row]'));
+      rowsEls.forEach(row => row.style.display = (!q || row.dataset.search.includes(q)) ? '' : 'none');
+      if(sortEl){
+        const mode = sortEl.value;
+        rowsEls.sort((a,b) => {
+          if(mode==='name_desc') return b.dataset.name.localeCompare(a.dataset.name,'fa');
+          if(mode==='value_desc') return Number(b.dataset.value)-Number(a.dataset.value);
+          if(mode==='value_asc') return Number(a.dataset.value)-Number(b.dataset.value);
+          return a.dataset.name.localeCompare(b.dataset.name,'fa');
+        }).forEach(row => listEl.appendChild(row));
+      }
+      let empty = listEl.querySelector('.consign-modal-list-empty');
+      const visible = rowsEls.some(row => row.style.display !== 'none');
+      if(!visible){
+        if(!empty){ empty=document.createElement('div'); empty.className='consign-modal-list-empty'; empty.textContent='نتیجه‌ای پیدا نشد.'; listEl.appendChild(empty); }
+      }else if(empty) empty.remove();
+    };
+    if(searchEl) searchEl.addEventListener('input', applyListView);
+    if(sortEl) sortEl.addEventListener('change', applyListView);
     const cleanup = (result) => {
       overlay.classList.remove('show');
       okBtn.removeEventListener('click', onOk);
       cancelBtn.removeEventListener('click', onCancel);
       overlay.removeEventListener('click', onBackdrop);
+      if(searchEl) searchEl.removeEventListener('input', applyListView);
+      if(sortEl) sortEl.removeEventListener('change', applyListView);
       resolve(result);
     };
     const onOk = () => {
@@ -6725,6 +6800,7 @@ function openConsignQtyModal(opts){
     okBtn.addEventListener('click', onOk);
     cancelBtn.addEventListener('click', onCancel);
     overlay.addEventListener('click', onBackdrop);
+    if(searchEl) setTimeout(()=>searchEl.focus(),40);
   });
 }
 
@@ -6747,24 +6823,63 @@ function openConsignMultiFieldModal(opts){
     subEl.textContent = opts.sub || '';
     subEl.style.display = opts.sub ? '' : 'none';
     okBtn.textContent = opts.okLabel || 'تأیید';
-    listEl.innerHTML = (opts.rows||[]).map(r => `
-      <div class="consign-qty-row" style="flex-direction:column; align-items:stretch; gap:6px;">
-        <div style="display:flex; align-items:center; gap:8px;">
+    const rows = opts.rows || [];
+    const toolsHtml = rows.length > 8 ? `
+      <div class="consign-modal-tools">
+        <div class="consign-modal-search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.2-3.2"></path></svg>
+          <input id="consign_modal_search" type="text" placeholder="جستجوی محصول یا رنگ…" autocomplete="off">
+        </div>
+        <select id="consign_modal_sort" class="consign-modal-sort" aria-label="مرتب‌سازی">
+          <option value="name">نام: الفبا</option>
+          <option value="name_desc">نام: برعکس</option>
+          <option value="value_desc">مقدار: بیشتر</option>
+          <option value="value_asc">مقدار: کمتر</option>
+        </select>
+      </div>` : '';
+    listEl.innerHTML = toolsHtml + rows.map(r => `
+      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText(r.name||''))}" data-value="${Number((r.fields||[]).reduce((sum,f)=>sum+(Number(f.value)||0),0))}">
+        <div style="display:flex;align-items:center;gap:8px;">
           <span class="qname" style="flex:1;">${escapeHtml(r.name)}</span>
           ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
         </div>
         ${(r.fields||[]).map(f => `
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="qhint" style="width:76px; flex-shrink:0;">${escapeHtml(f.label)}</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="qhint" style="width:76px;flex-shrink:0;">${escapeHtml(f.label)}</span>
           <input type="text" inputmode="numeric" data-role="${escapeHtml(f.role)}" data-key="${escapeHtml(r.key)}" value="${(f.value !== undefined && f.value !== null && f.value !== '') ? toFaNum(f.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
         </div>`).join('')}
       </div>`).join('');
     overlay.classList.add('show');
+    const searchEl = document.getElementById('consign_modal_search');
+    const sortEl = document.getElementById('consign_modal_sort');
+    const applyListView = () => {
+      const q = normalizeFaText(searchEl ? searchEl.value : '');
+      const rowsEls = Array.from(listEl.querySelectorAll('[data-modal-row]'));
+      rowsEls.forEach(row => row.style.display = (!q || row.dataset.search.includes(q)) ? '' : 'none');
+      if(sortEl){
+        const mode = sortEl.value;
+        rowsEls.sort((a,b) => {
+          if(mode==='name_desc') return b.dataset.name.localeCompare(a.dataset.name,'fa');
+          if(mode==='value_desc') return Number(b.dataset.value)-Number(a.dataset.value);
+          if(mode==='value_asc') return Number(a.dataset.value)-Number(b.dataset.value);
+          return a.dataset.name.localeCompare(b.dataset.name,'fa');
+        }).forEach(row => listEl.appendChild(row));
+      }
+      let empty = listEl.querySelector('.consign-modal-list-empty');
+      const visible = rowsEls.some(row => row.style.display !== 'none');
+      if(!visible){
+        if(!empty){ empty=document.createElement('div'); empty.className='consign-modal-list-empty'; empty.textContent='نتیجه‌ای پیدا نشد.'; listEl.appendChild(empty); }
+      }else if(empty) empty.remove();
+    };
+    if(searchEl) searchEl.addEventListener('input', applyListView);
+    if(sortEl) sortEl.addEventListener('change', applyListView);
     const cleanup = (result) => {
       overlay.classList.remove('show');
       okBtn.removeEventListener('click', onOk);
       cancelBtn.removeEventListener('click', onCancel);
       overlay.removeEventListener('click', onBackdrop);
+      if(searchEl) searchEl.removeEventListener('input', applyListView);
+      if(sortEl) sortEl.removeEventListener('change', applyListView);
       resolve(result);
     };
     const onOk = () => {
@@ -6781,6 +6896,7 @@ function openConsignMultiFieldModal(opts){
     okBtn.addEventListener('click', onOk);
     cancelBtn.addEventListener('click', onCancel);
     overlay.addEventListener('click', onBackdrop);
+    if(searchEl) setTimeout(()=>searchEl.focus(),40);
   });
 }
 
@@ -7580,17 +7696,25 @@ function renderConsignCard(c){
   let totalRemain = 0, totalSold = 0, totalCharged = 0, totalRestockNeed = 0;
   const productQuery = normalizeFaText(consignProductSearch[c.id] || '');
   const rows = items.map(it => {
+    const meta = getLiveConsignItemMeta(it);
     const remain = consignRemaining(it);
-    const rowSearch = normalizeFaText((it.productName||'')+' '+(it.colorName||''));
+    const rowSearch = normalizeFaText((meta.productName||'')+' '+(meta.colorName||'')+' '+(it.productName||'')+' '+(it.colorName||''));
     const restock = consignRestockQty(it);
     const charged = it.rechargedQty||0;
     totalRemain += remain;
     totalSold += (it.soldQty||0);
     totalCharged += charged;
     totalRestockNeed += restock;
+    const liveLabel = meta.prod ? meta.productName + (meta.colorName ? ' — ' + meta.colorName : '') : (it.productName || 'محصول حذف‌شده');
     return `
       <div class="consign-tr product-row" data-product-row data-search="${escapeHtml(rowSearch)}" style="${productQuery && !rowSearch.includes(productQuery)?'display:none;':''}">
-        <span class="cname-wrap"><span class="cname">${it.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(it.colorHex)}"></span>` : ''}${escapeHtml(it.productName)}${it.colorName ? ' — ' + escapeHtml(it.colorName) : ''}</span></span>
+        <span class="cname-wrap">
+          <button type="button" class="cname product-link" title="مشاهده در محصولات" onclick="event.stopPropagation(); openProductFromConsign('${it.productId}')">
+            ${meta.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(meta.colorHex)}"></span>` : ''}
+            <span>${escapeHtml(liveLabel)}</span>
+          </button>
+          ${meta.prod ? `<span class="consign-live-stock">انبار: ${fa.format(meta.warehouseStock)}</span>` : `<span class="consign-live-stock" style="color:var(--red);">محصول در تب محصولات موجود نیست</span>`}
+        </span>
         <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
         <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
         <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
