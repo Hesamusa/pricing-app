@@ -5772,7 +5772,9 @@ function updateProduct(id, field, value){
   // Update only the computed numbers in place (no innerHTML rebuild),
   // so the input the user is typing in never loses focus/keyboard.
   updateProductDisplay(id);
-  persist({telegramProductId:id});
+  // تغییرات داخل کارت محصول فقط در اپ و Supabase ذخیره می‌شوند.
+  // ارسال/به‌روزرسانی تلگرام فقط با دکمه «ذخیره و ارسال به کانال تلگرام» انجام شود.
+  persist({skipTelegram:true});
 }
 
 function setProductGroupFilter(gid){
