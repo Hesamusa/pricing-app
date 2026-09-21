@@ -5189,6 +5189,19 @@ function setPhotoStatus(id, text, kind){
   el.className = 'photo-status' + (kind ? ' '+kind : '');
 }
 
+// رویداد انتخاب فایل را روی document می‌گیریم تا بعد از بازسازی کارت محصول هم
+// روی iPhone/iPad از بین نرود. این listener مستقل از inline onchange است.
+if(!window.__productImageFileListenerInstalled){
+  window.__productImageFileListenerInstalled = true;
+  document.addEventListener('change', function(e){
+    const input = e.target;
+    if(!input || input.tagName !== 'INPUT' || input.type !== 'file' || !input.id || !input.id.startsWith('imgfile_')) return;
+    const id = input.dataset.productId || input.id.slice('imgfile_'.length);
+    if(!id) return;
+    handleImageFile(id, input);
+  }, true);
+}
+
 const PRODUCT_MAX_IMAGES = 5;
 
 // بخش تصویری کاروسل (عکس فعلی + نقطه‌ها) — با لمس/کلیک روی عکس، ویوئر تمام‌صفحه باز می‌شه
@@ -5215,7 +5228,7 @@ function photoActionsInnerHTML(prod, lk){
   return `
     ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
     ${remaining > 0
-      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*" multiple id="imgfile_${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
+      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*,.heic,.heif" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input"></div>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
   `;
 }
