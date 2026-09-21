@@ -1724,7 +1724,9 @@ async function loadProductsFromSupabaseBridge(){
     });
 
     supabaseProductsLoaded = true;
+    const migratedColors = migrateAllColorsToCommonCatalog();
     rebuildSupabaseProductSnapshot();
+    if(migratedColors) setTimeout(() => persist({skipTelegram:true,skipSync:true}), 50);
     try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
     return true;
   }catch(err){
@@ -3267,7 +3269,91 @@ function makeProduct(name, weight, printHours, manualHours, paintHours){
 }
 
 // ————— رنگ‌های محصول: هر محصول می‌تونه چند رنگ داشته باشه، هر رنگ موجودی جدای خودش رو داره —————
+// ————— رنگ‌های مشترک محصول —————
+// فهرست مرجع مشترک: هر رنگ یک شناسه ثابت دارد و در همه محصولات از همان شناسه استفاده می‌شود.
+const COMMON_PRODUCT_COLORS = [
+  {id:'color_black',name:'مشکی',hex:'#111111'},
+  {id:'color_white',name:'سفید',hex:'#ffffff'},
+  {id:'color_red',name:'قرمز',hex:'#e53935'},
+  {id:'color_blue',name:'آبی',hex:'#1e88e5'},
+  {id:'color_green',name:'سبز',hex:'#43a047'},
+  {id:'color_yellow',name:'زرد',hex:'#fdd835'},
+  {id:'color_orange',name:'نارنجی',hex:'#fb8c00'},
+  {id:'color_purple',name:'بنفش',hex:'#8e24aa'},
+  {id:'color_pink',name:'صورتی',hex:'#ec407a'},
+  {id:'color_brown',name:'قهوه‌ای',hex:'#795548'},
+  {id:'color_gray',name:'طوسی',hex:'#78909c'},
+  {id:'color_silver',name:'نقره‌ای',hex:'#b0bec5'},
+  {id:'color_gold',name:'طلایی',hex:'#d4a72c'},
+  {id:'color_cream',name:'کرم',hex:'#f3e5c8'},
+  {id:'color_navy',name:'سرمه‌ای',hex:'#283593'}
+];
+function normalizeColorName(name){
+  return String(name||'').trim().toLowerCase()
+    .replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه')
+    .replace(/[أإٱ]/g,'ا').replace(/ؤ/g,'و')
+    .replace(/[ًٌٍَُِّْـ]/g,'')
+    .replace(/[\u200c\u200d\u200e\u200f]/g,'')
+    .replace(/\s+/g,'');
+}
+const COMMON_COLOR_ALIASES = {
+  'مشکی':'مشکی','سیاه':'مشکی','black':'مشکی',
+  'سفید':'سفید','سفيد':'سفید','white':'سفید',
+  'قرمز':'قرمز','سرخ':'قرمز','red':'قرمز',
+  'آبی':'آبی','ابی':'آبی','blue':'آبی',
+  'سبز':'سبز','green':'سبز','زرد':'زرد','yellow':'زرد',
+  'نارنجی':'نارنجی','orange':'نارنجی','بنفش':'بنفش','purple':'بنفش','ارغوانی':'بنفش',
+  'صورتی':'صورتی','pink':'صورتی','قهوه‌ای':'قهوه‌ای','قهوهای':'قهوه‌ای','brown':'قهوه‌ای',
+  'طوسی':'طوسی','خاکستری':'طوسی','gray':'طوسی','grey':'طوسی',
+  'نقره‌ای':'نقره‌ای','نقرهای':'نقره‌ای','silver':'نقره‌ای',
+  'طلایی':'طلایی','طلائي':'طلایی','gold':'طلایی','کرم':'کرم','cream':'کرم',
+  'سرمه‌ای':'سرمه‌ای','سرمه ای':'سرمه‌ای','navy':'سرمه‌ای'
+};
+function getCommonColorByName(name){
+  const key=normalizeColorName(name);
+  const alias=COMMON_COLOR_ALIASES[key] || name;
+  const target=normalizeColorName(alias);
+  return COMMON_PRODUCT_COLORS.find(c=>normalizeColorName(c.name)===target) || null;
+}
+function getCommonColorById(id){ return COMMON_PRODUCT_COLORS.find(c=>c.id===id) || null; }
+function colorOptionMarkup(){
+  return '<option value="">— انتخاب رنگ —</option>' + COMMON_PRODUCT_COLORS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function syncCommonColorSwatch(productId){
+  const sel=document.getElementById('commonColorSelect_'+productId);
+  const sw=document.getElementById('commonColorSwatch_'+productId);
+  const name=document.getElementById('commonColorLabel_'+productId);
+  const c=sel ? getCommonColorById(sel.value) : null;
+  if(sw){ sw.style.background=c?c.hex:'transparent'; sw.style.borderColor=c&&c.id==='color_white'?'var(--line)':'transparent'; }
+  if(name) name.textContent=c?c.name:'رنگی انتخاب نشده';
+}
 function newColorId(){ return 'col_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function migrateAllColorsToCommonCatalog(){
+  let changed=false; const idMapByProduct={};
+  for(const prod of (Array.isArray(products)?products:[])){
+    if(!prod || !Array.isArray(prod.colors) || !prod.colors.length) continue;
+    const oldStock=prod.colorStock||{}, next=[], nextStock={}, localMap={};
+    for(const old of prod.colors){
+      const common=getCommonColorById(old.id)||getCommonColorByName(old.name);
+      if(!common){ next.push(old); nextStock[old.id]=Number(oldStock[old.id]||0); continue; }
+      if(old.id!==common.id) localMap[old.id]=common.id;
+      if(!next.some(c=>c.id===common.id)) next.push({id:common.id,name:common.name,hex:common.hex});
+      nextStock[common.id]=(nextStock[common.id]||0)+Number(oldStock[old.id]||0);
+      if(old.id!==common.id||old.name!==common.name||old.hex!==common.hex) changed=true;
+    }
+    if(Object.keys(localMap).length) idMapByProduct[prod.id]=localMap;
+    prod.colors=next; prod.colorStock=nextStock; syncProductStockFromColors(prod);
+  }
+  const productFor=(pid)=>products.find(p=>p.id===pid);
+  for(const c of (Array.isArray(consignments)?consignments:[])){
+    for(const it of (c.items||[])){const m=idMapByProduct[it.productId];if(m&&m[it.colorId]){it.colorId=m[it.colorId];const col=productFor(it.productId)?.colors?.find(x=>x.id===it.colorId);if(col)it.colorName=col.name;changed=true;}}
+    for(const d of (c.deliveries||[])) for(const it of (d.items||[])){const m=idMapByProduct[it.productId];if(m&&m[it.colorId]){it.colorId=m[it.colorId];const col=productFor(it.productId)?.colors?.find(x=>x.id===it.colorId);if(col)it.colorName=col.name;changed=true;}}
+    for(const l of (c.saleLogs||[])) for(const it of (l.items||[])){const m=idMapByProduct[it.productId];if(m&&m[it.colorId]){it.colorId=m[it.colorId];const col=productFor(it.productId)?.colors?.find(x=>x.id===it.colorId);if(col)it.colorName=col.name;changed=true;}}
+  }
+  for(const sale of (Array.isArray(sales)?sales:[])){const m=idMapByProduct[sale.productId];if(m&&m[sale.colorId]){sale.colorId=m[sale.colorId];const col=productFor(sale.productId)?.colors?.find(x=>x.id===sale.colorId);if(col)sale.colorName=col.name;changed=true;}}
+  for(const order of (Array.isArray(orders)?orders:[])) for(const it of (order.items||[])){const m=idMapByProduct[it.productId];if(m&&m[it.colorId]){it.colorId=m[it.colorId];const col=productFor(it.productId)?.colors?.find(x=>x.id===it.colorId);if(col)it.colorName=col.name;changed=true;}}
+  return changed;
+}
 function productColorStock(prod, colorId){ return (prod.colorStock && prod.colorStock[colorId]) || 0; }
 // موجودی قابل‌استفاده‌ی یه محصول: اگه colorId داده بشه و محصول همچین رنگی داشته باشه، فقط موجودی همون رنگ؛ وگرنه جمع کل
 function productAvailableStock(prod, colorId){
@@ -3283,25 +3369,22 @@ function syncProductStockFromColors(prod){
 }
 function submitAddProductColor(id){
   if(!isAdmin) return;
-  const prod = products.find(p=>p.id===id);
+  const prod=products.find(p=>p.id===id);
   if(!prod) return;
-  const hexInput = document.getElementById('colorPickInput_'+id);
-  const nameInput = document.getElementById('colorNameInput_'+id);
-  const name = (nameInput && nameInput.value.trim()) || '';
-  if(!name){ if(nameInput) nameInput.focus(); return; }
-  const hex = (hexInput && hexInput.value) || '#c0392b';
-  if(!prod.colors) prod.colors = [];
-  if(!prod.colorStock) prod.colorStock = {};
-  const cid = newColorId();
-  prod.colors.push({id: cid, name, hex});
-  prod.colorStock[cid] = 0;
+  const select=document.getElementById('commonColorSelect_'+id);
+  const cid=select && select.value;
+  const common=getCommonColorById(cid);
+  if(!common){ if(select) select.focus(); return; }
+  if(!prod.colors) prod.colors=[];
+  if(!prod.colorStock) prod.colorStock={};
+  const existing=prod.colors.find(c=>c.id===common.id) || prod.colors.find(c=>getCommonColorByName(c.name)?.id===common.id);
+  if(existing){ showToast('این رنگ قبلاً برای این محصول تعریف شده است.','warn',2500); return; }
+  prod.colors.push({id:common.id,name:common.name,hex:common.hex});
+  prod.colorStock[common.id]=Number(prod.colorStock[common.id]||0);
   syncProductStockFromColors(prod);
   persist();
   renderProducts();
-  setTimeout(() => {
-    const card = document.getElementById('card_'+id);
-    if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
-  }, 30);
+  setTimeout(()=>{ const card=document.getElementById('card_'+id); if(card) card.scrollIntoView({behavior:'smooth',block:'center'}); },30);
 }
 async function removeProductColor(id, colorId){
   if(!isAdmin) return;
@@ -4358,12 +4441,16 @@ function renderProducts(){
             </div>
             `}
             ${lk ? '' : `
-            <div class="color-add-row">
-              <input type="color" class="color-pick-input" id="colorPickInput_${prod.id}" value="#c0392b" onclick="event.stopPropagation()">
-              <input type="text" class="color-name-input" id="colorNameInput_${prod.id}" placeholder="اسم رنگ جدید (مثلاً قرمز)" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitAddProductColor('${prod.id}');}">
-              <button type="button" class="add-btn" style="width:auto; margin:0; padding:0 16px; min-height:44px; background:var(--blue);" onclick="event.stopPropagation(); submitAddProductColor('${prod.id}')">+ رنگ</button>
-            </div>`}
+            <div class="color-add-row common-color-add-row">
+              <span class="common-color-swatch" id="commonColorSwatch_${prod.id}"></span>
+              <select class="common-color-select" id="commonColorSelect_${prod.id}" onclick="event.stopPropagation()" onchange="syncCommonColorSwatch('${prod.id}')">
+                ${colorOptionMarkup()}
+              </select>
+              <span class="common-color-label" id="commonColorLabel_${prod.id}">رنگی انتخاب نشده</span>
+              <button type="button" class="add-btn" style="width:auto;margin:0;padding:0 16px;min-height:44px;background:var(--blue);" onclick="event.stopPropagation();submitAddProductColor('${prod.id}')">+ افزودن رنگ</button>
+            </div>
             <div class="hint">با ثبت فروش از تب «فروش»، این عدد خودکار کم می‌شه. اگه محصولت چند رنگه، از همین‌جا رنگ‌هاش رو تعریف کن تا توی واگذاری امانی و فروش هم بشه رنگ رو مشخص کرد.</div>
+            `}
           </div>
           <div class="grid-2">
             <div class="field">
