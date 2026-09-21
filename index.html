@@ -5041,57 +5041,76 @@ async function syncProductToTelegram(id){
   const caption = telegramCaption(prod);
   const existingIds = getTelegramMessageIds(prod);
 
-  // قانون قطعی این نسخه:
-  // هنگام به‌روزرسانی محصول، هرگز پست قبلی حذف یا پست جدید ایجاد نمی‌شود.
-  // فقط همان Message IDهای ثبت‌شده ویرایش می‌شوند.
-  if(!existingIds.length){
-    throw new Error('برای این محصول شناسه پست تلگرام ثبت نشده است؛ برای جلوگیری از ایجاد پست تکراری، پست جدید ساخته نشد.');
-  }
-
-  if(images.length === 0){
-    if(existingIds.length !== 1){
-      throw new Error('برای محصول بدون عکس باید دقیقاً یک شناسه پیام تلگرام ثبت شده باشد؛ پست قبلی دست‌نخورده باقی ماند.');
-    }
-    const data = await telegramCall('editMessageText', {
-      chat_id: channel,
-      message_id: existingIds[0],
-      text: caption,
-      parse_mode:'HTML'
-    });
-    if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
-  } else if(images.length === 1){
-    if(existingIds.length !== 1){
-      throw new Error('برای محصول تک‌عکسه باید دقیقاً یک شناسه پیام تلگرام ثبت شده باشد؛ پست قبلی دست‌نخورده باقی ماند.');
-    }
-    const data = await telegramCall('editMessageMedia', {
-      chat_id: channel,
-      message_id: existingIds[0],
-      media: {type:'photo', media:images[0].url, caption, parse_mode:'HTML'}
-    });
-    if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
-  } else {
-    if(existingIds.length !== images.length){
-      throw new Error(`تعداد عکس‌های فعلی (${images.length}) با تعداد پیام‌های ثبت‌شده برای این محصول (${existingIds.length}) یکسان نیست؛ برای جلوگیری از حذف یا ایجاد پست جدید، هیچ تغییری در تلگرام انجام نشد.`);
-    }
-    for(let i=0;i<images.length;i++){
-      const media = i === 0
-        ? {type:'photo', media:images[i].url, caption, parse_mode:'HTML'}
-        : {type:'photo', media:images[i].url};
-      const data = await telegramCall('editMessageMedia', {
-        chat_id:channel,
-        message_id:existingIds[i],
-        media
+  // اصل مهم:
+  // - اگر محصول قبلاً در تلگرام پست شده باشد، فقط همان پیام‌ها ویرایش می‌شوند.
+  // - اگر محصول جدید باشد و شناسه‌ای نداشته باشد، اولین انتشار انجام می‌شود و شناسه‌ها در Supabase ذخیره می‌شوند.
+  // - در هیچ حالتِ ویرایش، پیام قبلی حذف یا با پیام جدید جایگزین نمی‌شود.
+  if(existingIds.length){
+    if(images.length === 0){
+      if(existingIds.length !== 1){
+        throw new Error('برای محصول بدون عکس باید دقیقاً یک شناسه پیام تلگرام ثبت شده باشد؛ پست قبلی دست‌نخورده باقی ماند.');
+      }
+      const data = await telegramCall('editMessageText', {
+        chat_id: channel, message_id: existingIds[0], text: caption, parse_mode:'HTML'
       });
-      if(!data.ok){
-        throw new Error(data.description || `ویرایش عکس ${i+1} پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.`);
+      if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
+    } else if(images.length === 1){
+      if(existingIds.length !== 1){
+        throw new Error('برای محصول تک‌عکسه باید دقیقاً یک شناسه پیام تلگرام ثبت شده باشد؛ پست قبلی دست‌نخورده باقی ماند.');
+      }
+      const data = await telegramCall('editMessageMedia', {
+        chat_id: channel, message_id: existingIds[0],
+        media:{type:'photo', media:images[0].url, caption, parse_mode:'HTML'}
+      });
+      if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
+    } else {
+      if(existingIds.length !== images.length){
+        throw new Error(`تعداد عکس‌های فعلی (${images.length}) با تعداد پیام‌های ثبت‌شده برای این محصول (${existingIds.length}) یکسان نیست؛ برای جلوگیری از حذف یا ایجاد پست جدید، هیچ تغییری در تلگرام انجام نشد.`);
+      }
+      for(let i=0;i<images.length;i++){
+        const media = i === 0
+          ? {type:'photo', media:images[i].url, caption, parse_mode:'HTML'}
+          : {type:'photo', media:images[i].url};
+        const data = await telegramCall('editMessageMedia', {
+          chat_id:channel, message_id:existingIds[i], media
+        });
+        if(!data.ok) throw new Error(data.description || `ویرایش عکس ${i+1} پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.`);
       }
     }
+
+    await saveTelegramIdsToSupabase(prod);
+    try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
+    return {ok:true, mode:'edited', messageIds:existingIds};
   }
 
-  // شناسه‌ها ثابت می‌مانند؛ فقط وضعیت فعلی محصول را در Supabase ثبت می‌کنیم.
+  // محصول جدید: چون Message ID ندارد، اینجا و فقط اینجا اولین پست ساخته می‌شود.
+  // پس از انتشار، Message ID در خود محصول و Supabase ثبت می‌شود تا دفعات بعد فقط ویرایش انجام شود.
+  let newIds = [];
+  if(images.length === 0){
+    const data = await telegramCall('sendMessage', {chat_id:channel, text:caption, parse_mode:'HTML'});
+    if(!data.ok) throw new Error(data.description || 'ارسال محصول جدید به تلگرام ناموفق بود.');
+    newIds = [data.result.message_id];
+  } else if(images.length === 1){
+    const data = await telegramCall('sendPhoto', {
+      chat_id:channel, photo:images[0].url, caption, parse_mode:'HTML'
+    });
+    if(!data.ok) throw new Error(data.description || 'ارسال تصویر محصول جدید به تلگرام ناموفق بود.');
+    newIds = [data.result.message_id];
+  } else {
+    const media = images.map((im,i)=>({
+      type:'photo', media:im.url,
+      ...(i===0 ? {caption, parse_mode:'HTML'} : {})
+    }));
+    const data = await telegramCall('sendMediaGroup', {chat_id:channel, media});
+    if(!data.ok) throw new Error(data.description || 'ارسال آلبوم محصول جدید به تلگرام ناموفق بود.');
+    newIds = (data.result || []).map(m=>m.message_id).filter(Boolean);
+    if(newIds.length !== images.length) throw new Error('تلگرام آلبوم را ارسال کرد ولی شناسه همه پیام‌ها دریافت نشد؛ برای جلوگیری از تکرار، شناسه‌ها ذخیره نشدند.');
+  }
+
+  setTelegramMessageIds(prod, newIds);
   await saveTelegramIdsToSupabase(prod);
   try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
-  return {ok:true, mode:'edited', messageIds:existingIds};
+  return {ok:true, mode:'new', messageIds:newIds};
 }
 
 // دکمه‌ی «ذخیره و ارسال به کانال تلگرام» روی کارت محصول: هر ذخیره‌ی معلقی رو فوراً commit می‌کنه
@@ -8789,6 +8808,24 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
+async function refreshProductsFromSupabaseIfSafe(){
+  try{
+    const active = document.activeElement;
+    if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+    const ok = await loadProductsFromSupabaseBridge();
+    if(ok){
+      try{
+        if(typeof render === 'function') render();
+        else if(typeof renderAll === 'function') renderAll();
+      }catch(e){ console.warn('Product render after Supabase refresh failed', e); }
+    }
+  }catch(e){ console.warn('Supabase product refresh failed', e); }
+}
+window.addEventListener('pageshow', () => setTimeout(refreshProductsFromSupabaseIfSafe, 300));
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible') setTimeout(refreshProductsFromSupabaseIfSafe, 300);
+});
+
 window.addEventListener('load', async () => {
   setTimeout(async () => {
     const ok = await loadProductsFromSupabaseBridge();
