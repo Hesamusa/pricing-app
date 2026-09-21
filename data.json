@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T12:39:21.228Z",
+  "updatedAt": "2026-09-21T12:40:58.559Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -596,54 +596,6 @@
       "sizeH": 0
     },
     {
-      "id": "p_1789473468341u6rm9",
-      "name": "سگ پودل بالونی بافتنی",
-      "stock": 0,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659508561_0.jpg?v=1789659510030",
-          "path": "product-images/p_1789473468341u6rm9_1789659508561_0.jpg",
-          "sha": "bc7fa6a2c879bb476eac818178dd6ea6edcff514"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659466164_0.jpg?v=1789659468613",
-          "path": "product-images/p_1789473468341u6rm9_1789659466164_0.jpg",
-          "sha": "ae6a8681f5c13948d9ccdf3e0b1d64b137faf0b2"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659468677_1.jpg?v=1789659470151",
-          "path": "product-images/p_1789473468341u6rm9_1789659468677_1.jpg",
-          "sha": "f12e06b41c6f23692f448dc53ed7ff3657c70e03"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659491339_0.jpg?v=1789659493334",
-          "path": "product-images/p_1789473468341u6rm9_1789659491339_0.jpg",
-          "sha": "168820787804119fcf784d71f5bd8570f37f799e"
-        }
-      ],
-      "weight": 16,
-      "marginR": 85,
-      "marginW": 65,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0.5,
-      "printHours": 1.5,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "ظاهرش طوری طراحی شده که حس یه بافتنی نرم رو میده، اما با دقت و ظرافت بالا پرینت شده! 🎈\nانقدر سبک و خاصه که بهترین آویز برای کیف یا رفیق فابریک کلیدات میشه.\nیه اکسسوری بانمک و متفاوت که هربار می‌بینیش حسابی حالت رو خوب می‌کنه.",
-      "telegramMessageIds": [
-        208,
-        209,
-        210,
-        211
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
       "id": "p_178941010031173kks",
       "name": "فلکسی بیبی گروت چوبی",
       "stock": 0,
@@ -702,6 +654,62 @@
       "sizeL": 0,
       "sizeW": 0,
       "sizeH": 0
+    },
+    {
+      "id": "p_1789473468341u6rm9",
+      "name": "سگ پودل بالونی بافتنی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [
+        {
+          "id": "col_mub8hd33us0m",
+          "name": "قهوه ای",
+          "hex": "#804040"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659508561_0.jpg?v=1789659510030",
+          "path": "product-images/p_1789473468341u6rm9_1789659508561_0.jpg",
+          "sha": "bc7fa6a2c879bb476eac818178dd6ea6edcff514"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659466164_0.jpg?v=1789659468613",
+          "path": "product-images/p_1789473468341u6rm9_1789659466164_0.jpg",
+          "sha": "ae6a8681f5c13948d9ccdf3e0b1d64b137faf0b2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659468677_1.jpg?v=1789659470151",
+          "path": "product-images/p_1789473468341u6rm9_1789659468677_1.jpg",
+          "sha": "f12e06b41c6f23692f448dc53ed7ff3657c70e03"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789473468341u6rm9_1789659491339_0.jpg?v=1789659493334",
+          "path": "product-images/p_1789473468341u6rm9_1789659491339_0.jpg",
+          "sha": "168820787804119fcf784d71f5bd8570f37f799e"
+        }
+      ],
+      "weight": 16,
+      "marginR": 85,
+      "marginW": 65,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "col_mub8hd33us0m": 0
+      },
+      "paintHours": 0.5,
+      "printHours": 1.5,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "ظاهرش طوری طراحی شده که حس یه بافتنی نرم رو میده، اما با دقت و ظرافت بالا پرینت شده! 🎈\nانقدر سبک و خاصه که بهترین آویز برای کیف یا رفیق فابریک کلیدات میشه.\nیه اکسسوری بانمک و متفاوت که هربار می‌بینیش حسابی حالت رو خوب می‌کنه.",
+      "telegramMessageIds": [
+        208,
+        209,
+        210,
+        211
+      ]
     },
     {
       "id": "p_17893536103524v8zn",
