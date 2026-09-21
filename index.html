@@ -1793,14 +1793,29 @@ async function loadProductsFromSupabaseBridge(){
 
     const colorsByProduct = {};
     const imagesByProduct = {};
-    for(const c of colorRows) (colorsByProduct[c.product_id] ||= []).push({id:c.id,name:c.name,hex:c.hex});
+    // رنگِ داخل برنامه یک شناسهٔ مشترک مثل color_red دارد، اما کلید اصلی جدول
+    // product_colors باید برای هر محصول یکتا باشد. در دیتابیس شناسه‌ها را
+    // به صورت productId::colorId نگه می‌داریم و هنگام خواندن دوباره به شناسهٔ
+    // رنگِ داخل برنامه برمی‌گردانیم. این کار جلوی خطای duplicate key را می‌گیرد.
+    const dbColorIdToAppId = (productId, dbId) => {
+      const prefix = String(productId || '') + '::';
+      const value = String(dbId || '');
+      return value.startsWith(prefix) ? value.slice(prefix.length) : value;
+    };
+    for(const c of colorRows){
+      const appId = dbColorIdToAppId(c.product_id, c.id);
+      (colorsByProduct[c.product_id] ||= []).push({id:appId,name:c.name,hex:c.hex});
+    }
     for(const im of imageRows) (imagesByProduct[im.product_id] ||= []).push({url:im.url,path:im.path,sha:im.sha});
 
     products = rows.map(r => {
       const legacy = (r.legacy_payload && typeof r.legacy_payload === 'object') ? r.legacy_payload : {};
       const productColors = colorsByProduct[r.id] || [];
       const colorStock = {};
-      for(const c of colorRows.filter(x => x.product_id === r.id)) colorStock[c.id] = Number(c.stock || 0);
+      for(const c of colorRows.filter(x => x.product_id === r.id)){
+        const appId = dbColorIdToAppId(r.id, c.id);
+        colorStock[appId] = Number(c.stock || 0);
+      }
       return {
         ...legacy,
         id:r.id, name:r.name ?? legacy.name ?? '',
@@ -1913,9 +1928,15 @@ async function saveProductsToSupabaseBridge(){
       if(cd) throw new Error('حذف رنگ‌های قدیمی: ' + cd.message + (cd.code ? ' ['+cd.code+']' : ''));
       const colorPayload=[];
       for(const p of changed){
+        const seenColorIds = new Set();
         for(let i=0;i<(p.colors||[]).length;i++){
           const c=p.colors[i];
-          colorPayload.push({id:c.id, product_id:p.id, name:c.name||'', hex:c.hex||null,
+          if(!c || !c.id || seenColorIds.has(c.id)) continue;
+          seenColorIds.add(c.id);
+          // IMPORTANT: c.id is a shared application color id. It must NOT be
+          // used directly as the product_colors primary key because the same
+          // color can exist on many products. Namespace it by product id.
+          colorPayload.push({id:String(p.id)+'::'+String(c.id), product_id:p.id, name:c.name||'', hex:c.hex||null,
             stock:Number((p.colorStock||{})[c.id]||0), sort_order:i});
         }
       }
@@ -3833,8 +3854,11 @@ function updateColorStockDirect(id,colorId,value){
 }
 function handleColorStockDirectInput(el,id,colorId){
   if(!el) return;
+  // هنگام تایپ روی iPhone مقدار input را بازنویسی نکن؛ بازنویسی value در
+  // oninput می‌تواند cursor/keyboard را ناپایدار کند. قالب‌بندی فارسی فقط
+  // هنگام خروج از فیلد انجام می‌شود.
   const raw=toEnNum(String(el.value||'')).replace(/[^0-9]/g,'');
-  if(raw!=='') el.value=fa.format(Number(raw));
+  if(el.value !== raw) el.value = raw;
 }
 function commitColorStockDirectInput(el,id,colorId){
   if(!el) return;
@@ -6317,7 +6341,9 @@ function updateProductDisplay(id){
   if(badge2) badge2.textContent = fa.format(stock);
   (prod.colors||[]).forEach(col => {
     const cel = document.getElementById('colorStockVal_'+id+'_'+col.id);
-    if(cel) cel.textContent = fa.format(productColorStock(prod, col.id));
+    // فقط اگر این input در حال ویرایش نیست مقدارش را به‌روزرسانی کن؛
+    // این کار مانع پرش cursor و بسته‌شدن ناخواستهٔ کیبورد می‌شود.
+    if(cel && document.activeElement !== cel) cel.value = fa.format(productColorStock(prod, col.id));
   });
   updateSaleStockHint();
 }
