@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T13:15:10.466Z",
+  "updatedAt": "2026-09-21T13:16:28.805Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -1015,8 +1015,14 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 3,
-      "colors": [],
+      "stock": 0,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661594248_0.jpg?v=1789661603536",
@@ -1038,7 +1044,9 @@
       "marginR": 80,
       "marginW": 65,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_white": 0
+      },
       "paintHours": 1,
       "printHours": 1,
       "manualHours": 0,
