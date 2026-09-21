@@ -2194,6 +2194,7 @@ async function saveProductsToSupabaseBridge(){
 <style id="consignment-sticky-header-v35">
 /* v35 — Fix sticky consignment header: do not let the open card's overflow clip the sticky element. */
 #tab-consign .consign-card.open .consign-card-body{
+  max-height:none !important;
   overflow:visible !important;
 }
 #tab-consign .consign-card:not(.open) .consign-card-body{
@@ -2215,6 +2216,16 @@ async function saveProductsToSupabaseBridge(){
   line-height:1.55;
   font-weight:900;
 }
+/* v36 — Product group line: make «رنگ · نزد · فروش» clearly readable on mobile. */
+#tab-consign .consign-card.open .consign-product-group-count{
+  font-size:15px !important;
+  line-height:1.6 !important;
+  font-weight:900 !important;
+  white-space:nowrap;
+}
+#tab-consign .consign-card.open .consign-product-group-count{
+  color:var(--ink) !important;
+}
 @media(max-width:899px){
   #tab-consign .consign-card.open .consign-table > .consign-th{
     top:58px !important;
@@ -2223,6 +2234,11 @@ async function saveProductsToSupabaseBridge(){
   #tab-consign .consign-card.open .consign-table > .consign-th span:nth-child(2),
   #tab-consign .consign-card.open .consign-table > .consign-th span:nth-child(3){
     font-size:15px !important;
+  }
+  #tab-consign .consign-card.open .consign-product-group-count{
+    font-size:15px !important;
+    line-height:1.65 !important;
+    font-weight:900 !important;
   }
 }
 </style>
