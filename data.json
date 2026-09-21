@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T13:53:44.734Z",
+  "updatedAt": "2026-09-21T13:53:48.063Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -60,7 +60,7 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 13,
+      "stock": 15,
       "colors": [
         {
           "id": "col_mua2g2dwby3k",
@@ -113,7 +113,7 @@
         "col_mua2g2dwby3k": 4,
         "col_mua2gs728zwd": 4,
         "color_pink": 4,
-        "color_black": 1
+        "color_black": 3
       },
       "paintHours": 0,
       "printHours": 1,
