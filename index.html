@@ -8961,6 +8961,179 @@ setInterval(() => {
   if(document.visibilityState === 'visible') refreshProductsFromSupabaseIfSafe(false);
 }, 5000);
 
+
+<script>
+/* =========================================================
+   V15.1 — Supabase Realtime cross-device sync
+   هدف: تغییرات موبایل/دسکتاپ بدون Refresh بین دستگاه‌ها پخش شوند.
+   - products + product_colors + product_images
+   - sales / orders / customers / consignments
+   - تغییرات پشت‌سرهم debounce می‌شوند تا UI چندبار بی‌دلیل reload نشود.
+   - اگر کاربر وسط تایپ باشد، refresh همان لحظه انجام نمی‌شود و بعد از خروج از فیلد ادامه پیدا می‌کند.
+   ========================================================= */
+let realtimeSyncChannel = null;
+let realtimeSyncGeneration = 0;
+const realtimeSyncTimers = Object.create(null);
+const realtimeSyncPending = Object.create(null);
+
+function realtimeFocusedFormField(){
+  const el = document.activeElement;
+  if(!el) return false;
+  return ['INPUT','TEXTAREA','SELECT'].includes(el.tagName) || !!el.isContentEditable;
+}
+
+function realtimeSetPending(key){
+  realtimeSyncPending[key] = true;
+}
+
+function realtimeClearPending(key){
+  delete realtimeSyncPending[key];
+}
+
+function realtimeSchedule(key, fn, delay=450){
+  realtimeSetPending(key);
+  clearTimeout(realtimeSyncTimers[key]);
+  realtimeSyncTimers[key] = setTimeout(async()=>{
+    delete realtimeSyncTimers[key];
+    if(!currentUser) return;
+    // Never replace an actively edited form with a remote snapshot.
+    if(realtimeFocusedFormField()){
+      realtimeSchedule(key, fn, 1200);
+      return;
+    }
+    try{
+      await fn();
+    }catch(e){ console.warn('Realtime refresh failed:', key, e); }
+    realtimeClearPending(key);
+  }, delay);
+}
+
+async function realtimeRefreshProducts(){
+  const ok = await loadProductsFromSupabaseBridge();
+  if(!ok) return;
+  try{
+    if(typeof render === 'function') render();
+    else if(typeof renderAll === 'function') renderAll();
+    else {
+      if(typeof renderProducts === 'function') renderProducts();
+      if(typeof renderSummary === 'function') renderSummary();
+      if(typeof renderSalesTab === 'function') renderSalesTab();
+      if(typeof renderOrdersTab === 'function') renderOrdersTab();
+      if(typeof renderConsignTab === 'function') renderConsignTab();
+    }
+  }catch(e){ console.warn('Realtime product render failed:', e); }
+}
+
+async function realtimeRefreshSales(){
+  await loadSalesFromSupabase();
+  if(typeof renderSalesTab === 'function') renderSalesTab();
+  if(typeof renderSummary === 'function') renderSummary();
+}
+
+async function realtimeRefreshOrders(){
+  await loadOrdersFromSupabase();
+  if(typeof renderOrdersTab === 'function') renderOrdersTab();
+}
+
+async function realtimeRefreshCustomers(){
+  await loadCustomersFromSupabase();
+  if(typeof renderCustomersTab === 'function') renderCustomersTab();
+}
+
+async function realtimeRefreshConsignments(){
+  await loadConsignmentsFromSupabase();
+  if(typeof renderConsignTab === 'function') renderConsignTab();
+}
+
+function stopRealtimeSync(){
+  realtimeSyncGeneration++;
+  Object.keys(realtimeSyncTimers).forEach(k=>clearTimeout(realtimeSyncTimers[k]));
+  Object.keys(realtimeSyncTimers).forEach(k=>delete realtimeSyncTimers[k]);
+  Object.keys(realtimeSyncPending).forEach(k=>delete realtimeSyncPending[k]);
+  if(realtimeSyncChannel && typeof sb !== 'undefined' && sb){
+    try{ sb.removeChannel(realtimeSyncChannel); }catch(e){ console.warn('Realtime channel removal failed:', e); }
+  }
+  realtimeSyncChannel = null;
+}
+
+function startRealtimeSync(){
+  if(typeof sb === 'undefined' || !sb || !currentUser) return;
+  stopRealtimeSync();
+  const generation = realtimeSyncGeneration;
+  const channelName = 'app-realtime-sync-' + currentUser.id + '-' + Date.now();
+  const channel = sb.channel(channelName);
+  realtimeSyncChannel = channel;
+
+  const tableMap = {
+    products: 'products',
+    product_colors: 'products',
+    product_images: 'products',
+    sales: 'sales',
+    orders: 'orders',
+    customers: 'customers',
+    consignments: 'consignments'
+  };
+
+  Object.entries(tableMap).forEach(([table, target])=>{
+    channel.on('postgres_changes', {event:'*', schema:'public', table}, payload=>{
+      if(generation !== realtimeSyncGeneration || !currentUser) return;
+      const row = payload && (payload.new || payload.old || {});
+      // Realtime events are already subject to Supabase Realtime/RLS.
+      // For child product tables, any change means the parent product snapshot changed.
+      if(table === 'products' || table === 'product_colors' || table === 'product_images'){
+        realtimeSchedule('products', realtimeRefreshProducts);
+      }else if(target === 'sales'){
+        realtimeSchedule('sales', realtimeRefreshSales);
+      }else if(target === 'orders'){
+        realtimeSchedule('orders', realtimeRefreshOrders);
+      }else if(target === 'customers'){
+        realtimeSchedule('customers', realtimeRefreshCustomers);
+      }else if(target === 'consignments'){
+        realtimeSchedule('consignments', realtimeRefreshConsignments);
+      }
+      void row;
+    });
+  });
+
+  channel.subscribe(status=>{
+    if(generation !== realtimeSyncGeneration) return;
+    if(status === 'SUBSCRIBED'){
+      console.info('Supabase Realtime: connected');
+      window.__realtimeSyncStatus = 'SUBSCRIBED';
+    }else if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
+      console.warn('Supabase Realtime:', status, '— polling fallback remains active.');
+      window.__realtimeSyncStatus = status;
+    }else if(status === 'CLOSED'){
+      window.__realtimeSyncStatus = 'CLOSED';
+    }
+  });
+}
+
+// If the user finishes editing a field while a remote change was queued,
+// apply the latest server snapshot immediately instead of waiting for polling.
+document.addEventListener('focusout', ()=>{
+  if(!currentUser) return;
+  Object.keys(realtimeSyncPending).forEach(key=>{
+    if(key === 'products') realtimeSchedule(key, realtimeRefreshProducts, 80);
+    else if(key === 'sales') realtimeSchedule(key, realtimeRefreshSales, 80);
+    else if(key === 'orders') realtimeSchedule(key, realtimeRefreshOrders, 80);
+    else if(key === 'customers') realtimeSchedule(key, realtimeRefreshCustomers, 80);
+    else if(key === 'consignments') realtimeSchedule(key, realtimeRefreshConsignments, 80);
+  });
+});
+
+// Start/stop with the shared Supabase session.
+const __originalRealtimeRefreshAuthState = refreshAuthState;
+refreshAuthState = async function(){
+  await __originalRealtimeRefreshAuthState();
+  if(currentUser) startRealtimeSync();
+  else stopRealtimeSync();
+};
+
+// Auth state can fire more than once during session recovery; the wrapper above
+// handles it safely and replaces the old channel instead of creating duplicates.
+</script>
+
 <!-- V15: Telegram relay default/fallback fix -->
 </body>
 </html>
