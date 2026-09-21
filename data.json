@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T12:54:34.070Z",
+  "updatedAt": "2026-09-21T12:54:53.163Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -626,36 +626,6 @@
       ]
     },
     {
-      "id": "p_17893536103524v8zn",
-      "name": "گربه طرح بافتنی",
-      "stock": 0,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17893536103524v8zn_1789658765030_0.jpg?v=1789658780954",
-          "path": "product-images/p_17893536103524v8zn_1789658765030_0.jpg",
-          "sha": "5db8b863d4bde2742d824bab75267d06c56b66b6"
-        }
-      ],
-      "weight": 13,
-      "marginR": 90,
-      "marginW": null,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "ظاهر کاموا‌یی و بامزه‌ش در نگاه اول همه رو گول می‌زنه، اما در واقع با جزئیات فوق‌العاده بالا پرینت سه‌بعدی شده! انقدر سبک و ظریفه که بهترین همراه برای کلیدها یا کوله‌پشتیتونه؛ یه اکسسوری خاص که هربار می‌بینیش حسابی دلتو می‌بره. 🐾",
-      "telegramMessageIds": [
-        139
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
       "id": "p_1789318632241mto8f",
       "name": "سیلوستر تیپ شهری",
       "sizeH": 50,
@@ -1233,6 +1203,44 @@
       "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
       "telegramMessageIds": [
         138
+      ]
+    },
+    {
+      "id": "p_17893536103524v8zn",
+      "name": "گربه طرح بافتنی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [
+        {
+          "id": "col_mub8z9ipdz21",
+          "name": "نارنجی",
+          "hex": "#ff8000"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17893536103524v8zn_1789658765030_0.jpg?v=1789658780954",
+          "path": "product-images/p_17893536103524v8zn_1789658765030_0.jpg",
+          "sha": "5db8b863d4bde2742d824bab75267d06c56b66b6"
+        }
+      ],
+      "weight": 13,
+      "marginR": 90,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "col_mub8z9ipdz21": 0
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "ظاهر کاموا‌یی و بامزه‌ش در نگاه اول همه رو گول می‌زنه، اما در واقع با جزئیات فوق‌العاده بالا پرینت سه‌بعدی شده! انقدر سبک و ظریفه که بهترین همراه برای کلیدها یا کوله‌پشتیتونه؛ یه اکسسوری خاص که هربار می‌بینیش حسابی دلتو می‌بره. 🐾",
+      "telegramMessageIds": [
+        139
       ]
     },
     {
