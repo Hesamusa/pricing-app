@@ -10512,3 +10512,113 @@ setTimeout(()=>{
   }
 }
 </style>
+
+<style>
+/* MOBILE TYPOGRAPHY — larger Persian type without overlap or clipping */
+@media (max-width:699px){
+  html,body{font-size:16px;}
+  body{line-height:1.7;}
+
+  /* Give the content every useful pixel without making controls touch edges. */
+  main{width:100%;max-width:none;padding-left:8px;padding-right:8px;}
+  .card,.product-card,.sale-item,.order-card,.customer-card,.store-card{min-width:0;}
+
+  /* General readable text */
+  .section-title{font-size:17px !important;line-height:1.55 !important;font-weight:800;}
+  .hint,.empty p{font-size:15px !important;line-height:1.8 !important;}
+  .stat-card .stat-label{font-size:15px !important;line-height:1.65;}
+  .stat-card .stat-value{font-size:20px !important;}
+
+  /* Inputs: large enough for Persian, but not oversized */
+  input,select,textarea,
+  .field input,.field select,.field textarea,
+  .search-box input,
+  .product-picker-btn{
+    font-size:17px !important;
+    line-height:1.65 !important;
+  }
+  input,select,.product-picker-btn{min-height:48px;}
+  textarea{min-height:92px;}
+  .field label{font-size:15px !important;line-height:1.55 !important;margin-bottom:6px;}
+  .unit,.field .unit{font-size:14px !important;}
+
+  /* Persian product names and descriptions should wrap instead of disappearing. */
+  .product-card .product-header,
+  .product-card .product-title,
+  .product-card .product-name,
+  .product-card .product-meta,
+  .product-card .product-body,
+  .product-card .product-body-inner,
+  .product-card .hint,
+  .product-card label,
+  .product-card p{
+    min-width:0;
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+  .product-card .product-header{min-height:72px;}
+  .product-card .product-title,.product-card .product-name{font-size:18px !important;line-height:1.55 !important;white-space:normal !important;}
+  .product-card .product-meta{font-size:15px !important;line-height:1.65 !important;white-space:normal !important;}
+
+  /* Do not let important text be clipped by desktop-style ellipsis rules. */
+  .product-card .product-body .hint,
+  .product-card .product-body label,
+  .product-card .product-body .field,
+  .product-card .product-body .photo-status{overflow:visible;}
+
+  /* Photo area: use width efficiently while preserving the image ratio. */
+  .product-card .photo-field img,
+  .product-card .photo-field .photo-preview,
+  .product-card .product-thumb{max-width:100%;}
+  .product-card .photo-field{min-width:0;}
+
+  /* Color / stock rows: readable numbers and labels without collision. */
+  .color-row,.color-item,.variant-row,
+  .stock-row,.stock-item{min-width:0;}
+  .color-row label,.color-item label,.variant-row label{font-size:15px !important;line-height:1.55;}
+  .color-row input,.color-item input,.variant-row input{font-size:16px !important;}
+
+  /* Buttons need a real touch target and Persian text must be allowed to wrap. */
+  button,.add-btn,.delete-btn,.order-status-btn,.consign-actions button{
+    font-size:15px !important;
+    line-height:1.55 !important;
+    min-height:48px;
+  }
+  .add-btn{padding:10px 14px !important;}
+  .delete-btn{padding:10px 12px !important;}
+  button{white-space:normal;overflow-wrap:anywhere;}
+
+  /* Search fields: reserve the icon zone and keep Persian text visible. */
+  .search-box input,
+  .consign-products-search input,
+  .consign-modal-search input{
+    min-height:50px;
+    padding-top:9px !important;
+    padding-bottom:9px !important;
+  }
+
+  /* Tables / compact rows: increase type but allow names to wrap. */
+  .consign-tr,.consign-th{line-height:1.55 !important;}
+  .consign-tr{font-size:14px !important;}
+  .consign-th{font-size:12px !important;}
+  .consign-tr .cname{white-space:normal !important;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;}
+  .consign-tr .cnum{font-size:14px !important;}
+
+  /* Open product editor: keep spacing compact so larger text still fits. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    padding:12px !important;
+    gap:10px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .field{
+    margin-bottom:2px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .field label{
+    font-size:15px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open input,
+  body.product-focus-mode #tab-products #products-list > .product.open select,
+  body.product-focus-mode #tab-products #products-list > .product.open textarea{
+    font-size:17px !important;
+  }
+}
+</style>
