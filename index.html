@@ -1398,6 +1398,110 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   #tab-consign #consign-list{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
 
+
+/* =========================================================
+   RESPONSIVE INTERNAL LAYOUT — desktop/tablet content surfaces
+   Mobile remains unchanged; desktop sections use the available canvas.
+   ========================================================= */
+@media (min-width:900px){
+  /* Shared surfaces */
+  .section-title{font-size:16px;}
+  .card{border-radius:16px;}
+  .hint{max-width:80ch;}
+
+  /* Products: search/header + catalog become a proper desktop workspace */
+  #tab-products .section-title,
+  #tab-products .search-box,
+  #tab-products .products-toolbar{max-width:none;}
+  #tab-products .search-box{margin-bottom:14px;}
+  #tab-products #products-list{align-items:stretch;}
+  #tab-products .product-card{height:100%;display:flex;flex-direction:column;}
+  #tab-products .product-card .product-body{flex:1;}
+  #tab-products .product-actions{margin-top:auto;}
+
+  /* Sales / orders: forms should use horizontal fields on wide screens */
+  #tab-sales #sale-form-wrap,
+  #tab-orders #order-form-wrap{width:100%;}
+  #tab-sales #sale-form-wrap .form-grid,
+  #tab-orders #order-form-wrap .form-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+  #tab-sales #sale-form-wrap .form-grid .full,
+  #tab-orders #order-form-wrap .form-grid .full{grid-column:1/-1;}
+  #tab-sales #sale-form-wrap .form-actions,
+  #tab-orders #order-form-wrap .form-actions{display:flex;gap:10px;align-items:center;}
+  #tab-sales #sale-form-wrap .form-actions button,
+  #tab-orders #order-form-wrap .form-actions button{flex:0 1 auto;min-width:160px;}
+
+  /* Sales/orders result cards: denser desktop cards without tiny text */
+  #tab-sales #sales-list .sale-item,
+  #tab-orders #orders-list .order-card{height:100%;}
+  #tab-sales .sale-item-meta,
+  #tab-orders .order-meta{row-gap:6px;}
+
+  /* Consignment: each store card gets a wider internal table */
+  #tab-consign #consign-list{align-items:start;}
+  #tab-consign .consign-card{height:100%;}
+  #tab-consign .consign-card.open{grid-column:1/-1;}
+  #tab-consign .consign-card-body-inner{padding:0 20px 18px;}
+  #tab-consign .consign-products-tools{max-width:560px;}
+  #tab-consign .consign-table{overflow-x:auto;}
+  #tab-consign .consign-table-inner,
+  #tab-consign .consign-table > .consign-th,
+  #tab-consign .consign-table > .consign-tr{min-width:560px;}
+  #tab-consign .consign-th,
+  #tab-consign .consign-tr{grid-template-columns:minmax(260px,1fr) 80px 80px 80px 90px 34px;gap:8px;}
+  #tab-consign .consign-product-group{min-width:0;}
+  #tab-consign .consign-product-group-head{padding:10px 12px;}
+  #tab-consign .consign-variant-row{grid-template-columns:minmax(260px,1fr) 70px 70px 70px 80px 34px;gap:7px;padding:8px 10px;}
+  #tab-consign .consign-actions{gap:9px;}
+  #tab-consign .consign-actions .order-status-btn{flex:0 1 auto;min-width:150px;}
+
+  /* Consignment editor modals: grouped product / color rows become a real grid */
+  .consign-modal{width:min(920px,calc(100vw - 80px));}
+  .consign-modal .consign-modal-body{max-height:min(72vh,720px);overflow:auto;}
+  .consign-modal .consign-product-group{margin-bottom:10px;}
+  .consign-modal .consign-variant-editor-card{padding:12px 14px;}
+  .consign-modal .consign-variant-editor-grid{grid-template-columns:repeat(3,minmax(140px,1fr));gap:10px;}
+  .consign-modal .consign-qty-row,
+  .consign-modal .consign-field-row{display:grid;grid-template-columns:minmax(240px,1fr) 120px;gap:12px;align-items:center;}
+
+  /* Customers: directory cards use a comfortable 3-column desktop grid */
+  #tab-customers #customers-list{align-items:stretch;}
+  #tab-customers .customer-card{height:100%;}
+  #tab-customers .customer-card .card-body{height:100%;}
+
+  /* Summary/accounting: internal blocks should not become one huge column */
+  #tab-summary .summary-grid,
+  #tab-summary .accounting-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  #tab-summary .summary-card,
+  #tab-summary .accounting-card{height:100%;}
+
+  /* Settings: controls remain readable instead of stretching across the whole screen */
+  #tab-settings input,
+  #tab-settings select,
+  #tab-settings textarea{max-width:680px;}
+  #tab-settings .settings-section-body{padding-inline:2px;}
+
+  /* Long rows/tables never force the page itself wider */
+  #tab-products,#tab-sales,#tab-orders,#tab-consign,#tab-customers,#tab-summary,#tab-settings{min-width:0;}
+  #tab-products * ,#tab-sales * ,#tab-orders * ,#tab-consign * ,#tab-customers * ,#tab-summary * ,#tab-settings *{min-width:0;}
+}
+
+@media (min-width:1200px){
+  #tab-sales #sale-form-wrap .form-grid,
+  #tab-orders #order-form-wrap .form-grid{grid-template-columns:repeat(6,minmax(0,1fr));}
+  #tab-sales #sale-form-wrap .form-grid .full,
+  #tab-orders #order-form-wrap .form-grid .full{grid-column:1/-1;}
+  #tab-consign .consign-card.open{grid-column:1/-1;}
+  #tab-customers #customers-list{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+
+@media (min-width:1500px){
+  #tab-products #products-list{grid-template-columns:repeat(5,minmax(0,1fr));}
+  #tab-sales #sales-list,
+  #tab-orders #orders-list,
+  #tab-consign #consign-list{grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+
 </style>
 </head>
 <body>
@@ -8336,3 +8440,4 @@ document.addEventListener('DOMContentLoaded', function(){
 
 </body>
 </html>
+
