@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
-<title>دفترچه قیمت‌گذاری پرینت سه‌بعدی</title>
+<meta name="telegram-sync-version" content="V6-EDIT-ONLY">
+  <title>دفترچه قیمت‌گذاری پرینت سه‌بعدی</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="پرینت پلاسی">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5040,62 +5041,58 @@ async function syncProductToTelegram(id){
   const caption = telegramCaption(prod);
   const existingIds = getTelegramMessageIds(prod);
 
-  // اگر پست قبلی قابل ویرایش باشد، همان پست را به‌روز می‌کنیم.
-  // اگر پست قبلی قابل ویرایش نباشد، پست قبلی را حذف نمی‌کنیم و پست جدید هم
-  // خودکار نمی‌سازیم؛ تا هیچ‌وقت پست محصول بی‌دلیل جابه‌جا/حذف نشود.
-  let edited = false;
-  let editError = '';
+  // قانون قطعی این نسخه:
+  // هنگام به‌روزرسانی محصول، هرگز پست قبلی حذف یا پست جدید ایجاد نمی‌شود.
+  // فقط همان Message IDهای ثبت‌شده ویرایش می‌شوند.
+  if(!existingIds.length){
+    throw new Error('برای این محصول شناسه پست تلگرام ثبت نشده است؛ برای جلوگیری از ایجاد پست تکراری، پست جدید ساخته نشد.');
+  }
 
   if(images.length === 0){
-    if(existingIds.length === 1){
-      const data = await telegramCall('editMessageText', { chat_id: channel, message_id: existingIds[0], text: caption, parse_mode:'HTML' });
-      if(data.ok){ edited = true; }
-      else editError = data.description || 'ویرایش پیام قبلی ناموفق بود';
+    if(existingIds.length !== 1){
+      throw new Error('برای محصول بدون عکس باید دقیقاً یک شناسه پیام تلگرام ثبت شده باشد؛ پست قبلی دست‌نخورده باقی ماند.');
     }
-    if(!edited){
-      throw new Error(`ویرایش پست قبلی تلگرام ناموفق بود و برای جلوگیری از حذف پست قبلی، پست جدید ساخته نشد: ${editError || 'خطای نامشخص'}`);
-    }
+    const data = await telegramCall('editMessageText', {
+      chat_id: channel,
+      message_id: existingIds[0],
+      text: caption,
+      parse_mode:'HTML'
+    });
+    if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
   } else if(images.length === 1){
-    const photoUrl = images[0].url;
-    if(existingIds.length === 1){
-      const data = await telegramCall('editMessageMedia', {
-        chat_id: channel,
-        message_id: existingIds[0],
-        media: {type:'photo', media:photoUrl, caption, parse_mode:'HTML'}
-      });
-      if(data.ok){ edited = true; }
-      else editError = data.description || 'ویرایش پست قبلی ناموفق بود';
+    if(existingIds.length !== 1){
+      throw new Error('برای محصول تک‌عکسه باید دقیقاً یک شناسه پیام تلگرام ثبت شده باشد؛ پست قبلی دست‌نخورده باقی ماند.');
     }
-    if(!edited){
-      throw new Error(`ویرایش پست قبلی تلگرام ناموفق بود و برای جلوگیری از حذف پست قبلی، پست جدید ساخته نشد: ${editError || 'خطای نامشخص'}`);
-    }
+    const data = await telegramCall('editMessageMedia', {
+      chat_id: channel,
+      message_id: existingIds[0],
+      media: {type:'photo', media:images[0].url, caption, parse_mode:'HTML'}
+    });
+    if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
   } else {
-    if(existingIds.length === images.length){
-      let allOk = true;
-      for(let i=0;i<images.length;i++){
-        const media = i === 0
-          ? {type:'photo', media:images[i].url, caption, parse_mode:'HTML'}
-          : {type:'photo', media:images[i].url};
-        const data = await telegramCall('editMessageMedia', {chat_id:channel, message_id:existingIds[i], media});
-        if(!data.ok){
-          allOk = false;
-          editError = data.description || 'ویرایش آلبوم قبلی ناموفق بود';
-          break;
-        }
-      }
-      if(allOk) edited = true;
+    if(existingIds.length !== images.length){
+      throw new Error(`تعداد عکس‌های فعلی (${images.length}) با تعداد پیام‌های ثبت‌شده برای این محصول (${existingIds.length}) یکسان نیست؛ برای جلوگیری از حذف یا ایجاد پست جدید، هیچ تغییری در تلگرام انجام نشد.`);
     }
-    if(!edited){
-      throw new Error(`ویرایش پست قبلی تلگرام ناموفق بود و برای جلوگیری از حذف پست قبلی، آلبوم جدید ساخته نشد: ${editError || 'خطای نامشخص'}`);
+    for(let i=0;i<images.length;i++){
+      const media = i === 0
+        ? {type:'photo', media:images[i].url, caption, parse_mode:'HTML'}
+        : {type:'photo', media:images[i].url};
+      const data = await telegramCall('editMessageMedia', {
+        chat_id:channel,
+        message_id:existingIds[i],
+        media
+      });
+      if(!data.ok){
+        throw new Error(data.description || `ویرایش عکس ${i+1} پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.`);
+      }
     }
   }
 
-  // ویرایش مستقیم موفق بود؛ آیدی‌ها ثابت‌اند، ولی برای اطمینان آخرین شناسه‌ها را در Supabase ثبت می‌کنیم.
+  // شناسه‌ها ثابت می‌مانند؛ فقط وضعیت فعلی محصول را در Supabase ثبت می‌کنیم.
   await saveTelegramIdsToSupabase(prod);
   try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
-  return {ok:true, mode:'edited'};
+  return {ok:true, mode:'edited', messageIds:existingIds};
 }
-
 
 // دکمه‌ی «ذخیره و ارسال به کانال تلگرام» روی کارت محصول: هر ذخیره‌ی معلقی رو فوراً commit می‌کنه
 // و اگه کاتالوگ تلگرام فعال باشه، بدون صبر کردن برای تایمر ۲.۵ ثانیه‌ای، همون لحظه به کانال می‌فرسته.
