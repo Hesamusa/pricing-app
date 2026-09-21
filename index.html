@@ -7185,7 +7185,12 @@ function makeConsignment(storeName, contactName, contactPhone, address, hasStand
 
 // ————— محاسبه‌های کمکی —————
 function consignRemaining(it){
-  return Math.max(0, (it.deliveredQty||0) - (it.soldQty||0) - (it.returnedQty||0));
+  // بعضی واگذاری‌های قدیمی قبل از تعریف رنگ ثبت شده‌اند. در مهاجرت رنگی،
+  // بخشی از موجودی فعلی همان قلم به ردیف‌های رنگی منتقل می‌شود؛ مقدار منتقل‌شده
+  // فقط از «موجودی باقی‌مانده» قلم قدیمی کم می‌شود و هیچ تغییری در انبار ایجاد نمی‌کند.
+  const base = Math.max(0, (it.deliveredQty||0) - (it.soldQty||0) - (it.returnedQty||0));
+  const allocated = Math.max(0, Number(it.legacyColorAllocatedQty||0));
+  return Math.max(0, base - allocated);
 }
 function productConsignedQty(productId){
   // A product can have multiple color variants in the same consignment.
@@ -8560,6 +8565,105 @@ function clearConsignProductSearch(id){
   const card = document.getElementById('consignCard_'+id);
   if(card) card.querySelectorAll('.consign-tr[data-product-row]').forEach(row => row.style.display='');
 }
+async function migrateLegacyConsignItemColors(consignId, itemKey){
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه رنگ اقلام امانی قدیمی رو تعیین کنه.'); return; }
+  const c = consignments.find(x=>x.id===consignId);
+  if(!c) return;
+  const it = (c.items||[]).find(x=>ciKey(x.productId,x.colorId)===itemKey);
+  if(!it || it.colorId) return;
+  const prod = products.find(p=>p.id===it.productId);
+  const colors = (prod && prod.colors) || [];
+  if(!colors.length){ await customAlert('برای این محصول هنوز رنگی در تب محصولات تعریف نشده.'); return; }
+
+  const currentRemaining = consignRemaining(it);
+  const currentTarget = Math.max(0, Number(it.targetQty||0) - Number(it.legacyColorAllocatedTargetQty||0));
+  if(currentRemaining <= 0){
+    await customAlert('از این قلم موجودی فعلی نزد فروشگاه باقی نمانده؛ نیازی به تعیین رنگ برای موجودی فعلی نیست.');
+    return;
+  }
+
+  const sourceId = it.legacyColorSourceId || ('legacy_color_' + Date.now() + Math.random().toString(36).slice(2,7));
+  const existingGenerated = (c.items||[]).filter(x=>x.legacyColorSourceId===sourceId && x.colorId);
+  const oldAllocated = {};
+  existingGenerated.forEach(x=>{ oldAllocated[x.colorId] = (oldAllocated[x.colorId]||0) + Math.max(0, Number(x.deliveredQty||0) - Number(x.soldQty||0) - Number(x.returnedQty||0)); });
+
+  const rows = colors.map(col => {
+    const existing = existingGenerated.find(x=>x.colorId===col.id);
+    return {
+      key: col.id,
+      group: prod.name,
+      variant: col.name,
+      colorHex: col.hex,
+      name: prod.name + ' — ' + col.name,
+      hint: 'موجودی فعلی تخصیص‌داده‌نشده: ' + fa.format(currentRemaining) + (oldAllocated[col.id] ? ' | فعلی: '+fa.format(oldAllocated[col.id]) : ''),
+      fields: [
+        {role:'qty', label:'موجودی فعلی', value: existing ? consignRemaining(existing) : 0},
+        {role:'target', label:'ظرفیت مطلوب', value: existing ? (existing.targetQty||0) : 0}
+      ]
+    };
+  });
+
+  const res = await openConsignMultiFieldModal({
+    title:'تطبیق رنگ واگذاری قدیمی',
+    sub:'این واگذاری قبل از تعریف رنگ ثبت شده. موجودی فعلی نزد فروشگاه را بین رنگ‌های جدید تقسیم کن. جمع «موجودی فعلی» باید دقیقاً برابر '+fa.format(currentRemaining)+' باشد. این کار موجودی انبار را تغییر نمی‌دهد.',
+    rows,
+    okLabel:'ذخیره تطبیق رنگ'
+  });
+  if(!res || !res.qty) return;
+
+  const allocations = colors.map(col=>({
+    col,
+    qty: Math.max(0, Number(res.qty[col.id]||0)),
+    target: Math.max(0, Number((res.target||{})[col.id]||0))
+  })).filter(x=>x.qty>0 || x.target>0);
+  const qtySum = allocations.reduce((s,x)=>s+x.qty,0);
+  if(qtySum !== currentRemaining){
+    await customAlert('جمع موجودی رنگ‌ها باید دقیقاً '+fa.format(currentRemaining)+' عدد باشد؛ الان '+fa.format(qtySum)+' عدد وارد شده.');
+    return;
+  }
+  const targetSum = allocations.reduce((s,x)=>s+x.target,0);
+  if(targetSum > currentTarget){
+    await customAlert('جمع ظرفیت مطلوب رنگ‌ها نمی‌تواند بیشتر از ظرفیت باقی‌مانده ('+fa.format(currentTarget)+') باشد.');
+    return;
+  }
+
+  const snapshot = JSON.parse(JSON.stringify(c.items));
+  try{
+    it.legacyColorSourceId = sourceId;
+    it.legacyColorAllocatedQty = Math.max(0, qtySum);
+    it.legacyColorAllocatedTargetQty = Math.max(0, targetSum);
+
+    // ردیف‌های رنگی قبلی همین مهاجرت را حذف و بر اساس انتخاب جدید دوباره می‌سازیم.
+    c.items = (c.items||[]).filter(x=>x.legacyColorSourceId!==sourceId || !x.colorId);
+    allocations.forEach(x=>{
+      const colorItem = makeConsignItem(prod, x.qty, it.unitPrice || calc(prod).priceW, x.target, x.col.id, x.col.name, x.col.hex);
+      colorItem.legacyColorSourceId = sourceId;
+      c.items.push(colorItem);
+    });
+
+    if(!Array.isArray(c.colorMigrations)) c.colorMigrations=[];
+    c.colorMigrations.unshift({
+      id:'cm_'+Date.now()+Math.random().toString(36).slice(2,5),
+      date:new Date().toISOString().slice(0,10),
+      productId:prod.id,
+      productName:prod.name,
+      allocatedQty:qtySum,
+      colors:allocations.map(x=>({colorId:x.col.id,colorName:x.col.name,qty:x.qty,target:x.target}))
+    });
+
+    renderConsignTab();
+    renderSummary();
+    const ok = await syncConsignmentToSupabase(c);
+    if(!ok) throw new Error('sync failed');
+    showToast('رنگ‌های واگذاری قدیمی با موفقیت تطبیق داده شد ✓','success');
+  }catch(e){
+    c.items = snapshot;
+    renderConsignTab();
+    renderSummary();
+    if(e.message !== 'sync failed') await customAlert('تطبیق رنگ انجام نشد؛ دوباره تلاش کن.');
+  }
+}
+
 async function editConsignItemQuick(consignId, itemKey){
   if(!isAdmin){ await customAlert('فقط مدیر می‌تونه مشخصات قلم امانی رو ویرایش کنه.'); return; }
   const c = consignments.find(x=>x.id===consignId);
@@ -8673,6 +8777,7 @@ function renderConsignCard(c){
           <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
           <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
           <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
+          ${(!it.colorId && meta.prod && (meta.prod.colors||[]).length && remain>0) ? `<button type="button" class="consign-item-edit" title="تطبیق رنگ این واگذاری قدیمی" ${isAdmin ? `onclick="event.stopPropagation(); migrateLegacyConsignItemColors('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'} style="color:var(--orange);">🎨</button>` : ''}
           <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'}>✎</button>
         </div>`;
     }).join('');
