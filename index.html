@@ -3318,6 +3318,7 @@ function persist(opts){
     else showToast('ذخیره‌سازی ناموفق بود', 'error', 3500);
 
     if(!(opts && opts.skipSync)) scheduleSync();
+    if(opts && opts.telegramProductId && !(opts && opts.skipTelegram)) queueTelegramSync(opts.telegramProductId);
   }, 250);
 }
 function flashSaved(){
@@ -4965,11 +4966,24 @@ function setTelegramSyncStatus(text, kind){
   el.style.color = kind === 'error' ? 'var(--red)' : kind === 'success' ? 'var(--green)' : 'var(--ink-soft)';
 }
 
-// توجه: قبلاً اینجا یه سینک خودکار (queueTelegramSync) بود که با هر ویرایش کوچیک
-// (حتی یک کاراکتر توی اسم) بعد از چند ثانیه خودش به تلگرام می‌فرستاد. طبق درخواست
-// کاربر حذف شد — الان ارسال به کانال فقط با زدن دکمه‌ی «ذخیره و ارسال» روی خود کارت
-// محصول (تابع saveAndSendProduct) یا با «همگام‌سازی همه» از تنظیمات انجام می‌شه.
+// سینک خودکار محصول بعد از ذخیره: مثل رفتار قبلی برنامه، تغییرات محصول
+// (از جمله قیمت) چند ثانیه بعد از آخرین ویرایش به تلگرام هم منتقل می‌شوند.
+// تا وقتی کاربر در حال تایپ/ویرایش است درخواست‌های قبلی لغو می‌شوند.
 const telegramSyncTimers = {};
+function queueTelegramSync(id){
+  if(!id || !telegramConfigured()) return;
+  clearTimeout(telegramSyncTimers[id]);
+  telegramSyncTimers[id] = setTimeout(async () => {
+    delete telegramSyncTimers[id];
+    try{
+      await syncProductToTelegram(id);
+      showToast('تغییرات محصول در تلگرام به‌روز شد ✓', 'success', 2200);
+    }catch(err){
+      console.error('Auto Telegram sync failed:', err);
+      showToast('محصول ذخیره شد، ولی به‌روزرسانی تلگرام ناموفق بود: ' + (err.message || 'خطای نامشخص'), 'warn', 5000);
+    }
+  }, 2500);
+}
 
 // آیدی پست‌های قبلیِ این محصول توی کانال رو برمی‌گردونه؛ از فرمت قدیمی (یک آیدی تکی) هم پشتیبانی می‌کنه
 function getTelegramMessageIds(prod){
@@ -5650,7 +5664,7 @@ function updateProduct(id, field, value){
   // Update only the computed numbers in place (no innerHTML rebuild),
   // so the input the user is typing in never loses focus/keyboard.
   updateProductDisplay(id);
-  persist();
+  persist({telegramProductId:id});
 }
 
 function setProductGroupFilter(gid){
