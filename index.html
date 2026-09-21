@@ -3151,7 +3151,10 @@ function loadState(){
     fetchRemoteData().then(remote => {
       if(remote){
         settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken, aiApiKey: settings.aiApiKey, aiApiKeyGemini: settings.aiApiKeyGemini};
-        products = Array.isArray(remote.products) ? remote.products : products;
+        // محصولات از اینجا دیگر خوانده نمی‌شوند؛ منبع اصلی محصولات Supabase است.
+        // GitHub فقط برای تنظیمات/تصاویر و سازگاری نسخه‌های قدیمی باقی می‌ماند.
+        // این خط عمداً حذف شده تا نسخه قدیمی GitHub بعد از Refresh روی محصولات Supabase overwrite نشود.
+        // products = Array.isArray(remote.products) ? remote.products : products;
         // مشتریان و سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
         renderSettings();
         renderProducts();
