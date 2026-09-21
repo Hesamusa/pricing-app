@@ -289,7 +289,9 @@
   .photo-btn.danger{color:var(--red); border-color:var(--red);}
   .photo-limit-note{font-size:12px; color:var(--ink-soft); font-weight:600;}
   .photo-status{font-size:12px; font-weight:600; margin-top:8px;}
-  .product-image-file-input{position:absolute!important;width:1px!important;height:1px!important;opacity:0.01!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important;padding:0!important;margin:-1px!important;pointer-events:auto!important;}
+  .photo-file-wrap{position:relative;display:inline-flex;min-height:44px;min-width:120px;overflow:hidden;border-radius:10px;}
+  .photo-file-wrap .photo-btn{margin:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+  .product-image-file-input{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;opacity:0!important;z-index:20!important;cursor:pointer!important;display:block!important;margin:0!important;padding:0!important;border:0!important;pointer-events:auto!important;}
   .photo-file-label{display:block;}
   .photo-status:empty{display:none;}
   .photo-status.uploading{color:var(--ink-soft);}
@@ -5177,7 +5179,6 @@ function triggerImageUpload(id){
   const el = document.getElementById('imgfile_'+id);
   if(!el) return;
   try{ el.value = ''; }catch(e){}
-  // مسیر اصلی روی موبایل با label[for] است؛ این fallback فقط برای جاهایی است که مستقیم صدا زده شود.
   try{ el.click(); }catch(e){ console.error('file picker:', e); }
 }
 
@@ -5214,9 +5215,8 @@ function photoActionsInnerHTML(prod, lk){
   return `
     ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
     ${remaining > 0
-      ? `<label for="imgfile_${prod.id}" class="photo-btn photo-file-label" onclick="event.stopPropagation()">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</label>`
+      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*" multiple id="imgfile_${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
-    <input type="file" accept="image/*,.heic,.heif,image/jpeg,image/png,image/webp" multiple id="imgfile_${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)">
   `;
 }
 
