@@ -1858,6 +1858,35 @@ async function saveProductsToSupabaseBridge(){
 
 <style>#syncStatusV11{position:fixed;bottom:10px;left:10px;z-index:99999;display:none;max-width:min(92vw,520px);padding:10px 12px;border:1px solid rgba(255,90,90,.45);border-radius:12px;background:#1d1414;color:#ffd9d9;font:12px/1.6 sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.25)}</style>
 <script>window.APP_BUILD='V12';</script>
+
+<style id="product-focus-mode-v27">
+/* Desktop product editor: open one product as a full-workspace focus view. */
+@media (min-width:900px){
+  body.product-focus-mode{overflow:hidden;}
+  body.product-focus-mode #tab-products #products-list{display:block !important;position:relative;min-height:0;}
+  body.product-focus-mode #tab-products #products-list > .product:not(.open){display:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open{
+    position:fixed !important; inset:12px !important; width:auto !important;
+    height:calc(100vh - 24px) !important; max-height:calc(100vh - 24px) !important;
+    margin:0 !important; z-index:5000 !important; display:flex !important;
+    flex-direction:column !important; overflow:hidden !important; border-radius:18px !important;
+    box-shadow:0 24px 80px rgba(0,0,0,.28) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    flex:0 0 auto; min-height:92px; cursor:pointer; position:sticky; top:0; z-index:2;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    display:block !important; flex:1 1 auto !important; min-height:0 !important;
+    max-height:none !important; height:auto !important; overflow-y:auto !important;
+    overflow-x:hidden !important; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    min-height:100%; padding:24px 28px 34px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head-top{min-height:54px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .chev{transform:rotate(180deg);}
+}
+</style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -5847,11 +5876,12 @@ function setProductThumbnail(id, index){
 function toggleProduct(id){
   const wasOpen = openProductId === id;
   openProductId = wasOpen ? null : id;
+  document.body.classList.toggle('product-focus-mode', !wasOpen);
   renderProducts();
   if(!wasOpen){
     requestAnimationFrame(() => {
       const card = document.getElementById('card_' + id);
-      if(card) card.scrollIntoView({behavior:'smooth', block:'start'});
+      if(card && window.innerWidth < 900) card.scrollIntoView({behavior:'smooth', block:'start'});
     });
   }
 }
