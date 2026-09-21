@@ -6156,79 +6156,79 @@ async function prepareProductImageBase64(file){
   }
 }
 
+async function verifyGithubImageUpload(apiUrl, path, branch, expectedSha){
+  const verifyRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`, {method:'GET', headers:githubHeaders()});
+  const verifyData = await verifyRes.json().catch(()=>({}));
+  if(!verifyRes.ok) throw new Error('فایل در گیت‌هاب قابل تأیید نیست: ' + (verifyData.message || verifyRes.status));
+  if(!verifyData.sha) throw new Error('گیت‌هاب فایل را برگرداند ولی SHA فایل قابل تأیید نیست.');
+  if(expectedSha && verifyData.sha !== expectedSha) throw new Error('نسخه فایل در گیت‌هاب با فایل آپلودشده یکسان نیست.');
+  return verifyData;
+}
+function githubRawImageUrl(path, branch){
+  const owner=String(settings.githubOwner||'').trim(), repo=String(settings.githubRepo||'').trim(), br=String(branch||'main').trim();
+  return `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(br)}/${path.split('/').map(encodeURIComponent).join('/')}`;
+}
+async function verifyImageUrl(url){
+  const res=await fetch(url + (url.includes('?')?'&':'?') + 'v=' + Date.now(), {method:'GET', cache:'no-store'});
+  if(!res.ok) throw new Error('فایل در آدرس عمومی تصویر قابل خواندن نیست ('+res.status+').');
+  return true;
+}
 async function handleImageFile(id, inputEl){
   if(!isAdmin) return;
-  const files = inputEl.files ? Array.from(inputEl.files) : [];
-  if(!files.length){
-    setPhotoStatus(id, 'فایلی انتخاب نشد.', 'error');
-    return;
+  const files=inputEl.files?Array.from(inputEl.files):[];
+  if(!files.length){setPhotoStatus(id,'فایلی انتخاب نشد.','error');return;}
+  setPhotoStatus(id,'فایل انتخاب شد؛ در حال بررسی و آپلود...','uploading');
+  const prod=products.find(p=>p.id===id);
+  if(!prod){inputEl.value='';return;}
+  if(!Array.isArray(prod.images)) prod.images=[];
+  if(!settings.githubOwner.trim()||!settings.githubRepo.trim()||!settings.githubToken.trim()){
+    setPhotoStatus(id,'اول در تب تنظیمات، اطلاعات گیت‌هاب (کاربر، ریپو، توکن) رو کامل کن','error'); inputEl.value=''; return;
   }
-  setPhotoStatus(id, 'فایل انتخاب شد؛ در حال بررسی و آپلود...', 'uploading');
-  const prod = products.find(p=>p.id===id);
-  if(!prod){ inputEl.value=''; return; }
-  if(!Array.isArray(prod.images)) prod.images = [];
-
-  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim()){
-    setPhotoStatus(id, 'اول در تب تنظیمات، اطلاعات گیت‌هاب (کاربر، ریپو، توکن) رو کامل کن', 'error');
-    inputEl.value = '';
-    return;
-  }
-
-  const remaining = PRODUCT_MAX_IMAGES - prod.images.length;
-  if(remaining <= 0){
-    setPhotoStatus(id, 'حداکثر ۵ عکس برای هر محصول مجاز است.', 'error');
-    inputEl.value = '';
-    return;
-  }
-  const toUpload = files.slice(0, remaining);
-  const skipped = files.length - toUpload.length;
-
-  const branch = (settings.githubBranch || 'main').trim();
-  const folder = (settings.githubFolder || 'product-images').trim().replace(/^\/+|\/+$/g,'');
-
-  let uploadedCount = 0;
-  for(let i=0; i<toUpload.length; i++){
-    const file = toUpload[i];
-    setPhotoStatus(id, toUpload.length>1 ? `در حال آپلود عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}...` : 'در حال آماده‌سازی و آپلود عکس...', 'uploading');
+  const remaining=PRODUCT_MAX_IMAGES-prod.images.length;
+  if(remaining<=0){setPhotoStatus(id,'حداکثر ۵ عکس برای هر محصول مجاز است.','error');inputEl.value='';return;}
+  const toUpload=files.slice(0,remaining), skipped=files.length-toUpload.length;
+  const branch=(settings.githubBranch||'main').trim();
+  const folder=(settings.githubFolder||'product-images').trim().replace(/^\/+|\/+$/g,'');
+  let uploadedCount=0;
+  for(let i=0;i<toUpload.length;i++){
+    const file=toUpload[i]; let imageRecord=null;
     try{
-      const prepared = await prepareProductImageBase64(file);
-      const path = `${folder}/${id}_${Date.now()}_${i}.${prepared.extension}`;
-      const apiUrl = githubContentsUrl(path);
-      const body = { message: 'add product image '+id, content: prepared.base64, branch };
-      const putRes = await fetch(apiUrl, {
-        method: 'PUT',
-        headers: {...githubHeaders(), 'Content-Type':'application/json'},
-        body: JSON.stringify(body)
-      });
-      const data = await putRes.json().catch(()=>({}));
-      if(!putRes.ok) throw new Error(data.message || ('خطای گیت‌هاب: '+putRes.status));
-      if(!data.content || !data.content.download_url) throw new Error('گیت‌هاب فایل را ذخیره کرد ولی آدرس عکس را برنگرداند.');
-
-      prod.images.push({
-        url: data.content.download_url + (data.content.download_url.includes('?')?'&':'?') + 'v=' + Date.now(),
-        path,
-        sha: data.content.sha
-      });
-      productCarouselIndex[id] = prod.images.length - 1;
+      setPhotoStatus(id,toUpload.length>1?`عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}: در حال آماده‌سازی...`:'در حال آماده‌سازی عکس...','uploading');
+      const prepared=await prepareProductImageBase64(file);
+      const safeBase=String(file.name||'image').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').replace(/^[-.]+|[-.]+$/g,'')||'image';
+      const path=`${folder}/${id}/${Date.now()}_${i}_${safeBase.replace(/\.[^.]+$/,'')}.${prepared.extension}`;
+      const apiUrl=githubContentsUrl(path);
+      setPhotoStatus(id,'در حال ارسال واقعی فایل به گیت‌هاب...','uploading');
+      const putRes=await fetch(apiUrl,{method:'PUT',headers:{...githubHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:'add product image '+id,content:prepared.base64,branch})});
+      const data=await putRes.json().catch(()=>({}));
+      if(!putRes.ok) throw new Error(data.message||('خطای گیت‌هاب: '+putRes.status));
+      if(!data.content||!data.content.sha) throw new Error('گیت‌هاب پاسخ موفق داد اما شناسه واقعی فایل (SHA) برنگشت.');
+      setPhotoStatus(id,'آپلود انجام شد؛ در حال تأیید فایل روی گیت‌هاب...','uploading');
+      const verified=await verifyGithubImageUpload(apiUrl,path,branch,data.content.sha);
+      const rawUrl=githubRawImageUrl(path,branch);
+      await verifyImageUrl(rawUrl);
+      imageRecord={url:rawUrl,path,sha:verified.sha};
+      prod.images.push(imageRecord);
+      productCarouselIndex[id]=prod.images.length-1;
       updateProductPhotoUI(id);
-      persist();
+      const cloudOk=SUPABASE_PRODUCTS_ENABLED?await saveProductsToSupabaseBridge():true;
+      if(!cloudOk){prod.images=prod.images.filter(im=>im!==imageRecord);updateProductPhotoUI(id);throw new Error('فایل روی گیت‌هاب قرار گرفت، اما ثبت اطلاعات عکس در Supabase ناموفق بود.');}
       uploadedCount++;
+      setPhotoStatus(id,'فایل واقعاً روی گیت‌هاب ذخیره و در Supabase ثبت شد ✓','success');
     }catch(err){
-      console.error('handleImageFile:', err);
-      const errText = err.message || 'خطای ناشناخته';
-      setPhotoStatus(id, 'آپلود عکس ' + toFaNum(i+1,0) + ' ناموفق شد: ' + errText, 'error');
-      if(typeof showToast === 'function') showToast('آپلود عکس ناموفق بود: '+errText, 'error', 6000);
-      inputEl.value = '';
-      return;
+      console.error('handleImageFile:',err);
+      const errText=err&&err.message?err.message:'خطای ناشناخته';
+      setPhotoStatus(id,'آپلود نهایی نشد: '+errText,'error');
+      if(typeof showToast==='function') showToast('آپلود عکس نهایی نشد: '+errText,'error',7000);
+      inputEl.value=''; return;
     }
   }
-
-  let msg = uploadedCount > 1 ? `${toFaNum(uploadedCount,0)} عکس با موفقیت آپلود شد ✓` : 'عکس با موفقیت آپلود شد ✓';
-  if(skipped > 0) msg += ` (${toFaNum(skipped,0)} عکس دیگه به‌خاطر محدودیت ۵ تایی نادیده گرفته شد)`;
-  setPhotoStatus(id, msg, 'success');
-  if(typeof showToast === 'function') showToast(msg, 'success', 3000);
-  setTimeout(()=>setPhotoStatus(id,'',''), 3500);
-  inputEl.value = '';
+  if(uploadedCount){
+    let msg=uploadedCount>1?`${toFaNum(uploadedCount,0)} عکس با موفقیت ذخیره شد ✓`:'عکس با موفقیت ذخیره شد ✓';
+    if(skipped>0) msg+=` (${toFaNum(skipped,0)} عکس به‌دلیل محدودیت ۵تایی نادیده گرفته شد)`;
+    setPhotoStatus(id,msg,'success'); if(typeof showToast==='function') showToast(msg,'success',3000); setTimeout(()=>setPhotoStatus(id,'',''),5000);
+  }
+  inputEl.value='';
 }
 
 async function removeProductImage(id, idxParam){
