@@ -1340,10 +1340,26 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
     margin-right:248px;
     padding:0 30px 40px!important;
   }
+  /* Every desktop page uses the full available workspace. The sidebar remains fixed,
+     while the active page expands to the entire content area. */
   .tab-panel{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  #app-content{
     width:100%;
-    max-width:1500px;
-    margin:0 auto;
+  }
+  main{
+    padding-left:18px!important;
+    padding-right:18px!important;
+  }
+  #tab-settings #settings-admin-content,
+  #tab-summary #summary-content,
+  #tab-sales #sale-form-wrap,
+  #tab-orders #order-form-wrap{
+    max-width:none!important;
+    width:100%!important;
   }
   .section-title{margin-inline:0;}
 
@@ -1394,8 +1410,37 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   }
   #tab-settings .settings-section{margin-bottom:0;}
 
+  /* Other desktop pages also consume the full workspace. */
+  #tab-products, #tab-sales, #tab-orders, #tab-customers, #tab-consign,
+  #tab-accounting, #tab-settings, #tab-summary, #tab-telegram,
+  #tab-dashboard, #tab-reports{
+    width:100%!important;
+    max-width:none!important;
+  }
+  #tab-products .section-title, #tab-sales .section-title,
+  #tab-orders .section-title, #tab-customers .section-title,
+  #tab-consign .section-title, #tab-accounting .section-title,
+  #tab-settings .section-title, #tab-summary .section-title{
+    width:100%;
+  }
+
   /* Modals remain centered relative to the full viewport, not the sidebar. */
   .modal,.overlay,.dialog,.confirm-modal{max-width:min(900px,calc(100vw - 80px));}
+  /* Final desktop width pass: no artificial page-width caps. */
+  #tab-settings #settings-admin-content,
+  #tab-summary #summary-content,
+  #tab-sales #sale-form-wrap,
+  #tab-orders #order-form-wrap{
+    width:100%!important;
+    max-width:none!important;
+  }
+  #tab-products, #tab-sales, #tab-orders, #tab-customers, #tab-consign,
+  #tab-accounting, #tab-settings, #tab-summary, #tab-telegram,
+  #tab-dashboard, #tab-reports{
+    width:100%!important;
+    max-width:none!important;
+  }
+
 }
 
 @media (min-width: 1200px){
@@ -10130,4 +10175,140 @@ setTimeout(()=>{
     width:100%;
   }
 }
+
+/* =========================================================
+   DESKTOP POLISH v28 — proportionate controls, media and forms
+   ========================================================= */
+@media (min-width:900px){
+  /* Keep the full workspace, but give content a comfortable reading gutter. */
+  main{padding:0 24px 44px!important;}
+  .tab-panel{padding-bottom:28px;}
+  .field{padding:12px 0;}
+  .field label,.photo-field>label,.stock-field>label{display:block;margin-bottom:8px;font-size:13px;font-weight:800;}
+
+  /* Inputs should grow with their column, not with the entire monitor. */
+  .field input,.field select,.field textarea,
+  .settings-section input,.settings-section select,.settings-section textarea,
+  .form-section input,.form-section select,.form-section textarea{
+    width:100%; max-width:100%; box-sizing:border-box;
+  }
+  input[type=text],input[type=number],input[type=email],input[type=password],textarea,select{
+    min-height:48px;
+  }
+  textarea{min-height:112px;resize:vertical;line-height:1.8;}
+
+  /* Wide forms use intentional columns instead of stretched single fields. */
+  #tab-sales #sale-form-wrap .field,
+  #tab-orders #order-form-wrap .field{min-width:0;}
+  #tab-settings .settings-section-body .grid-2,
+  #tab-sales .grid-2,#tab-orders .grid-2{gap:14px;}
+
+  /* Product editor: balanced two-column composition inside the full-screen card. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    padding:26px 34px 40px;
+    max-width:1540px;
+    margin:0 auto;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    min-height:104px;
+    padding-inline:18px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .head-thumb{
+    width:104px;height:104px;margin:0 6px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){
+    display:inline-block;vertical-align:top;width:calc(50% - 9px);box-sizing:border-box;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){margin-inline-start:14px;}
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
+    display:grid;grid-template-columns:minmax(300px,1fr) minmax(360px,1.25fr);gap:22px;
+    align-items:center;padding:18px 20px;margin:8px 0 16px;
+    background:var(--saas-surface-2);border:1px solid var(--line);border-radius:16px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field>label{
+    grid-column:1/-1;margin:0 0 -4px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{gap:22px;min-width:0;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{width:190px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{
+    width:180px;height:180px;border-radius:16px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{min-width:0;gap:10px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-btn{min-height:46px;}
+
+  body.product-focus-mode #tab-products #products-list > .product.open .desc-textarea{min-height:150px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .stock-field{
+    margin:8px 0 18px;padding:18px 20px;
+    background:var(--saas-surface-2);border:1px solid var(--line);border-radius:16px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{
+    min-height:52px;padding:8px 10px;border-radius:12px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-stock-input{
+    width:64px;min-width:64px;height:38px;font-size:15px;text-align:center;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-add-row{
+    margin-top:12px;gap:10px;align-items:center;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open > .product-body .grid-2{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;
+    padding:4px 0 8px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .dim-grid{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .input-row{
+    display:flex;align-items:center;gap:8px;flex-wrap:nowrap;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .input-row .num-input{
+    width:90px;min-width:90px;text-align:center;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-toggle,
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-wrap,
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
+    max-width:100%;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card{
+    min-height:132px;padding:18px 20px;border-radius:16px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card .value{font-size:26px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .margin-input{
+    display:flex;align-items:center;gap:8px;margin-top:12px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .margin-input .num-input{
+    width:100px;min-width:100px;text-align:center;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open [id^="saveSendBtn_"]{max-width:none;}
+
+  /* Long desktop lists: readable card proportions instead of tiny columns. */
+  #tab-sales #sales-list,#tab-orders #orders-list,#tab-customers #customers-list,#tab-consign #consign-list{
+    gap:16px;
+  }
+  #tab-sales .sale-item,#tab-orders .order-card,#tab-customers .customer-card,#tab-consign .consign-card{
+    border-radius:16px;
+  }
+
+  /* Settings: labels and controls stay visually paired. */
+  #tab-settings .settings-section-body{padding:4px 18px 18px;}
+  #tab-settings .field{padding:12px 0;}
+}
+
+@media (min-width:1200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    padding-inline:42px;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+  }
+}
+
 </style>
