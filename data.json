@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T18:26:48.146Z",
+  "updatedAt": "2026-09-21T18:27:16.545Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -1325,14 +1325,22 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 2,
-      "colors": [],
+      "stock": 0,
+      "colors": [
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
       "images": [],
       "weight": 8,
       "marginR": 100,
       "marginW": null,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_pink": 0
+      },
       "paintHours": 0,
       "printHours": 0.75,
       "manualHours": 0,
