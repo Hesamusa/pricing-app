@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T18:17:54.402Z",
+  "updatedAt": "2026-09-21T18:18:51.957Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -55,92 +55,52 @@
   },
   "products": [
     {
-      "id": "p_1790014671598fm20e",
-      "name": "محصول جدید",
-      "weight": 50,
-      "printHours": 3,
-      "manualHours": 0,
-      "paintHours": 0,
-      "accessoryCost": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0,
-      "marginW": null,
-      "marginR": null,
-      "images": [],
+      "id": "p_1788757924479oy27y",
+      "name": "خشم شب سفید",
       "stock": 0,
       "colors": [],
-      "colorStock": {},
-      "catalogDescription": "",
-      "telegramMessageIds": []
-    },
-    {
-      "id": "p_17898772049865cor5",
-      "name": "چارم بگ دمبل باشگاه",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 11,
-      "colors": [
-        {
-          "id": "col_mua2gs728zwd",
-          "name": "آبی پاستلی",
-          "hex": "#52d6fc"
-        },
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        },
-        {
-          "id": "color_black",
-          "name": "مشکی",
-          "hex": "#111111"
-        }
-      ],
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877254819_2.jpg?v=1789877256533",
-          "path": "product-images/p_17898772049865cor5_1789877254819_2.jpg",
-          "sha": "273755443e34cd12818e0f99e8c126bf25e5c0e2"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658330155_0.jpg?v=1789658336788",
+          "path": "product-images/p_1788757924479oy27y_1789658330155_0.jpg",
+          "sha": "c52279db907970e7ecff68c66efd103d689a1b34"
         },
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877251879_0.jpg?v=1789877253456",
-          "path": "product-images/p_17898772049865cor5_1789877251879_0.jpg",
-          "sha": "224a4a8c2dbab53c3f663d57e19bbb6e0a6c7c3c"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658192568_0.jpg?v=1789658200234",
+          "path": "product-images/p_1788757924479oy27y_1789658192568_0.jpg",
+          "sha": "6278a06d8182ad0d91966ed340c576053f62360d"
         },
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877253489_1.jpg?v=1789877254752",
-          "path": "product-images/p_17898772049865cor5_1789877253489_1.jpg",
-          "sha": "481d6930d4d8f0a57e571a2ce6a308b01f44c093"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658200263_1.jpg?v=1789658204631",
+          "path": "product-images/p_1788757924479oy27y_1789658200263_1.jpg",
+          "sha": "9c3b409eb3db141935fd44bb4d682bb09c778a3c"
         },
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877781644_0.jpg?v=1789877783695",
-          "path": "product-images/p_17898772049865cor5_1789877781644_0.jpg",
-          "sha": "e6a414d093977493a55840d0cba5e57b8a605a21"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658204661_2.jpg?v=1789658216760",
+          "path": "product-images/p_1788757924479oy27y_1789658204661_2.jpg",
+          "sha": "18fa4bb4dbdaeae721a9d0782e9f44ab8eb55ee9"
         }
       ],
-      "weight": 13,
-      "marginR": 150,
+      "weight": 8,
+      "marginR": null,
       "marginW": null,
       "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "col_mua2gs728zwd": 4,
-        "color_pink": 4,
-        "color_black": 3
-      },
-      "paintHours": 0,
+      "colorStock": {},
+      "paintHours": 0.5,
       "printHours": 1,
       "manualHours": 0,
-      "accessoryCost": 0,
+      "accessoryCost": 10000,
       "telegramMessageId": null,
-      "catalogDescription": "اگه ورزشکاری و دوست داری کیفت حس‌وحال باشگاه داشته باشه، این **چارم بگ دمبل** اصلاً برای خودت ساخته شده! اون‌قدر سبک و جمع‌وجوره که راحت به زیپ ساک یا دسته‌کلیدت آویزون می‌شه و استایلت رو خاص می‌کنه. اگه خوشت اومد، برای سفارش پیام بده 😉 برای دیدن کارای جدیدتر هم عضو کانال شو.",
+      "catalogDescription": "یه همراه رویایی و بامزه که کیفت رو از سادگی درمیاره! این آویزِ فوق‌العاده سبک، بدون اینکه کیفت رو سنگین کنه، یه حال‌وهوای فانتزی و خاص به استایل روزمره‌ت می‌ده تا هر جا می‌ری لبخند رو به لبت بیاره. ✨",
       "telegramMessageIds": [
-        272,
-        273,
-        274,
-        275
-      ]
+        179,
+        180,
+        181,
+        182
+      ],
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0
     },
     {
       "id": "p_1789909666043x7sfu",
@@ -1292,52 +1252,93 @@
       ]
     },
     {
-      "id": "p_1788757924479oy27y",
-      "name": "خشم شب سفید",
-      "stock": 0,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658330155_0.jpg?v=1789658336788",
-          "path": "product-images/p_1788757924479oy27y_1789658330155_0.jpg",
-          "sha": "c52279db907970e7ecff68c66efd103d689a1b34"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658192568_0.jpg?v=1789658200234",
-          "path": "product-images/p_1788757924479oy27y_1789658192568_0.jpg",
-          "sha": "6278a06d8182ad0d91966ed340c576053f62360d"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658200263_1.jpg?v=1789658204631",
-          "path": "product-images/p_1788757924479oy27y_1789658200263_1.jpg",
-          "sha": "9c3b409eb3db141935fd44bb4d682bb09c778a3c"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658204661_2.jpg?v=1789658216760",
-          "path": "product-images/p_1788757924479oy27y_1789658204661_2.jpg",
-          "sha": "18fa4bb4dbdaeae721a9d0782e9f44ab8eb55ee9"
-        }
-      ],
-      "weight": 8,
-      "marginR": null,
-      "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {},
-      "paintHours": 0.5,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "یه همراه رویایی و بامزه که کیفت رو از سادگی درمیاره! این آویزِ فوق‌العاده سبک، بدون اینکه کیفت رو سنگین کنه، یه حال‌وهوای فانتزی و خاص به استایل روزمره‌ت می‌ده تا هر جا می‌ری لبخند رو به لبت بیاره. ✨",
-      "telegramMessageIds": [
-        179,
-        180,
-        181,
-        182
-      ],
+      "id": "p_17898772049865cor5",
+      "name": "چارم بگ دمبل باشگاه",
+      "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "sizeH": 0
+      "stock": 11,
+      "colors": [
+        {
+          "id": "col_mua2gs728zwd",
+          "name": "آبی پاستلی",
+          "hex": "#52d6fc"
+        },
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        },
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877254819_2.jpg?v=1789877256533",
+          "path": "product-images/p_17898772049865cor5_1789877254819_2.jpg",
+          "sha": "273755443e34cd12818e0f99e8c126bf25e5c0e2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877251879_0.jpg?v=1789877253456",
+          "path": "product-images/p_17898772049865cor5_1789877251879_0.jpg",
+          "sha": "224a4a8c2dbab53c3f663d57e19bbb6e0a6c7c3c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877253489_1.jpg?v=1789877254752",
+          "path": "product-images/p_17898772049865cor5_1789877253489_1.jpg",
+          "sha": "481d6930d4d8f0a57e571a2ce6a308b01f44c093"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877781644_0.jpg?v=1789877783695",
+          "path": "product-images/p_17898772049865cor5_1789877781644_0.jpg",
+          "sha": "e6a414d093977493a55840d0cba5e57b8a605a21"
+        }
+      ],
+      "weight": 13,
+      "marginR": 150,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "col_mua2gs728zwd": 4,
+        "color_pink": 4,
+        "color_black": 3
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه ورزشکاری و دوست داری کیفت حس‌وحال باشگاه داشته باشه، این **چارم بگ دمبل** اصلاً برای خودت ساخته شده! اون‌قدر سبک و جمع‌وجوره که راحت به زیپ ساک یا دسته‌کلیدت آویزون می‌شه و استایلت رو خاص می‌کنه. اگه خوشت اومد، برای سفارش پیام بده 😉 برای دیدن کارای جدیدتر هم عضو کانال شو.",
+      "telegramMessageIds": [
+        272,
+        273,
+        274,
+        275
+      ]
+    },
+    {
+      "id": "p_1790014671598fm20e",
+      "name": "پنجه گرب",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [],
+      "images": [],
+      "weight": 50,
+      "marginR": null,
+      "marginW": null,
+      "colorStock": {},
+      "paintHours": 0,
+      "printHours": 3,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": [],
+      "category": null
     }
   ]
 }
