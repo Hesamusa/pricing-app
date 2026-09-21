@@ -1692,6 +1692,116 @@ async function loadProductsFromSupabaseBridge(){
     return false;
   }
 }
+async function loadProductsFromSupabaseBridge(){
+  if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
+  try{
+    const { data: rows, error } = await sb.from('products')
+      .select('id,name,category,weight,print_hours,manual_hours,paint_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
+      .order('created_at', { ascending:true });
+    if(error) throw error;
+    if(!Array.isArray(rows) || rows.length === 0) return false;
+
+    const ids = rows.map(r => r.id).filter(Boolean);
+    let colorRows = [];
+    let imageRows = [];
+    if(ids.length){
+      const [cRes, iRes] = await Promise.all([
+        sb.from('product_colors').select('id,product_id,name,hex,stock,sort_order').in('product_id', ids).order('sort_order',{ascending:true}),
+        sb.from('product_images').select('product_id,url,path,sha,sort_order').in('product_id', ids).order('sort_order',{ascending:true})
+      ]);
+      if(cRes.error) throw cRes.error;
+      if(iRes.error) throw iRes.error;
+      colorRows = cRes.data || [];
+      imageRows = iRes.data || [];
+    }
+
+    const colorsByProduct = {};
+    const imagesByProduct = {};
+    for(const c of colorRows) (colorsByProduct[c.product_id] ||= []).push({id:c.id,name:c.name,hex:c.hex});
+    for(const im of imageRows) (imagesByProduct[im.product_id] ||= []).push({url:im.url,path:im.path,sha:im.sha});
+
+    products = rows.map(r => {
+      const legacy = (r.legacy_payload && typeof r.legacy_payload === 'object') ? r.legacy_payload : {};
+      const productColors = colorRows.filter(x => x.product_id === r.id);
+      const colorStock = {};
+      for(const c of productColors) colorStock[c.id] = Number(c.stock || 0);
+      return {
+        ...legacy,
+        id:r.id, name:r.name ?? legacy.name ?? '',
+        category:r.category ?? legacy.category ?? null,
+        weight:Number(r.weight ?? legacy.weight ?? 0),
+        printHours:Number(r.print_hours ?? legacy.printHours ?? 0),
+        manualHours:Number(r.manual_hours ?? legacy.manualHours ?? 0),
+        paintHours:Number(r.paint_hours ?? legacy.paintHours ?? 0),
+        accessoryCost:Number(r.accessory_cost ?? legacy.accessoryCost ?? 0),
+        sizeL:Number(r.size_l ?? legacy.sizeL ?? 0),
+        sizeW:Number(r.size_w ?? legacy.sizeW ?? 0),
+        sizeH:Number(r.size_h ?? legacy.sizeH ?? 0),
+        marginW:r.margin_w ?? legacy.marginW ?? null,
+        marginR:r.margin_r ?? legacy.marginR ?? null,
+        stock:Number(r.stock ?? legacy.stock ?? 0),
+        catalogDescription:r.catalog_description ?? legacy.catalogDescription ?? '',
+        telegramMessageIds:Array.isArray(r.telegram_message_ids) ? r.telegram_message_ids : (legacy.telegramMessageIds || []),
+        colors:colorsByProduct[r.id] || legacy.colors || [],
+        colorStock,
+        images:imagesByProduct[r.id] || legacy.images || []
+      };
+    });
+
+    supabaseProductsLoaded = true;
+    try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
+    return true;
+  }catch(err){
+    console.warn('Supabase product load failed; existing product source remains active.', err);
+    return false;
+  }
+}
+
+
+async function saveProductsToSupabaseBridge(){
+  if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb || !Array.isArray(products)) return false;
+  try{
+    const productPayload = products.map(p => ({
+      id:p.id, name:p.name||'', category:p.category||null,
+      weight:Number(p.weight||0), print_hours:Number(p.printHours||0),
+      manual_hours:Number(p.manualHours||0), paint_hours:Number(p.paintHours||0),
+      accessory_cost:Number(p.accessoryCost||0), size_l:Number(p.sizeL||0),
+      size_w:Number(p.sizeW||0), size_h:Number(p.sizeH||0),
+      margin_w:p.marginW ?? null, margin_r:p.marginR ?? null,
+      stock:Number(p.stock||0), catalog_description:p.catalogDescription||'',
+      telegram_message_ids:Array.isArray(p.telegramMessageIds)?p.telegramMessageIds:[],
+      legacy_payload:p
+    }));
+    if(productPayload.length){
+      const {error} = await sb.from('products').upsert(productPayload, {onConflict:'id'});
+      if(error) throw error;
+    }
+
+    const ids = products.map(p=>p.id).filter(Boolean);
+    if(ids.length){
+      const {error:ce} = await sb.from('product_colors').delete().in('product_id', ids);
+      if(ce) throw ce;
+      const colorPayload=[];
+      for(const p of products){
+        for(let i=0;i<(p.colors||[]).length;i++){
+          const c=p.colors[i];
+          colorPayload.push({id:c.id, product_id:p.id, name:c.name||'', hex:c.hex||null,
+            stock:Number((p.colorStock||{})[c.id]||0), sort_order:i});
+        }
+      }
+      if(colorPayload.length){
+        const {error:ie}=await sb.from('product_colors').insert(colorPayload);
+        if(ie) throw ie;
+      }
+    }
+
+    try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
+    return true;
+  }catch(err){
+    console.error('Supabase product save failed:', err);
+    return false;
+  }
+}
 </script>
 
 </head>
@@ -3187,12 +3297,23 @@ let saveTimer;
 function persist(opts){
   if(!ready) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
+  saveTimer = setTimeout(async () => {
+    let localOk = true;
     try{
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
       localStorage.setItem('pricing_app_products', JSON.stringify(products));
-      flashSaved();
-    }catch(e){ console.error('ذخیره‌سازی ناموفق بود', e); }
+    }catch(e){ localOk = false; console.error('ذخیره‌سازی محلی ناموفق بود', e); }
+
+    let cloudOk = true;
+    if(!(opts && opts.skipSupabase) && supabaseProductsLoaded){
+      cloudOk = await saveProductsToSupabaseBridge();
+      if(!cloudOk) console.error('ذخیره محصولات در Supabase ناموفق بود');
+    }
+
+    if(localOk && cloudOk) flashSaved();
+    else if(localOk) showToast('محلی ذخیره شد، ولی ذخیره در Supabase ناموفق بود', 'warn', 3500);
+    else showToast('ذخیره‌سازی ناموفق بود', 'error', 3500);
+
     if(!(opts && opts.skipSync)) scheduleSync();
   }, 250);
 }
@@ -4864,7 +4985,9 @@ async function telegramCall(method, body){
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
     });
     data = await res.json().catch(()=>({}));
-  }catch(e){ throw new Error('خطای اتصال به تلگرام: ' + e.message); }
+  }catch(e){
+    throw new Error('اتصال مستقیم مرورگر به Telegram Bot API برقرار نشد. اگر اپ را به‌صورت فایل محلی/بدون VPN باز کرده‌ای، باید Telegram API را از طریق یک relay/proxy عبور دهیم. جزئیات: ' + e.message);
+  }
   return data;
 }
 // یک یا چند پست قدیمی رو از کانال پاک می‌کنه؛ خطاها رو نادیده می‌گیره (best-effort)
@@ -4952,21 +5075,26 @@ async function syncProductToTelegram(id){
 // و اگه کاتالوگ تلگرام فعال باشه، بدون صبر کردن برای تایمر ۲.۵ ثانیه‌ای، همون لحظه به کانال می‌فرسته.
 async function saveAndSendProduct(id){
   if(!isAdmin) return;
-  persist();
-  if(!telegramConfigured()){
-    showToast('ذخیره شد ✓', 'success', 1600);
-    return;
-  }
-  clearTimeout(telegramSyncTimers[id]);
+  clearTimeout(saveTimer);
   const btn = document.getElementById('saveSendBtn_' + id);
   if(btn) btn.disabled = true;
-  showToast('در حال ذخیره و ارسال به کانال تلگرام…', 'info', 2500);
+  showToast('در حال ذخیره در Supabase و ارسال به کانال تلگرام…', 'info', 3000);
   try{
+    // ذخیره محلی + Supabase را همینجا منتظر می‌مانیم؛ دیگر ارسال تلگرام قبل از ذخیره انجام نمی‌شود.
+    localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
+    localStorage.setItem('pricing_app_products', JSON.stringify(products));
+    const cloudOk = supabaseProductsLoaded ? await saveProductsToSupabaseBridge() : true;
+    if(!cloudOk) throw new Error('ذخیره محصول در Supabase ناموفق بود. اتصال یا مجوز جدول products را بررسی کن.');
+
+    if(!telegramConfigured()){
+      showToast('محصول در Supabase ذخیره شد ✓ ولی اتصال تلگرام تنظیم نشده است', 'warn', 3500);
+      return;
+    }
     await syncProductToTelegram(id);
-    showToast('ذخیره شد و در کانال تلگرام ارسال شد ✓', 'success', 2200);
+    showToast('محصول در Supabase ذخیره و پست تلگرام به‌روز شد ✓', 'success', 2800);
   }catch(err){
-    console.error(err);
-    showToast('ذخیره شد، ولی ارسال به تلگرام ناموفق بود: ' + err.message, 'warn', 4200);
+    console.error('saveAndSendProduct:', err);
+    showToast('ذخیره/ارسال ناموفق: ' + (err.message || 'خطای ناشناخته'), 'error', 5000);
   }finally{
     if(btn) btn.disabled = false;
   }
