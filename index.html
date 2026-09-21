@@ -5008,71 +5008,101 @@ function isStaleTelegramMessageError(description){
 
 // موفق بود => برمی‌گردونه؛ ناموفق بود => خطا رو با پیام واقعیِ تلگرام پرتاب می‌کنه
 // (تا صدا زننده بفهمه واقعاً ارسال شده یا نه، به‌جای اینکه فقط توی کنسول قایم بشه)
+async function saveTelegramIdsToSupabase(prod){
+  if(!prod || !prod.id || typeof sb === 'undefined' || !sb) return;
+  const ids = getTelegramMessageIds(prod);
+  const {error} = await sb.from('products')
+    .update({telegram_message_ids: ids, legacy_payload: prod, updated_at: new Date().toISOString()})
+    .eq('id', prod.id);
+  if(error) throw error;
+}
+
 async function syncProductToTelegram(id){
-  if(!telegramConfigured()) throw new Error('کاتالوگ تلگرام تنظیم نشده');
+  if(!telegramConfigured()) throw new Error('کاتالوگ تلگرام تنظیم نشده؛ در تنظیمات، فعال بودن کاتالوگ، توکن ربات و شناسه کانال را بررسی کن.');
   const prod = products.find(p => p.id === id);
   if(!prod) throw new Error('محصول پیدا نشد');
   const channel = settings.telegramChannelId.trim();
-  const images = prod.images || [];
+  const images = Array.isArray(prod.images) ? prod.images.filter(x=>x && x.url) : [];
   const caption = telegramCaption(prod);
   const existingIds = getTelegramMessageIds(prod);
 
-  // بدون عکس: فقط پیام متنی
+  // اگر پست قبلی قابل ویرایش باشد، همان پست را به‌روز می‌کنیم.
+  // اگر به هر دلیل قابل ویرایش نباشد (مثلاً پست را ربات دیگری ساخته باشد)،
+  // حتماً یک پست جدید می‌فرستیم تا تغییر قیمت در کانال واقعاً اعمال شود.
+  let edited = false;
+  let editError = '';
+
   if(images.length === 0){
     if(existingIds.length === 1){
-      const data = await telegramCall('editMessageCaption', { chat_id: channel, message_id: existingIds[0], caption, parse_mode:'HTML' });
-      if(data.ok) return true;
-      if(!isStaleTelegramMessageError(data.description)){
-        throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
-      }
+      const data = await telegramCall('editMessageText', { chat_id: channel, message_id: existingIds[0], text: caption, parse_mode:'HTML' });
+      if(data.ok){ edited = true; }
+      else editError = data.description || 'ویرایش پیام قبلی ناموفق بود';
     }
-    if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
-    const data = await telegramCall('sendMessage', { chat_id: channel, text: caption, parse_mode:'HTML' });
-    if(data.ok){ setTelegramMessageIds(prod, [data.result.message_id]); persist(); return true; }
-    throw new Error(data.description || 'ارسال پیام به تلگرام ناموفق بود');
-  }
-
-  // یک عکس: پست تک‌عکسه، مثل قبل قابل ویرایش سر جا
-  if(images.length === 1){
+    if(!edited){
+      const data = await telegramCall('sendMessage', { chat_id: channel, text: caption, parse_mode:'HTML' });
+      if(!data.ok) throw new Error(`ارسال پست جدید به تلگرام ناموفق بود: ${data.description || 'خطای نامشخص'}`);
+      setTelegramMessageIds(prod, [data.result.message_id]);
+      if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
+      await saveTelegramIdsToSupabase(prod);
+      try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
+      return {ok:true, mode:'new', warning:editError};
+    }
+  } else if(images.length === 1){
     const photoUrl = images[0].url;
     if(existingIds.length === 1){
-      const data = await telegramCall('editMessageMedia', { chat_id: channel, message_id: existingIds[0], media: {type:'photo', media: photoUrl, caption, parse_mode:'HTML'} });
-      if(data.ok) return true;
-      if(!isStaleTelegramMessageError(data.description)){
-        throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود');
-      }
+      const data = await telegramCall('editMessageMedia', {
+        chat_id: channel,
+        message_id: existingIds[0],
+        media: {type:'photo', media:photoUrl, caption, parse_mode:'HTML'}
+      });
+      if(data.ok){ edited = true; }
+      else editError = data.description || 'ویرایش پست قبلی ناموفق بود';
     }
-    if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
-    const data = await telegramCall('sendPhoto', { chat_id: channel, photo: photoUrl, caption, parse_mode:'HTML' });
-    if(data.ok){ setTelegramMessageIds(prod, [data.result.message_id]); persist(); return true; }
-    throw new Error(data.description || 'ارسال عکس به تلگرام ناموفق بود');
+    if(!edited){
+      const data = await telegramCall('sendPhoto', { chat_id: channel, photo:photoUrl, caption, parse_mode:'HTML' });
+      if(!data.ok) throw new Error(`ارسال پست جدید به تلگرام ناموفق بود: ${data.description || 'خطای نامشخص'}`);
+      setTelegramMessageIds(prod, [data.result.message_id]);
+      if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
+      await saveTelegramIdsToSupabase(prod);
+      try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
+      return {ok:true, mode:'new', warning:editError};
+    }
+  } else {
+    if(existingIds.length === images.length){
+      let allOk = true;
+      for(let i=0;i<images.length;i++){
+        const media = i === 0
+          ? {type:'photo', media:images[i].url, caption, parse_mode:'HTML'}
+          : {type:'photo', media:images[i].url};
+        const data = await telegramCall('editMessageMedia', {chat_id:channel, message_id:existingIds[i], media});
+        if(!data.ok){
+          allOk = false;
+          editError = data.description || 'ویرایش آلبوم قبلی ناموفق بود';
+          break;
+        }
+      }
+      if(allOk) edited = true;
+    }
+    if(!edited){
+      const media = images.map((img,i)=>i===0
+        ? {type:'photo',media:img.url,caption,parse_mode:'HTML'}
+        : {type:'photo',media:img.url});
+      const data = await telegramCall('sendMediaGroup', {chat_id:channel,media});
+      if(!data.ok) throw new Error(`ارسال آلبوم جدید به تلگرام ناموفق بود: ${data.description || 'خطای نامشخص'}`);
+      setTelegramMessageIds(prod, data.result.map(m=>m.message_id));
+      if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
+      await saveTelegramIdsToSupabase(prod);
+      try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
+      return {ok:true, mode:'new', warning:editError};
+    }
   }
 
-  // چند عکس: آلبوم (media group). کپشن فقط روی اولین عکسِ آلبوم نمایش داده می‌شه.
-  // اگه تعداد عکس‌ها با دفعه‌ی قبل یکی باشه، تک‌تک عکس‌های همون آلبوم رو ویرایش می‌کنیم (پست جابه‌جا نمی‌شه)؛
-  // وگرنه (تعداد عوض شده) آلبوم قبلی رو پاک می‌کنیم و یه آلبوم تازه می‌فرستیم.
-  if(existingIds.length === images.length){
-    let allOk = true;
-    for(let i = 0; i < images.length; i++){
-      const media = i === 0
-        ? {type:'photo', media: images[i].url, caption, parse_mode:'HTML'}
-        : {type:'photo', media: images[i].url};
-      const data = await telegramCall('editMessageMedia', { chat_id: channel, message_id: existingIds[i], media });
-      if(!data.ok){
-        if(isStaleTelegramMessageError(data.description)){ allOk = false; break; }
-        throw new Error(data.description || 'ویرایش آلبوم تلگرام ناموفق بود');
-      }
-    }
-    if(allOk) return true;
-  }
-  if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
-  const media = images.map((img, i) => i === 0
-    ? {type:'photo', media: img.url, caption, parse_mode:'HTML'}
-    : {type:'photo', media: img.url});
-  const data = await telegramCall('sendMediaGroup', { chat_id: channel, media });
-  if(data.ok){ setTelegramMessageIds(prod, data.result.map(m => m.message_id)); persist(); return true; }
-  throw new Error(data.description || 'ارسال آلبوم عکس به تلگرام ناموفق بود');
+  // ویرایش مستقیم موفق بود؛ آیدی‌ها ثابت‌اند، ولی برای اطمینان آخرین شناسه‌ها را در Supabase ثبت می‌کنیم.
+  await saveTelegramIdsToSupabase(prod);
+  try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
+  return {ok:true, mode:'edited'};
 }
+
 
 // دکمه‌ی «ذخیره و ارسال به کانال تلگرام» روی کارت محصول: هر ذخیره‌ی معلقی رو فوراً commit می‌کنه
 // و اگه کاتالوگ تلگرام فعال باشه، بدون صبر کردن برای تایمر ۲.۵ ثانیه‌ای، همون لحظه به کانال می‌فرسته.
@@ -5093,8 +5123,13 @@ async function saveAndSendProduct(id){
       showToast('محصول در Supabase ذخیره شد ✓ ولی اتصال تلگرام تنظیم نشده است', 'warn', 3500);
       return;
     }
-    await syncProductToTelegram(id);
-    showToast('محصول در Supabase ذخیره و پست تلگرام به‌روز شد ✓', 'success', 2800);
+    const tgResult = await syncProductToTelegram(id);
+    if(tgResult && tgResult.mode === 'new'){
+      const why = tgResult.warning ? ' (پست قبلی قابل ویرایش نبود؛ پست جدید جایگزین شد)' : '';
+      showToast('پست جدید در کانال تلگرام ارسال و محصول ذخیره شد ✓' + why, 'success', 4500);
+    }else{
+      showToast('محصول در Supabase ذخیره و پست تلگرام به‌روز شد ✓', 'success', 2800);
+    }
   }catch(err){
     console.error('saveAndSendProduct:', err);
     showToast('ذخیره/ارسال ناموفق: ' + (err.message || 'خطای ناشناخته'), 'error', 5000);
