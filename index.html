@@ -8557,3 +8557,42 @@ document.addEventListener('DOMContentLoaded', function(){
 </body>
 </html>
 
+<style>
+/* Final RTL search spacing fix — especially searches embedded inside cards */
+.search-box input,
+.search-box input[dir="rtl"],
+.search-box input[style*="direction:rtl"]{
+  padding-right:62px !important;
+  padding-left:48px !important;
+  text-indent:0 !important;
+}
+.search-box .search-icon{
+  right:16px !important;
+  width:18px;
+  height:18px;
+  z-index:3;
+}
+.consign-products-search input,
+.consign-modal-search input{
+  padding-right:58px !important;
+  padding-left:46px !important;
+  text-indent:0 !important;
+  direction:rtl;
+  text-align:right;
+}
+.consign-products-search svg,
+.consign-modal-search svg{
+  right:16px !important;
+  width:18px;
+  height:18px;
+  z-index:3;
+}
+/* Prevent long RTL placeholders from visually entering the icon zone */
+.search-box input::placeholder,
+.consign-products-search input::placeholder,
+.consign-modal-search input::placeholder{
+  text-overflow:ellipsis;
+  overflow:hidden;
+  white-space:nowrap;
+}
+</style>
