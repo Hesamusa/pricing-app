@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T12:30:43.976Z",
+  "updatedAt": "2026-09-21T12:39:21.228Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -596,48 +596,6 @@
       "sizeH": 0
     },
     {
-      "id": "p_1789475484761nq179",
-      "name": "سگ ساموئید سفید دم بلند",
-      "stock": 0,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661594248_0.jpg?v=1789661603536",
-          "path": "product-images/p_1789475484761nq179_1789661594248_0.jpg",
-          "sha": "ebcda0858ab8d12bb81b9a94b710eeb898b244a3"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661603617_1.jpg?v=1789661611760",
-          "path": "product-images/p_1789475484761nq179_1789661603617_1.jpg",
-          "sha": "033b06f546ae9015a24bf2e5221b9d87234d91ef"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661611829_2.jpg?v=1789661624601",
-          "path": "product-images/p_1789475484761nq179_1789661611829_2.jpg",
-          "sha": "88d822d8e511b05294d1de8b4f18c1fc2066059f"
-        }
-      ],
-      "weight": 14,
-      "marginR": 80,
-      "marginW": 65,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 1,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "فکرش رو بکن هربار دسته‌کلیدت رو درمیاری، این هاپوی خنده‌رو با اون دمِ قشنگش قراره کلی انرژی مثبت بهت بده! انقدر دقیق و ظریف پرینت شده که چه روی کیف ببندیش چه برای کادو، حسابی دلبری می‌کنه. چون خیلی طرفدار داشت همین امروز دوباره شارژش کردیم، پس تا بقیه نبردنش همین الان بهم پیام بده که مال خودت کنیش. 🐶",
-      "telegramMessageIds": [
-        241,
-        242,
-        243
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
       "id": "p_1789473468341u6rm9",
       "name": "سگ پودل بالونی بافتنی",
       "stock": 0,
@@ -1188,6 +1146,48 @@
       "sizeL": 0,
       "sizeW": 0,
       "sizeH": 0
+    },
+    {
+      "id": "p_1789475484761nq179",
+      "name": "سگ ساموئید سفید دم بلند",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 3,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661594248_0.jpg?v=1789661603536",
+          "path": "product-images/p_1789475484761nq179_1789661594248_0.jpg",
+          "sha": "ebcda0858ab8d12bb81b9a94b710eeb898b244a3"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661603617_1.jpg?v=1789661611760",
+          "path": "product-images/p_1789475484761nq179_1789661603617_1.jpg",
+          "sha": "033b06f546ae9015a24bf2e5221b9d87234d91ef"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789475484761nq179_1789661611829_2.jpg?v=1789661624601",
+          "path": "product-images/p_1789475484761nq179_1789661611829_2.jpg",
+          "sha": "88d822d8e511b05294d1de8b4f18c1fc2066059f"
+        }
+      ],
+      "weight": 14,
+      "marginR": 80,
+      "marginW": 65,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {},
+      "paintHours": 1,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "فکرش رو بکن هربار دسته‌کلیدت رو درمیاری، این هاپوی خنده‌رو با اون دمِ قشنگش قراره کلی انرژی مثبت بهت بده! انقدر دقیق و ظریف پرینت شده که چه روی کیف ببندیش چه برای کادو، حسابی دلبری می‌کنه. چون خیلی طرفدار داشت همین امروز دوباره شارژش کردیم، پس تا بقیه نبردنش همین الان بهم پیام بده که مال خودت کنیش. 🐶",
+      "telegramMessageIds": [
+        241,
+        242,
+        243
+      ]
     },
     {
       "id": "p_1788757924479oy27y",
