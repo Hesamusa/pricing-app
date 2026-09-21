@@ -10118,6 +10118,139 @@ setTimeout(()=>{
 }
 </style>
 </body>
+
+
+<style id="desktop-workspace-v30">
+/* v30 — Desktop workspace layout: use width for composition, not stretched controls. */
+@media (min-width:900px){
+  :root{--workspace-gap:16px;--workspace-max:1540px;}
+  main{padding-left:18px!important;padding-right:18px!important;}
+  .tab-panel{box-sizing:border-box;}
+
+  /* Shared page rhythm */
+  #tab-sales > *,#tab-orders > *,#tab-consign > *,#tab-customers > *,#tab-summary > *,#tab-settings > *,#tab-accounting > *,#tab-telegram > *{
+    min-width:0;
+  }
+  #tab-sales .card,#tab-orders .card,#tab-customers .card,#tab-settings .card,#tab-accounting .card,#tab-telegram .card{
+    box-sizing:border-box;
+  }
+
+  /* Forms: full workspace, but controls keep readable widths. */
+  #tab-sales #sale-form-wrap,#tab-orders #order-form-wrap{
+    width:100%!important;max-width:var(--workspace-max)!important;margin-inline:auto;
+    box-sizing:border-box;
+  }
+  #tab-sales #sale-form-wrap .form-grid,#tab-orders #order-form-wrap .form-grid{
+    align-items:start;gap:12px 14px;
+  }
+  #tab-sales #sale-form-wrap input,#tab-sales #sale-form-wrap select,#tab-sales #sale-form-wrap textarea,
+  #tab-orders #order-form-wrap input,#tab-orders #order-form-wrap select,#tab-orders #order-form-wrap textarea{
+    max-width:100%;box-sizing:border-box;
+  }
+
+  /* Directory/list pages: cards get width, internals stay compact. */
+  #tab-sales #sales-list,#tab-orders #orders-list,#tab-customers #customers-list,#tab-consign #consign-list{
+    width:100%;max-width:var(--workspace-max);margin-inline:auto;box-sizing:border-box;
+  }
+  #tab-customers #customers-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+  #tab-sales #sales-list,#tab-orders #orders-list{grid-template-columns:repeat(2,minmax(0,1fr));}
+
+  /* Consignment store card becomes a real desktop workspace when opened. */
+  #tab-consign .consign-card.open{
+    grid-column:1/-1;max-width:var(--workspace-max);width:100%;margin-inline:auto;
+  }
+  #tab-consign .consign-card.open .consign-card-body-inner{
+    display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);
+    gap:14px 18px;align-items:start;padding:16px 18px 18px;
+  }
+  #tab-consign .consign-card.open .consign-card-body-inner > .consign-table{
+    grid-column:1;grid-row:1 / span 4;margin-top:0;padding-top:0;
+  }
+  #tab-consign .consign-card.open .consign-card-body-inner > .sale-item-bottom{
+    grid-column:2;margin-top:0!important;
+    padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--saas-surface-2);
+  }
+  #tab-consign .consign-card.open .consign-card-body-inner > .order-status-btn{
+    grid-column:2;width:100%!important;margin-top:0!important;
+  }
+  #tab-consign .consign-card.open .consign-card-body-inner > .sale-item-note,
+  #tab-consign .consign-card.open .consign-card-body-inner > .consign-actions{
+    grid-column:1/-1;
+  }
+  #tab-consign .consign-card.open .consign-actions{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:0;
+  }
+  #tab-consign .consign-card.open .consign-actions .order-status-btn{min-width:0;width:100%;}
+
+  /* Summary: dense metric dashboard instead of stretched blocks. */
+  #tab-summary #summary-content{
+    width:100%;max-width:var(--workspace-max);margin-inline:auto;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch;
+  }
+  #tab-summary #summary-content .stat-card{min-width:0;min-height:108px;box-sizing:border-box;}
+  #tab-summary #accounting-customers{width:100%;max-width:var(--workspace-max);margin-inline:auto;}
+  #tab-summary #consign-summary-overview{
+    width:100%;max-width:var(--workspace-max);margin-inline:auto;
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;
+  }
+  #tab-summary #consign-summary-overview .stat-card{min-width:0;min-height:104px;}
+
+  /* Settings: organize sections in columns; never stretch a text field just because the page is wide. */
+  #tab-settings #settings-admin-content{
+    width:100%;max-width:var(--workspace-max);margin-inline:auto;
+  }
+  #tab-settings .settings-group{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start;}
+  #tab-settings input,#tab-settings select,#tab-settings textarea{width:min(100%,680px);box-sizing:border-box;}
+
+  /* Accounting/Telegram/dashboard/reports: preserve natural content widths while using workspace. */
+  #tab-accounting,#tab-telegram,#tab-dashboard,#tab-reports{width:100%;}
+  #tab-accounting .card,#tab-telegram .card,#tab-dashboard .card,#tab-reports .card{box-sizing:border-box;}
+}
+
+@media (min-width:1500px){
+  #tab-summary #summary-content{grid-template-columns:repeat(5,minmax(0,1fr));}
+  #tab-summary #consign-summary-overview{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+  #tab-consign .consign-card.open .consign-card-body-inner{grid-template-columns:minmax(0,1.5fr) minmax(360px,.5fr);}
+}
+
+@media (max-width:1100px) and (min-width:900px){
+  #tab-customers #customers-list{grid-template-columns:repeat(2,minmax(0,1fr));}
+  #tab-summary #summary-content,#tab-summary #consign-summary-overview{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  #tab-settings .settings-group{grid-template-columns:1fr;}
+  #tab-consign .consign-card.open .consign-card-body-inner{grid-template-columns:1fr;}
+  #tab-consign .consign-card.open .consign-card-body-inner > .consign-table,
+  #tab-consign .consign-card.open .consign-card-body-inner > .sale-item-bottom,
+  #tab-consign .consign-card.open .consign-card-body-inner > .order-status-btn{grid-column:1;grid-row:auto;}
+  #tab-consign .consign-card.open .consign-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+</style>
+
+<script id="scroll-stability-v30">
+/* v30 — Keep the open product at the user's scroll position when Realtime/polling rebuilds it. */
+(function(){
+  if(typeof renderProducts !== 'function' || window.__renderProductsScrollStableV30) return;
+  window.__renderProductsScrollStableV30 = true;
+  const baseRenderProductsV30 = renderProducts;
+  renderProducts = function(){
+    const preserve = window.innerWidth >= 900 && document.body.classList.contains('product-focus-mode');
+    const y = preserve ? window.scrollY : 0;
+    const active = preserve ? document.activeElement : null;
+    const activeId = preserve && active && active.id ? active.id : '';
+    baseRenderProductsV30.apply(this, arguments);
+    if(preserve){
+      requestAnimationFrame(()=>{
+        window.scrollTo({top:y,left:0,behavior:'auto'});
+        if(activeId){
+          const next=document.getElementById(activeId);
+          if(next && document.activeElement !== next){
+            try{ next.focus({preventScroll:true}); }catch(e){ try{next.focus();}catch(_e){} }
+          }
+        }
+      });
+    }
+  };
+})();
+</script>
 </html>
 
 <style>
