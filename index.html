@@ -2193,6 +2193,9 @@ async function saveProductsToSupabaseBridge(){
 
 <style id="consignment-sticky-header-v35">
 /* v35 — Fix sticky consignment header: do not let the open card's overflow clip the sticky element. */
+#tab-consign .consign-card.open{
+  overflow:visible !important;
+}
 #tab-consign .consign-card.open .consign-card-body{
   max-height:none !important;
   overflow:visible !important;
@@ -10383,6 +10386,66 @@ setTimeout(()=>{
   }
 }
 </style>
+<style id="consignment-mobile-floating-header-v38">
+@media (max-width:899px){
+  #tab-consign .consign-card.open .consign-table > .consign-th.consignment-float-active{
+    position:fixed !important;
+    top:58px !important;
+    z-index:999 !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+    background:var(--card) !important;
+    border:1px solid var(--line) !important;
+    border-radius:10px !important;
+    box-shadow:0 4px 14px rgba(0,0,0,.12) !important;
+    padding-top:8px !important;
+    padding-bottom:8px !important;
+  }
+}
+</style>
+<script id="consignment-mobile-floating-header-v38">
+(function(){
+  if(window.__consignFloatingHeaderV38) return;
+  window.__consignFloatingHeaderV38 = true;
+  var raf=0;
+  function resetHeader(h){
+    h.classList.remove('consignment-float-active');
+    h.style.left=''; h.style.width=''; h.style.top='';
+  }
+  function update(){
+    raf=0;
+    if(window.innerWidth>899){
+      document.querySelectorAll('.consign-th.consignment-float-active').forEach(resetHeader);
+      return;
+    }
+    var topOffset=58;
+    document.querySelectorAll('#tab-consign .consign-card.open .consign-table').forEach(function(table){
+      var h=table.querySelector(':scope > .consign-th');
+      if(!h) return;
+      var rect=table.getBoundingClientRect();
+      var hr=h.getBoundingClientRect();
+      var bottom=rect.bottom;
+      var shouldFloat=rect.top < topOffset && bottom > topOffset + hr.height;
+      if(shouldFloat){
+        if(!h.classList.contains('consignment-float-active')) h.classList.add('consignment-float-active');
+        var tr=table.getBoundingClientRect();
+        h.style.left=Math.round(tr.left)+'px';
+        h.style.width=Math.round(tr.width)+'px';
+        h.style.top=topOffset+'px';
+      }else{
+        resetHeader(h);
+      }
+    });
+  }
+  function schedule(){ if(!raf) raf=requestAnimationFrame(update); }
+  window.addEventListener('scroll',schedule,{passive:true});
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',schedule,{passive:true});
+  document.addEventListener('DOMContentLoaded',schedule);
+  setTimeout(schedule,300);
+  setTimeout(schedule,1000);
+})();
+</script>
 </body>
 
 
