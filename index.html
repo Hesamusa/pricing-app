@@ -440,6 +440,18 @@
   .variant-select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:9px 11px;font-family:'Vazirmatn',sans-serif;font-size:13px;outline:none;}
   .variant-select:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-soft);}
   .consign-product-group{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:7px;background:var(--card);}
+  .consign-variant-editor{display:flex;flex-direction:column;gap:8px;}
+  .consign-variant-editor-card{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px;}
+  .consign-variant-editor-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:800;}
+  .consign-variant-editor-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .consign-variant-editor-grid label{font-size:10px;color:var(--ink-soft);display:block;margin-bottom:3px;}
+  .consign-variant-editor-grid input{width:100%;min-width:0;}
+  .consign-modal-product{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:3;font-weight:900;}
+  .consign-modal-product small{font-size:10px;color:var(--ink-soft);font-weight:600;}
+  .consign-modal-variant{padding-right:14px;}
+  .consign-modal-variant .consign-qty-row-head{padding-right:4px;}
+  @media(max-width:380px){.consign-variant-editor-grid{grid-template-columns:1fr;}}
+
   .consign-product-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:var(--bg);border-bottom:1px solid var(--line);}
   .consign-product-group-name{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .consign-product-group-count{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
@@ -780,6 +792,11 @@
   .consign-tr .product-link{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:right;display:inline-flex;align-items:center;gap:5px;cursor:pointer;max-width:100%;font-weight:750;}
 .consign-tr .product-link:hover{color:var(--blue);}
 .consign-live-stock{display:block;font-size:9px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;}
+
+.consign-selected-group{border:1px solid var(--border);border-radius:14px;margin:0 0 10px;overflow:hidden;background:var(--surface)}
+.consign-selected-group-head{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--surface-2);font-size:13px}
+.consign-selected-group-head span{font-size:11px;color:var(--muted)}
+.consign-selected-group .order-item-row{margin:0;border-top:1px solid var(--border);border-radius:0}
 .consign-products-tools{display:flex; gap:8px; align-items:center; margin:10px 0 8px;}
   .consign-products-search{position:relative; flex:1; min-width:0;}
   .consign-products-search input{width:100%; height:44px; border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:10px 38px 10px 34px; font-size:14px; font-family:'Vazirmatn',sans-serif;}
@@ -2197,10 +2214,10 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
         <div class="hint" id="consign_item_stock_hint"></div>
       </div>
       <div class="field" id="consign_item_color_field" style="display:none;">
-        <label>رنگ محصول</label>
-        <div id="consign_item_color_row"></div>
+        <label>رنگ‌های همین محصول</label>
+        <div class="consign-variant-editor" id="consign_item_color_row"></div>
       </div>
-      <div class="grid-2">
+      <div class="grid-2" id="consign-common-qty-fields">
         <div class="field">
           <label>تعداد تحویلی</label>
           <input type="text" class="num-input" id="consign_item_qty" inputmode="numeric" value="۱" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
@@ -2210,7 +2227,7 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
           <input type="text" class="num-input" id="consign_item_target" inputmode="numeric" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
         </div>
       </div>
-      <div class="field">
+      <div class="field" id="consign-common-price-field">
         <label>قیمت واحد تسویه با فروشگاه — تومان</label>
         <div class="input-row">
           <input type="text" class="num-input" id="consign_item_price" inputmode="numeric" oninput="handleGroupedIntInput(this, ()=>{})" onblur="formatNumField(this,0)">
@@ -6560,19 +6577,33 @@ function selectConsignItemProduct(id){
 function renderConsignItemColorOptions(){
   const field = document.getElementById('consign_item_color_field');
   const row = document.getElementById('consign_item_color_row');
+  const commonQty = document.getElementById('consign-common-qty-fields');
+  const commonPrice = document.getElementById('consign-common-price-field');
   if(!field || !row) return;
   const prod = products.find(p => p.id === consignItemProductId);
   const colors = (prod && prod.colors) || [];
   if(!colors.length){
-    field.style.display = 'none';
-    row.innerHTML = '';
+    field.style.display = 'none'; row.innerHTML = '';
+    if(commonQty) commonQty.style.display = '';
+    if(commonPrice) commonPrice.style.display = '';
     return;
   }
   field.style.display = '';
-  row.innerHTML = `<select class="gh-field consign-color-select" onchange="selectConsignItemColor(this.value)">
-    <option value="">— انتخاب رنگ —</option>
-    ${colors.map(col => `<option value="${escapeHtml(col.id)}" ${col.id===consignItemColorId?'selected':''}>${escapeHtml(col.name)} — موجودی ${fa.format(productColorStock(prod,col.id))}</option>`).join('')}
-  </select>`;
+  if(commonQty) commonQty.style.display = 'none';
+  if(commonPrice) commonPrice.style.display = 'none';
+  row.innerHTML = colors.map(col => `
+    <div class="consign-variant-editor-card" data-consign-variant="${escapeHtml(col.id)}">
+      <div class="consign-variant-editor-head">
+        <span class="color-swatch-mini" style="background:${escapeHtml(col.hex||'transparent')}"></span>
+        <span>${escapeHtml(col.name)}</span>
+        <span class="qhint" style="margin-right:auto;">انبار: ${fa.format(productColorStock(prod,col.id))}</span>
+      </div>
+      <div class="consign-variant-editor-grid">
+        <div><label>تعداد واگذاری</label><input class="num-input variant-qty" data-color-id="${escapeHtml(col.id)}" inputmode="numeric" value="" placeholder="۰" oninput="handleGroupedIntInput(this,()=>{})"></div>
+        <div><label>ظرفیت مطلوب</label><input class="num-input variant-target" data-color-id="${escapeHtml(col.id)}" inputmode="numeric" placeholder="۰" oninput="handleGroupedIntInput(this,()=>{})"></div>
+        <div><label>قیمت تسویه</label><input class="num-input variant-price" data-color-id="${escapeHtml(col.id)}" inputmode="numeric" value="${toFaNum(calc(prod).priceW,0)}" oninput="handleGroupedIntInput(this,()=>{})"></div>
+      </div>
+    </div>`).join('');
 }
 function selectConsignItemColor(colorId){
   consignItemColorId = colorId;
@@ -6591,7 +6622,7 @@ function updateConsignItemHints(){
   const prod = products.find(p => p.id === consignItemProductId);
   if(stockHint){
     if(prod && prod.colors && prod.colors.length && !consignItemColorId){
-      stockHint.textContent = 'اول یکی از رنگ‌های زیر رو انتخاب کن.';
+      stockHint.textContent = 'برای هر رنگی که می‌خواهی واگذار کنی، تعداد را وارد کن.';
     }else if(prod){
       stockHint.textContent = 'موجودی انبار: ' + fa.format(productAvailableStock(prod, consignItemColorId)) + ' عدد';
     }else{
@@ -6616,33 +6647,44 @@ async function addItemToConsign(){
   }
   const prod = products.find(p => p.id === consignItemProductId);
   if(!prod){ await customAlert('اول یک محصول رو انتخاب کن.'); return; }
-  if(prod.colors && prod.colors.length && !consignItemColorId){
-    await customAlert('این محصول چند رنگه؛ اول یکی از رنگ‌هاش رو انتخاب کن.');
-    return;
-  }
-  const col = consignItemColorId ? (prod.colors||[]).find(c=>c.id===consignItemColorId) : null;
-  const qtyEl = document.getElementById('consign_item_qty');
-  const priceEl = document.getElementById('consign_item_price');
-  const targetEl = document.getElementById('consign_item_target');
-  const qty = Math.max(1, Math.round(parseNum(qtyEl.value)) || 1);
-  const price = Math.max(0, Math.round(parseNum(priceEl.value)) || 0);
-  if(price <= 0){ await customAlert('قیمت واحد تسویه با فروشگاه رو وارد کن.'); priceEl.focus(); return; }
-  const target = Math.max(0, Math.round(parseNum(targetEl.value)) || 0);
-  const existing = currentConsignItems.find(it => it.productId === prod.id && (it.colorId||null) === (consignItemColorId||null));
-  if(existing){
-    existing.deliveredQty += qty;
-    existing.unitPrice = price;
-    if(target > 0) existing.targetQty = target;
+  const colors = prod.colors || [];
+  if(colors.length){
+    const cards = Array.from(document.querySelectorAll('#consign_item_color_row .consign-variant-editor-card'));
+    const additions = [];
+    for(const card of cards){
+      const cid = card.dataset.consignVariant;
+      const col = colors.find(x=>x.id===cid);
+      if(!col) continue;
+      const qty = Math.max(0, Math.round(parseNum(card.querySelector('.variant-qty')?.value)) || 0);
+      const targetRaw = Math.max(0, Math.round(parseNum(card.querySelector('.variant-target')?.value)) || 0);
+      const price = Math.max(0, Math.round(parseNum(card.querySelector('.variant-price')?.value)) || 0);
+      if(qty <= 0) continue;
+      if(price <= 0){ await customAlert('برای رنگ «'+col.name+'» قیمت تسویه را وارد کن.'); return; }
+      additions.push({cid,col,qty,target:targetRaw>0?targetRaw:qty,price});
+    }
+    if(!additions.length){ await customAlert('حداقل تعداد واگذاری یکی از رنگ‌های این محصول را وارد کن.'); return; }
+    const shortages = additions.filter(x => x.qty > productColorStock(prod,x.cid));
+    if(shortages.length){ await customAlert('موجودی کافی نیست:\n'+shortages.map(x=>'• '+prod.name+' — '+x.col.name+': موجودی '+fa.format(productColorStock(prod,x.cid))+' — واگذاری '+fa.format(x.qty)).join('\n')); return; }
+    additions.forEach(x=>{
+      const existing=currentConsignItems.find(it=>it.productId===prod.id && (it.colorId||null)===x.cid);
+      if(existing){ existing.deliveredQty += x.qty; existing.unitPrice=x.price; existing.targetQty=x.target; }
+      else currentConsignItems.push(makeConsignItem(prod,x.qty,x.price,x.target,x.cid,x.col.name,x.col.hex));
+    });
+    cards.forEach(card=>{
+      const q=card.querySelector('.variant-qty'); const t=card.querySelector('.variant-target');
+      if(q) q.value='۱'; if(t) t.value='';
+    });
   }else{
-    currentConsignItems.push(makeConsignItem(prod, qty, price, target > 0 ? target : qty, consignItemColorId, col?col.name:null, col?col.hex:null));
+    const qtyEl=document.getElementById('consign_item_qty'), priceEl=document.getElementById('consign_item_price'), targetEl=document.getElementById('consign_item_target');
+    const qty=Math.max(1,Math.round(parseNum(qtyEl.value))||1), price=Math.max(0,Math.round(parseNum(priceEl.value))||0), target=Math.max(0,Math.round(parseNum(targetEl.value))||0);
+    if(price<=0){await customAlert('قیمت واحد تسویه با فروشگاه رو وارد کن.');priceEl.focus();return;}
+    if(qty>productAvailableStock(prod,null)){await customAlert('موجودی انبار برای این محصول کافی نیست.');return;}
+    const existing=currentConsignItems.find(it=>it.productId===prod.id && !(it.colorId));
+    if(existing){existing.deliveredQty+=qty;existing.unitPrice=price;if(target>0)existing.targetQty=target;}else currentConsignItems.push(makeConsignItem(prod,qty,price,target>0?target:qty,null,null,null));
+    qtyEl.value='۱';priceEl.value='';targetEl.value='';
   }
-  qtyEl.value = '۱';
-  priceEl.value = '';
-  targetEl.value = '';
-  consignItemColorId = null;
-  renderConsignItemColorOptions();
-  updateConsignItemHints();
-  renderConsignItemsList();
+  consignItemColorId=null;
+  renderConsignItemColorOptions(); updateConsignItemHints(); renderConsignItemsList();
 }
 function removeConsignFormItem(index){
   currentConsignItems.splice(index, 1);
@@ -6655,13 +6697,27 @@ function renderConsignItemsList(){
     el.innerHTML = `<div class="hint" style="margin:0 6px 10px;">هنوز محصولی به این واگذاری اضافه نشده.</div>`;
     return;
   }
-  el.innerHTML = currentConsignItems.map((it, i) => `
-    <div class="order-item-row">
-      <span class="order-item-row-name">${it.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(it.colorHex)}"></span>` : ''}${escapeHtml(it.productName)}${it.colorName ? ' — ' + escapeHtml(it.colorName) : ''}</span>
-      <span class="order-item-row-qty mono">× ${fa.format(it.deliveredQty)} — ${fmt(it.unitPrice)}</span>
-      <button type="button" class="order-item-row-del" onclick="removeConsignFormItem(${i})">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
-      </button>
+  const groups = [];
+  const groupMap = new Map();
+  currentConsignItems.forEach((it, i) => {
+    const g = it.productId || it.productName;
+    if(!groupMap.has(g)){ const item={productId:g, productName:it.productName, rows:[]}; groupMap.set(g,item); groups.push(item); }
+    groupMap.get(g).rows.push({it,i});
+  });
+  el.innerHTML = groups.map(g => `
+    <div class="consign-selected-group">
+      <div class="consign-selected-group-head">
+        <strong>${escapeHtml(g.productName)}</strong>
+        <span>${fa.format(g.rows.reduce((s,r)=>s+Number(r.it.deliveredQty||0),0))} عدد</span>
+      </div>
+      ${g.rows.map(({it,i}) => `
+        <div class="order-item-row">
+          <span class="order-item-row-name">${it.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(it.colorHex)}"></span>` : ''}${escapeHtml(it.colorName || 'بدون رنگ')}</span>
+          <span class="order-item-row-qty mono">× ${fa.format(it.deliveredQty)} — ${fmt(it.unitPrice)}</span>
+          <button type="button" class="order-item-row-del" onclick="removeConsignFormItem(${i})">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4v2m3 0v14a2 2 0 0 1-2 2H7A2 2 0 0 1 5 20V6h14z"/></svg>
+          </button>
+        </div>`).join('')}
     </div>`).join('');
 }
 function resetConsignForm(){
@@ -6765,7 +6821,7 @@ function openConsignQtyModal(opts){
     subEl.style.display = opts.sub ? '' : 'none';
     okBtn.textContent = opts.okLabel || 'تأیید';
     const rows = opts.rows || [];
-    const toolsHtml = rows.length > 8 ? `
+    const toolsHtml = rows.length > 4 ? `
       <div class="consign-modal-tools">
         <div class="consign-modal-search">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.2-3.2"></path></svg>
@@ -6782,9 +6838,9 @@ function openConsignQtyModal(opts){
     let lastGroup = null;
     [...rows].forEach(r => {
       const group = r.group || '';
-      if(group && group !== lastGroup){ groupedRows.push(`<div class="consign-modal-group" data-group-header>${escapeHtml(group)}</div>`); lastGroup = group; }
+      if(group && group !== lastGroup){ groupedRows.push(`<div class="consign-modal-product" data-group-header><span>${escapeHtml(group)}</span><small>رنگ‌های این محصول</small></div>`); lastGroup = group; }
       groupedRows.push(`
-      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')))}" data-value="${Number(r.value)||0}">
+      <div class="consign-qty-row consign-modal-variant" data-modal-row data-search="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')))}" data-group="${escapeHtml(normalizeFaText(r.group||''))}" data-value="${Number(r.value)||0}">
         <div class="consign-qty-row-head">
           <span class="consign-qty-variant">${r.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(r.colorHex)}"></span>` : ''}${escapeHtml(r.variant || (r.group ? (r.name||'') : (r.name||'')))}</span>
           ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
@@ -6809,14 +6865,21 @@ function openConsignQtyModal(opts){
       });
       rowsEls.forEach(row => listEl.appendChild(row));
       listEl.querySelectorAll('[data-group-header]').forEach(h => h.remove());
+      const visibleRows = rowsEls.filter(row => row.style.display !== 'none');
       let currentGroup='';
-      rowsEls.forEach(row => {
-        const name=row.dataset.name || '';
-        const group=(name.split(' — ')[0] || name);
-        if(group!==currentGroup){ currentGroup=group; const h=document.createElement('div'); h.className='consign-modal-group'; h.dataset.groupHeader=''; h.textContent=group; row.parentNode.insertBefore(h,row); }
+      visibleRows.forEach(row => {
+        const group=row.dataset.group || row.dataset.name || '';
+        if(group!==currentGroup){
+          currentGroup=group;
+          const h=document.createElement('div');
+          h.className='consign-modal-product';
+          h.dataset.groupHeader='';
+          h.innerHTML='<span>'+escapeHtml(group)+'</span><small>رنگ‌های این محصول</small>';
+          row.parentNode.insertBefore(h,row);
+        }
       });
       let empty = listEl.querySelector('.consign-modal-list-empty');
-      const visible = rowsEls.some(row => row.style.display !== 'none');
+      const visible = visibleRows.length > 0;
       if(!visible){
         if(!empty){ empty=document.createElement('div'); empty.className='consign-modal-list-empty'; empty.textContent='نتیجه‌ای پیدا نشد.'; listEl.appendChild(empty); }
       }else if(empty) empty.remove();
@@ -6868,7 +6931,7 @@ function openConsignMultiFieldModal(opts){
     subEl.style.display = opts.sub ? '' : 'none';
     okBtn.textContent = opts.okLabel || 'تأیید';
     const rows = opts.rows || [];
-    const toolsHtml = rows.length > 8 ? `
+    const toolsHtml = rows.length > 4 ? `
       <div class="consign-modal-tools">
         <div class="consign-modal-search">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.2-3.2"></path></svg>
@@ -6885,9 +6948,9 @@ function openConsignMultiFieldModal(opts){
     let lastGroup = null;
     [...rows].forEach(r => {
       const group = r.group || '';
-      if(group && group !== lastGroup){ groupedRows.push(`<div class="consign-modal-group" data-group-header>${escapeHtml(group)}</div>`); lastGroup = group; }
+      if(group && group !== lastGroup){ groupedRows.push(`<div class="consign-modal-product" data-group-header><span>${escapeHtml(group)}</span><small>رنگ‌های این محصول</small></div>`); lastGroup = group; }
       groupedRows.push(`
-      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')))}" data-value="${Number((r.fields||[]).reduce((sum,f)=>sum+(Number(f.value)||0),0))}">
+      <div class="consign-qty-row consign-modal-variant" data-modal-row data-search="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')))}" data-group="${escapeHtml(normalizeFaText(r.group||''))}" data-value="${Number((r.fields||[]).reduce((sum,f)=>sum+(Number(f.value)||0),0))}">
         <div class="consign-qty-row-head">
           <span class="consign-qty-variant">${r.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(r.colorHex)}"></span>` : ''}${escapeHtml(r.variant || (r.group ? (r.name||'') : (r.name||'')))}</span>
           ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
@@ -6918,14 +6981,21 @@ function openConsignMultiFieldModal(opts){
       });
       rowsEls.forEach(row => listEl.appendChild(row));
       listEl.querySelectorAll('[data-group-header]').forEach(h => h.remove());
+      const visibleRows = rowsEls.filter(row => row.style.display !== 'none');
       let currentGroup='';
-      rowsEls.forEach(row => {
-        const name=row.dataset.name || '';
-        const group=(name.split(' — ')[0] || name);
-        if(group!==currentGroup){ currentGroup=group; const h=document.createElement('div'); h.className='consign-modal-group'; h.dataset.groupHeader=''; h.textContent=group; row.parentNode.insertBefore(h,row); }
+      visibleRows.forEach(row => {
+        const group=row.dataset.group || row.dataset.name || '';
+        if(group!==currentGroup){
+          currentGroup=group;
+          const h=document.createElement('div');
+          h.className='consign-modal-product';
+          h.dataset.groupHeader='';
+          h.innerHTML='<span>'+escapeHtml(group)+'</span><small>رنگ‌های این محصول</small>';
+          row.parentNode.insertBefore(h,row);
+        }
       });
       let empty = listEl.querySelector('.consign-modal-list-empty');
-      const visible = rowsEls.some(row => row.style.display !== 'none');
+      const visible = visibleRows.length > 0;
       if(!visible){
         if(!empty){ empty=document.createElement('div'); empty.className='consign-modal-list-empty'; empty.textContent='نتیجه‌ای پیدا نشد.'; listEl.appendChild(empty); }
       }else if(empty) empty.remove();
@@ -6966,6 +7036,7 @@ async function recordConsignSale(id){
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
     value: 0
@@ -7022,6 +7093,9 @@ async function restockConsign(id){
     const suggested = consignRestockQty(it);
     return {
       key: ciKey(it.productId, it.colorId),
+      group: it.productName,
+      variant: it.colorName || 'بدون رنگ',
+      colorHex: it.colorHex || '',
       name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
       hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | انبار: ' + fa.format(prod ? productAvailableStock(prod, it.colorId) : 0) + (suggested>0 ? ' | پیشنهاد شارژ: ' + fa.format(suggested) : ''),
       fields: [
@@ -7128,6 +7202,9 @@ async function returnConsign(id){
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName,
+    variant: it.colorName || 'بدون رنگ',
+    colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
     value: 0
