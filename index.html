@@ -352,7 +352,7 @@
   .head-color-dots{display:inline-flex; align-items:center;}
   .color-chip-name{font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; max-width:90px; overflow:hidden; text-overflow:ellipsis;}
   .color-chip-stock{display:flex; align-items:center; gap:4px; background:var(--card); border-radius:10px; padding:2px 4px;}
-  .color-chip-stock b{font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:13px; min-width:16px; text-align:center; direction:ltr;}
+  .color-chip-stock b{font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:13px; min-width:16px; text-align:center; direction:ltr;} .color-stock-input{font-family:'IBM Plex Mono','Vazirmatn',monospace; font-size:13px; font-weight:700; width:48px; min-width:48px; height:28px; padding:2px 4px; border:1px solid var(--line); border-radius:7px; background:var(--bg); color:var(--ink); text-align:center; direction:ltr; font-variant-numeric:tabular-nums;} .color-stock-input:focus{outline:2px solid var(--orange); outline-offset:0;}
   .color-stock-btn{width:24px; height:24px; border-radius:8px; border:none; background:transparent; color:var(--ink-soft); font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer; font-family:'Vazirmatn',sans-serif;}
   .color-stock-btn:active{opacity:.6;}
   .color-chip-remove{width:22px; height:22px; border-radius:50%; border:none; background:transparent; color:var(--ink-soft); font-size:13px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;}
@@ -3408,17 +3408,49 @@ async function removeProductColor(id, colorId){
   if(!prod) return;
   const col = (prod.colors||[]).find(c=>c.id===colorId);
   if(!col) return;
-  const stockHeld = productColorStock(prod, colorId);
-  const msg = stockHeld > 0
-    ? 'رنگ «' + col.name + '» الان ' + fa.format(stockHeld) + ' عدد موجودی داره. حذفش کنم؟ (این عدد از موجودی کم می‌شه)'
-    : 'رنگ «' + col.name + '» حذف بشه؟';
-  if(!await customConfirm(msg)) return;
+  const stockHeld = Number(productColorStock(prod,colorId)||0);
+  const usedInConsignment = (Array.isArray(consignments)?consignments:[]).some(c=>(c.items||[]).some(it=>it.productId===id && it.colorId===colorId && ((it.deliveredQty||0)-(it.soldQty||0)-(it.returnedQty||0)>0)));
+  const msg = usedInConsignment
+    ? `رنگ «${col.name}» هنوز در یک یا چند واگذاری موجودی دارد. برای جلوگیری از خراب شدن اطلاعات امانی، ابتدا موجودی آن را تسویه/حذف کن.`
+    : (stockHeld>0
+      ? `رنگ «${col.name}» ${fa.format(stockHeld)} عدد موجودی دارد. با حذف رنگ، این موجودی هم حذف می‌شود. ادامه می‌دهی؟`
+      : `رنگ «${col.name}» حذف شود؟`);
+  if(usedInConsignment){ await customAlert(msg,'باشه'); return; }
+  if(!await customConfirm(msg,'حذف رنگ')) return;
   prod.colors = (prod.colors||[]).filter(c=>c.id!==colorId);
   if(prod.colorStock) delete prod.colorStock[colorId];
   syncProductStockFromColors(prod);
+  // حذف ارجاعات سفارش‌های باز به این رنگ فقط در صورت نبود موجودی امانی؛ سوابق تاریخی حفظ می‌شوند.
+  for(const order of (Array.isArray(orders)?orders:[])){
+    if(Array.isArray(order.items)) order.items = order.items.map(it=>it.productId===id && it.colorId===colorId ? {...it,colorId:null,colorName:''} : it);
+  }
   persist();
   renderProducts();
+  showToast(`رنگ «${col.name}» حذف شد`, 'success', 1800);
 }
+function updateColorStockDirect(id,colorId,value){
+  if(!isAdmin) return;
+  const prod=products.find(p=>p.id===id); if(!prod) return;
+  prod.colorStock=prod.colorStock||{};
+  const n=Math.max(0, Math.floor(Number(value)||0));
+  prod.colorStock[colorId]=n;
+  syncProductStockFromColors(prod);
+  updateProductDisplay(id);
+  persist();
+}
+function handleColorStockDirectInput(el,id,colorId){
+  if(!el) return;
+  const raw=toEnNum(String(el.value||'')).replace(/[^0-9]/g,'');
+  if(raw!=='') el.value=fa.format(Number(raw));
+}
+function commitColorStockDirectInput(el,id,colorId){
+  if(!el) return;
+  const raw=toEnNum(String(el.value||'')).replace(/[^0-9]/g,'');
+  const n=Math.max(0,Math.floor(Number(raw)||0));
+  el.value=fa.format(n);
+  updateColorStockDirect(id,colorId,n);
+}
+
 function adjustColorStock(id, colorId, delta){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
@@ -4453,7 +4485,7 @@ function renderProducts(){
                   <span class="color-chip-name">${escapeHtml(col.name)}</span>
                   <span class="color-chip-stock">
                     <button type="button" class="color-stock-btn" ${lkAttr} onclick="event.stopPropagation(); adjustColorStock('${prod.id}','${col.id}',-1)">−</button>
-                    <b id="colorStockVal_${prod.id}_${col.id}">${fa.format(productColorStock(prod,col.id))}</b>
+                    <input type="text" class="color-stock-input" ${lkAttr} id="colorStockVal_${prod.id}_${col.id}" inputmode="numeric" value="${toFaNum(productColorStock(prod,col.id),0)}" onclick="event.stopPropagation(); this.select()" onfocus="event.stopPropagation(); this.select()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}" oninput="handleColorStockDirectInput(this,'${prod.id}','${col.id}')" onblur="commitColorStockDirectInput(this,'${prod.id}','${col.id}')">
                     <button type="button" class="color-stock-btn" ${lkAttr} onclick="event.stopPropagation(); adjustColorStock('${prod.id}','${col.id}',1)">+</button>
                   </span>
                   ${lk ? '' : `<button type="button" class="color-chip-remove" onclick="event.stopPropagation(); removeProductColor('${prod.id}','${col.id}')">✕</button>`}
