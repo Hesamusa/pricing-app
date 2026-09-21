@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T02:52:14.328Z",
+  "updatedAt": "2026-09-21T11:03:57.216Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -54,6 +54,35 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1789987874096oumgl",
+      "name": "پنجه گربه مینی",
+      "weight": 10,
+      "printHours": 0.75,
+      "manualHours": 0,
+      "paintHours": 0,
+      "accessoryCost": 10000,
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0,
+      "marginW": null,
+      "marginR": 85,
+      "images": [],
+      "stock": 2,
+      "colors": [
+        {
+          "id": "col_mub4ph7hmw6b",
+          "name": "صورتی",
+          "hex": "#ff80c0"
+        }
+      ],
+      "colorStock": {
+        "col_mub4ph7hmw6b": 2
+      },
+      "catalogDescription": "",
+      "telegramMessageIds": [],
+      "category": "g_mu0mydrdz7a1"
+    },
     {
       "id": "p_1789909666043x7sfu",
       "name": "چارم بگ ابر با بند پاراکورد",
@@ -114,50 +143,6 @@
       ],
       "colorStock": {
         "col_mua27qtgbsd6": 0
-      }
-    },
-    {
-      "id": "p_1789904410869lh5mr",
-      "name": "پنجه گربه مینی کوچولو",
-      "weight": 10,
-      "printHours": 0.75,
-      "manualHours": 0,
-      "paintHours": 0,
-      "accessoryCost": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0,
-      "marginW": 45,
-      "marginR": 70,
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789904410869lh5mr_1789904675052_0.jpg?v=1789904678544",
-          "path": "product-images/p_1789904410869lh5mr_1789904675052_0.jpg",
-          "sha": "779b48fb5fda3cb9799480a48ba530a145b9f37f"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789904410869lh5mr_1789904678686_1.jpg?v=1789904681855",
-          "path": "product-images/p_1789904410869lh5mr_1789904678686_1.jpg",
-          "sha": "7fefda1b82a29a752a8b156470031c50bb7468f0"
-        }
-      ],
-      "stock": 2,
-      "catalogDescription": "اگه عاشق چیزای کیوتی، این **جاکلیدی پنجه گربه** رسماً دلتو می‌بره! اون‌قدر سبک و جمع‌وجوره که قشنگ روی کلید یا زیپ کیفت می‌شینه و کلی جذابش می‌کنه. کلاً ۲ تا دونه ازش داریم؛ اگه خوشت اومده پیام بده تا برات ثبتش کنیم 😉 عضو کانالمون هم بشو تا بقیه مدل‌ها رو از دست ندی.",
-      "telegramMessageIds": [
-        283,
-        284
-      ],
-      "category": "g_mu0mydrdz7a1",
-      "telegramMessageId": null,
-      "colors": [
-        {
-          "id": "col_mua2byk8lt2k",
-          "name": "صورتی",
-          "hex": "#efcaff"
-        }
-      ],
-      "colorStock": {
-        "col_mua2byk8lt2k": 2
       }
     },
     {
@@ -711,7 +696,7 @@
       "paintHours": 0,
       "accessoryCost": 10000,
       "marginW": 100,
-      "marginR": 140,
+      "marginR": 200,
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
