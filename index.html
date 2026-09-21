@@ -7343,6 +7343,102 @@ function consignNeedsRestock(c){
   return c.status !== 'closed' && (c.items||[]).some(it => consignRestockQty(it) > 0);
 }
 
+// ————— پاک‌سازی رنگ‌های قدیمی امانی —————
+// از این نسخه به بعد «بدون رنگ / تعیین رنگ» در امانی‌ها نمایش داده نمی‌شود.
+// اگر محصول اکنون رنگ دارد، اقلام قدیمیِ بدون colorId از حساب امانی کنار گذاشته
+// می‌شوند تا کاربر بتواند حسابداری را خودش دوباره ثبت کند. همچنین دو ردیف یک‌رنگ
+// برای یک محصول در همان واگذاری با هم ادغام می‌شوند.
+function normalizeConsignmentColorData(c){
+  if(!c || !Array.isArray(c.items)) return false;
+  const original = c.items;
+  const legacyProducts = new Set(
+    products.filter(p => Array.isArray(p.colors) && p.colors.length).map(p => p.id)
+  );
+  const removedLegacyKeys = new Set();
+  let changed = false;
+
+  const kept=[];
+  for(const it of original){
+    if(it && it.productId && legacyProducts.has(it.productId) && !it.colorId){
+      removedLegacyKeys.add(String(it.productId)+'::');
+      changed=true;
+      continue;
+    }
+    kept.push(it);
+  }
+
+  const merged=[];
+  const byColor=new Map();
+  for(const it of kept){
+    if(!it || !it.productId || !it.colorId){ merged.push(it); continue; }
+    // رنگ‌های قدیمی ممکن است ID متفاوت داشته باشند؛ آن‌ها را با رنگ فعلی محصول
+    // یا مرجع ۲۰ رنگ مشترک canonical می‌کنیم تا مثلاً دو «سفید» هرگز دو ردیف نشوند.
+    const prod=products.find(p=>p.id===it.productId);
+    let canonical=null;
+    if(prod && Array.isArray(prod.colors)){
+      canonical=prod.colors.find(x=>x.id===it.colorId) ||
+        prod.colors.find(x=>getCommonColorByName(x.name||'')?.name===getCommonColorByName(it.colorName||'')?.name);
+      if(!canonical && it.colorName){
+        const common=getCommonColorByName(it.colorName);
+        if(common) canonical=prod.colors.find(x=>getCommonColorByName(x.name||'')?.id===common.id);
+      }
+    }
+    if(canonical){
+      it.colorId=canonical.id;
+      it.colorName=canonical.name;
+      it.colorHex=canonical.hex;
+    }else{
+      const common=getCommonColorByName(it.colorName||'');
+      if(common){
+        it.colorId=common.id;
+        it.colorName=common.name;
+        it.colorHex=common.hex;
+      }
+    }
+    const key=String(it.productId)+'::'+String(it.colorId);
+    const prev=byColor.get(key);
+    if(!prev){
+      byColor.set(key,it);
+      merged.push(it);
+      continue;
+    }
+    changed=true;
+    const prevSold=Math.max(0,Number(prev.soldQty||0));
+    const curSold=Math.max(0,Number(it.soldQty||0));
+    const prevWeight=prevSold || Math.max(0,Number(prev.deliveredQty||0));
+    const curWeight=curSold || Math.max(0,Number(it.deliveredQty||0));
+    const totalWeight=prevWeight+curWeight;
+    if(totalWeight>0){
+      prev.unitPrice=Math.round(((prev.unitPrice||0)*prevWeight+(it.unitPrice||0)*curWeight)/totalWeight);
+      prev.costPerUnit=((prev.costPerUnit||0)*prevWeight+(it.costPerUnit||0)*curWeight)/totalWeight;
+    }
+    prev.deliveredQty=Math.max(0,Number(prev.deliveredQty||0)+Number(it.deliveredQty||0));
+    prev.rechargedQty=Math.max(0,Number(prev.rechargedQty||0)+Number(it.rechargedQty||0));
+    prev.soldQty=Math.max(0,Number(prev.soldQty||0)+Number(it.soldQty||0));
+    prev.returnedQty=Math.max(0,Number(prev.returnedQty||0)+Number(it.returnedQty||0));
+    prev.targetQty=Math.max(0,Number(prev.targetQty||0)+Number(it.targetQty||0));
+    prev.colorName=it.colorName || prev.colorName;
+    prev.colorHex=it.colorHex || prev.colorHex;
+  }
+  c.items=merged;
+
+  if(removedLegacyKeys.size){
+    const cleanLogs=(c.saleLogs||[]).map(log=>{
+      const items=(log.items||[]).filter(x=>!removedLegacyKeys.has(String(x.productId)+'::'+String(x.colorId||'')));
+      return {...log,items};
+    }).filter(log=>(log.items||[]).length);
+    if(cleanLogs.length !== (c.saleLogs||[]).length || cleanLogs.some((x,i)=>x.items.length !== (c.saleLogs||[])[i].items.length)){
+      c.saleLogs=cleanLogs;
+    }
+    c.deliveries=(c.deliveries||[]).map(d=>({
+      ...d,
+      items:(d.items||[]).filter(x=>!removedLegacyKeys.has(String(x.productId)+'::'+String(x.colorId||'')))
+    })).filter(d=>(d.items||[]).length);
+  }
+  if(changed) c.__colorCleanupV21=true;
+  return changed;
+}
+
 // ————— Supabase —————
 async function loadConsignmentsFromSupabase(){
   if(!currentUser){ consignments = []; return; }
@@ -7356,6 +7452,12 @@ async function loadConsignmentsFromSupabase(){
     }
     consignTableMissing = false;
     consignments = (data||[]).map(row => ({ ...(row.data||{}), id: row.id, ownerId: row.owner_id }));
+    // پاک‌سازی یک‌باره‌ی داده‌های قدیمی و ادغام ردیف‌های تکراریِ یک‌رنگ.
+    for(const c of consignments){
+      if(normalizeConsignmentColorData(c)){
+        await syncConsignmentToSupabase(c);
+      }
+    }
   }catch(e){ console.error(e); consignments = []; }
 }
 
@@ -9005,9 +9107,8 @@ function renderConsignCard(c){
       const rowSearch = normalizeFaText((g.name||'')+' '+(meta.colorName||'')+' '+(it.productName||'')+' '+(it.colorName||''));
       return !productQuery || rowSearch.includes(productQuery);
     });
-    const legacy = variants.filter(({it,meta}) => !it.colorId && meta.prod && (meta.prod.colors||[]).length);
-    const displayVariants = variants.filter(({it,meta}) => !( !it.colorId && meta.prod && (meta.prod.colors||[]).length ));
-    return { ...g, groupSearch, variants, legacy, displayVariants };
+    const displayVariants = variants;
+    return { ...g, groupSearch, variants, displayVariants };
   }).filter(g => g.variants.length);
   const rows = visibleGroups.map(g => {
     const gRemain = g.variants.reduce((n,x)=>n+consignRemaining(x.it),0);
@@ -9031,7 +9132,6 @@ function renderConsignCard(c){
           <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
           <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
           <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
-          ${(!it.colorId && meta.prod && (meta.prod.colors||[]).length) ? `<button type="button" class="consign-item-edit" title="تعیین/ویرایش رنگ این واگذاری قدیمی" ${isAdmin ? `onclick="event.stopPropagation(); editLegacyConsignItemColor('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'} style="color:var(--orange);">🎨</button>` : ''}
           <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'}>✎</button>
         </div>`;
     }).join('');
@@ -9041,10 +9141,9 @@ function renderConsignCard(c){
           <button type="button" class="cname product-link consign-product-group-name" title="مشاهده در محصولات" onclick="event.stopPropagation(); openProductFromConsign('${g.items[0].it.productId}')">${escapeHtml(g.name)}</button>
           <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
             <span class="consign-product-group-count">${fa.format(g.displayVariants.length)} رنگ · نزد ${fa.format(gRemain)} · فروش ${fa.format(gSold)}</span>
-            ${g.legacy.length && isAdmin ? `<button type="button" class="consign-item-edit" title="تعیین رنگ واگذاری‌های قدیمی" onclick="event.stopPropagation(); editLegacyConsignItemColor('${c.id}','${consignItemKey(c,g.legacy[0].it)}')" style="color:var(--orange);font-size:12px;padding:3px 7px;border:1px solid var(--orange);border-radius:8px;">🎨 تعیین رنگ${g.legacy.length>1?' ('+fa.format(g.legacy.length)+')':''}</button>` : ''}
           </span>
         </div>
-        ${variantRows || (g.legacy.length ? `<div class="hint" style="margin:8px 2px;">واگذاری قدیمی این محصول برای نمایش در رنگ‌ها نیاز به تعیین رنگ دارد.</div>` : '')}
+        ${variantRows}
       </div>`;
   }).join('');
   const totalsRow = items.length > 1 ? `
