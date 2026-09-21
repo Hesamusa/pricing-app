@@ -358,6 +358,8 @@
   .color-chip-remove{width:22px; height:22px; border-radius:50%; border:none; background:transparent; color:var(--ink-soft); font-size:13px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;}
   .color-chip-remove:active{color:var(--red);}
   .color-add-row{display:flex; align-items:center; gap:8px; margin:0 0 10px;}
+  .common-color-label{display:inline-flex;align-items:center;gap:6px;min-width:92px;font-size:12px;font-weight:800;color:var(--ink-soft);white-space:nowrap;}
+  .common-color-label-swatch{display:inline-block;width:18px;height:18px;border-radius:50%;flex:0 0 18px;border:1px solid transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
   .color-pick-input{width:44px; height:44px; padding:2px; border:none; border-radius:12px; background:var(--bg); cursor:pointer; flex-shrink:0;}
   .color-name-input{flex:1; min-width:0; border:none; background:var(--bg); border-radius:12px; padding:0 12px; height:44px; font-size:14px; color:var(--ink); font-family:'Vazirmatn',sans-serif; direction:rtl; text-align:right;}
   .color-name-input:focus{outline:2px solid var(--orange); outline-offset:0;}
@@ -3286,7 +3288,12 @@ const COMMON_PRODUCT_COLORS = [
   {id:'color_silver',name:'نقره‌ای',hex:'#b0bec5'},
   {id:'color_gold',name:'طلایی',hex:'#d4a72c'},
   {id:'color_cream',name:'کرم',hex:'#f3e5c8'},
-  {id:'color_navy',name:'سرمه‌ای',hex:'#283593'}
+  {id:'color_navy',name:'سرمه‌ای',hex:'#283593'},
+  {id:'color_turquoise',name:'فیروزه‌ای',hex:'#00a6a6'},
+  {id:'color_sky',name:'آبی آسمانی',hex:'#64b5f6'},
+  {id:'color_olive',name:'زیتونی',hex:'#808000'},
+  {id:'color_burgundy',name:'زرشکی',hex:'#800020'},
+  {id:'color_lilac',name:'یاسی',hex:'#b39ddb'}
 ];
 function normalizeColorName(name){
   return String(name||'').trim().toLowerCase()
@@ -3307,7 +3314,12 @@ const COMMON_COLOR_ALIASES = {
   'طوسی':'طوسی','خاکستری':'طوسی','gray':'طوسی','grey':'طوسی',
   'نقره‌ای':'نقره‌ای','نقرهای':'نقره‌ای','silver':'نقره‌ای',
   'طلایی':'طلایی','طلائي':'طلایی','gold':'طلایی','کرم':'کرم','cream':'کرم',
-  'سرمه‌ای':'سرمه‌ای','سرمه ای':'سرمه‌ای','navy':'سرمه‌ای'
+  'سرمه‌ای':'سرمه‌ای','سرمه ای':'سرمه‌ای','navy':'سرمه‌ای',
+  'فیروزه‌ای':'فیروزه‌ای','فیروزه ای':'فیروزه‌ای','turquoise':'فیروزه‌ای',
+  'آبی آسمانی':'آبی آسمانی','ابی اسمانی':'آبی آسمانی','sky blue':'آبی آسمانی',
+  'زیتونی':'زیتونی','زیتونی':'زیتونی','olive':'زیتونی',
+  'زرشکی':'زرشکی','عنابی':'زرشکی','burgundy':'زرشکی',
+  'یاسی':'یاسی','یاسی روشن':'یاسی','lilac':'یاسی','lavender':'یاسی'
 };
 function getCommonColorByName(name){
   const key=normalizeColorName(name);
@@ -3325,7 +3337,11 @@ function syncCommonColorSwatch(productId){
   const name=document.getElementById('commonColorLabel_'+productId);
   const c=sel ? getCommonColorById(sel.value) : null;
   if(sw){ sw.style.background=c?c.hex:'transparent'; sw.style.borderColor=c&&c.id==='color_white'?'var(--line)':'transparent'; }
-  if(name) name.textContent=c?c.name:'رنگی انتخاب نشده';
+  if(name){
+    name.innerHTML=c
+      ? `<span class="common-color-label-swatch" style="background:${escapeHtml(c.hex)};${c.id==='color_white'?'border-color:var(--line);':''}"></span><span>${escapeHtml(c.name)}</span>`
+      : 'رنگی انتخاب نشده';
+  }
 }
 function newColorId(){ return 'col_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function migrateAllColorsToCommonCatalog(){
