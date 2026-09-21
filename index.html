@@ -8571,26 +8571,59 @@ body.storefront-demo-mode>header,body.storefront-demo-mode>main,body.storefront-
   document.body.classList.add('storefront-demo-mode');
   const root=document.createElement('div'); root.id='storefrontDemo'; document.body.appendChild(root);
   let sfProducts=[]; let cart=[]; let search=''; let category='all'; let current=null; let selectedColor=null; let qty=1;
+  let sfRemoteLoaded=false; let sfRemoteLoading=false; let sfLastSignature='';
   const money=n=>new Intl.NumberFormat('fa-IR').format(Math.max(0,Math.round(Number(n)||0)))+' تومان';
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   function loadProducts(){
-    // اول از state خود پنل استفاده کن؛ این مهم است چون پنل ممکن است
-    // محصولات را از GitHub/Supabase تازه دریافت کرده باشد و هنوز localStorage
-    // مرورگر فروشگاه به‌روز نشده باشد.
+    // 1) اگر نسخه اصلی همین صفحه داده‌های GitHub را قبلاً گرفته، همان state را بخوان.
+    // توجه: products در اسکریپت اصلی با let تعریف شده و property روی window نیست.
     try{
-      if(Array.isArray(window.products) && window.products.length){
-        sfProducts=window.products;
+      if(typeof products !== 'undefined' && Array.isArray(products) && products.length){
+        sfProducts=products;
         return;
       }
     }catch(e){}
+    // 2) fallback برای اجرای محلی/آفلاین.
     try{
-      sfProducts=JSON.parse(localStorage.getItem('pricing_app_products')||'[]');
-    }catch(e){sfProducts=[]}
+      const local=JSON.parse(localStorage.getItem('pricing_app_products')||'[]');
+      if(Array.isArray(local) && local.length) sfProducts=local;
+    }catch(e){}
     if(!Array.isArray(sfProducts)) sfProducts=[];
+  }
+  async function loadRemoteCatalog(){
+    if(sfRemoteLoaded || sfRemoteLoading) return;
+    sfRemoteLoading=true;
+    try{
+      // در GitHub Pages، data.json کنار index.html قرار دارد؛ بنابراین مسیر نسبی
+      // هم برای project site و هم بعداً برای دامنه اختصاصی درست می‌ماند.
+      const res=await fetch('./data.json?storefront='+Date.now(),{cache:'no-store'});
+      if(!res.ok) throw new Error('data.json '+res.status);
+      const remote=await res.json();
+      if(Array.isArray(remote.products)) sfProducts=remote.products;
+      // قیمت‌ها از تنظیمات مرکزی محاسبه می‌شوند؛ همان تنظیمات data.json را موقتاً
+      // در state همین صفحه قرار می‌دهیم تا calc() دقیقاً همان قیمت اپ را بدهد.
+      if(remote.settings && typeof remote.settings==='object'){
+        try{ settings={...DEFAULT_SETTINGS,...remote.settings}; }catch(e){}
+      }
+      sfRemoteLoaded=true;
+      render();
+    }catch(e){
+      console.warn('storefront: data.json unavailable; using local data',e);
+    }finally{sfRemoteLoading=false;}
   }
   function stock(p,cid){ if(cid && p.colors?.length) return Number(p.colorStock?.[cid]||0); return Number(p.stock||0); }
   function price(p){ try{return typeof calc==='function'?calc(p).priceR:0}catch(e){return 0} }
-  function img(p){return (p.images&&p.images[0])||p.imageUrl||''}
+  function img(p){
+    const first=(p.images&&p.images[0]);
+    if(first && typeof first==='object'){
+      if(first.url) return first.url;
+      if(first.path) return './'+String(first.path).replace(/^\/+/, '');
+    }
+    if(typeof first==='string' && first) return first;
+    if(p.imageUrl) return p.imageUrl;
+    if(p.imagePath) return './'+String(p.imagePath).replace(/^\/+/, '');
+    return '';
+  }
   function cats(){return [...new Set(sfProducts.map(p=>p.category).filter(Boolean))]}
   function render(){
     loadProducts();
@@ -8599,8 +8632,7 @@ body.storefront-demo-mode>header,body.storefront-demo-mode>main,body.storefront-
     document.getElementById('sfSearch').oninput=e=>{search=e.target.value;render()};
     renderOrders();
     // اگر پنل چند لحظه بعد محصولات را از منبع اصلی دریافت کرد، فروشگاه هم تازه شود.
-    let sfLastCount=-1;
-    setInterval(()=>{ try{ loadProducts(); if(sfProducts.length!==sfLastCount){ sfLastCount=sfProducts.length; render(); } }catch(e){} }, 1200);
+    setInterval(()=>{ try{ loadProducts(); const sig=sfProducts.map(p=>p.id+':'+(p.stock||0)+':'+((p.images&&p.images.length)||0)).join('|'); if(sig!==sfLastSignature){ sfLastSignature=sig; render(); } }catch(e){} }, 1200);
   }
   function card(p){const s=p.colors?.length?p.colors.reduce((a,c)=>a+stock(p,c.id),0):stock(p); const im=img(p); return `<article class="sf-card"><div class="sf-img">${im?`<img src="${esc(im)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`:''}<span class="sf-placeholder" ${im?'style="display:none"':''}>🛍️</span></div><div class="sf-card-body"><div class="sf-name">${esc(p.name||'بدون نام')}</div><div class="sf-desc">${esc(p.catalogDescription||'محصول با کیفیت برای سفارش آنلاین')}</div><div class="sf-price">${money(price(p))} <small>قیمت مصرف‌کننده</small></div><div class="sf-stock">${s>0?'موجود':'ناموجود'} · ${new Intl.NumberFormat('fa-IR').format(s)} عدد</div><button onclick="window.sfOpenProduct('${esc(p.id)}')" ${s<=0?'disabled':''}>مشاهده و خرید</button></div></article>`}
   function openProduct(id){current=sfProducts.find(p=>p.id===id);selectedColor=current?.colors?.[0]?.id||null;qty=1; const p=current;if(!p)return; const s=stock(p,selectedColor); modal(`<div class="sf-dialog-head"><h2>${esc(p.name)}</h2><button class="sf-close" onclick="window.sfClose()">×</button></div><div class="sf-detail"><div class="sf-detail-img">${img(p)?`<img src="${esc(img(p))}">`:'<div class="sf-placeholder">🛍️</div>'}</div><div><p>${esc(p.catalogDescription||'توضیحات محصول در حال تکمیل است.')}</p><div><strong>قیمت: ${money(price(p))}</strong></div>${p.colors?.length?`<div style="margin-top:14px;font-weight:800">انتخاب رنگ</div><div class="sf-variants">${p.colors.map(c=>`<button class="sf-variant ${selectedColor===c.id?'active':''}" onclick="window.sfColor('${esc(c.id)}')">${esc(c.name)}<small>${stock(p,c.id)} موجود</small></button>`).join('')}</div>`:''}<div class="sf-qty"><button onclick="window.sfQty(-1)">−</button><input id="sfQty" value="${qty}" readonly><button onclick="window.sfQty(1)">+</button><span>موجودی: ${s}</span></div><button class="sf-primary" onclick="window.sfAdd()" ${s<=0?'disabled':''}>افزودن به سبد</button></div></div>`)}
@@ -8612,6 +8644,9 @@ body.storefront-demo-mode>header,body.storefront-demo-mode>main,body.storefront-
   function renderOrders(){const el=document.getElementById('sfOrders');if(!el)return;const orders=JSON.parse(localStorage.getItem('storefront_demo_orders')||'[]');el.innerHTML=orders.length?'<h4>سفارش‌های آزمایشی همین مرورگر</h4>'+orders.map(o=>`<div class="sf-order-row"><strong>${esc(o.id)}</strong> · ${esc(o.customer.name)} · ${money(o.total)}<br><small>${new Date(o.createdAt).toLocaleString('fa-IR')} · ${esc(o.status)}</small></div>`).join(''):'<p style="color:#737a84">هنوز سفارشی ثبت نشده.</p>'}
   window.sfOpenProduct=openProduct;window.sfOpenCart=openCart;window.sfCheckout=checkout;window.sfPay=pay;window.sfClose=close;window.sfRender=render;window.sfRemove=i=>{cart.splice(i,1);openCart()};window.sfColor=id=>{selectedColor=id;openProduct(current.id)};window.sfQty=d=>{const max=stock(current,selectedColor);qty=Math.max(1,Math.min(max,qty+d));const q=document.getElementById('sfQty');if(q)q.value=qty};window.sfAdd=()=>{const p=current;const color=p.colors?.find(c=>c.id===selectedColor);const available=stock(p,selectedColor);if(qty>available)return;const k=p.id+'|'+(selectedColor||'');const old=cart.find(x=>x.key===k);if(old)old.qty=Math.min(available,old.qty+qty);else cart.push({key:k,productId:p.id,colorId:selectedColor||null,colorName:color?.name||'',name:p.name,image:img(p),unitPrice:price(p),qty});close();openCart()};window.sfCat=c=>{category=c;render()};window.sfReset=()=>{if(confirm('همه سفارش‌های آزمایشی همین مرورگر پاک شود؟')){localStorage.removeItem('storefront_demo_orders');render()}};
   render();
+  // مهم: فروشگاه مستقل از localStorage، کاتالوگ واقعی همین ریپو را هم می‌خواند.
+  loadRemoteCatalog();
+  setTimeout(loadRemoteCatalog, 1500);
 })();
 </script>
 <script>
