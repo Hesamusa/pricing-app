@@ -1904,21 +1904,22 @@ async function saveProductsToSupabaseBridge(){
 <style>#syncStatusV11{position:fixed;bottom:10px;left:10px;z-index:99999;display:none;max-width:min(92vw,520px);padding:10px 12px;border:1px solid rgba(255,90,90,.45);border-radius:12px;background:#1d1414;color:#ffd9d9;font:12px/1.6 sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.25)}</style>
 <script>window.APP_BUILD='V12';</script>
 
-<style id="product-focus-mode-v27">
-/* Desktop product editor: open one product as a full-workspace focus view. */
+<style id="product-focus-mode-v29">
+/* Desktop product editor: full-workspace shell + deliberately constrained, reflowed form.
+   The screen becomes a workspace; controls do NOT stretch to the viewport edges. */
 @media (min-width:900px){
   body.product-focus-mode{overflow:hidden;}
   body.product-focus-mode #tab-products #products-list{display:block !important;position:relative;min-height:0;}
   body.product-focus-mode #tab-products #products-list > .product:not(.open){display:none !important;}
   body.product-focus-mode #tab-products #products-list > .product.open{
-    position:fixed !important; inset:12px !important; width:auto !important;
-    height:calc(100vh - 24px) !important; max-height:calc(100vh - 24px) !important;
+    position:fixed !important; inset:14px !important; width:auto !important;
+    height:calc(100vh - 28px) !important; max-height:calc(100vh - 28px) !important;
     margin:0 !important; z-index:5000 !important; display:flex !important;
     flex-direction:column !important; overflow:hidden !important; border-radius:18px !important;
     box-shadow:0 24px 80px rgba(0,0,0,.28) !important;
   }
   body.product-focus-mode #tab-products #products-list > .product.open .product-head{
-    flex:0 0 auto; min-height:92px; cursor:pointer; position:sticky; top:0; z-index:2;
+    flex:0 0 auto; min-height:82px; cursor:pointer; position:sticky; top:0; z-index:2;
   }
   body.product-focus-mode #tab-products #products-list > .product.open .product-body{
     display:block !important; flex:1 1 auto !important; min-height:0 !important;
@@ -1926,10 +1927,65 @@ async function saveProductsToSupabaseBridge(){
     overflow-x:hidden !important; overscroll-behavior:contain; -webkit-overflow-scrolling:touch;
   }
   body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
-    min-height:100%; padding:24px 28px 34px;
+    width:min(1500px, calc(100% - 48px)); max-width:1500px; margin:0 auto;
+    min-height:0; padding:22px 0 30px;
+    display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:16px 18px;
+    align-items:start;
   }
-  body.product-focus-mode #tab-products #products-list > .product.open .product-head-top{min-height:54px;}
+  /* Base information: compact fields rather than full-width stretched inputs. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1){grid-column:1 / span 5;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){grid-column:6 / span 3;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field{grid-column:9 / span 4; grid-row:1 / span 2;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){grid-column:1 / span 8;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field{grid-column:9 / span 4; grid-row:3 / span 2;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{grid-column:1 / -1;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{grid-column:1 / span 6;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards{grid-column:7 / -1; align-self:start; margin-top:0;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{grid-column:auto;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn{grid-column:1 / span 8; width:100%;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{grid-column:9 / -1; width:100%;}
+
+  /* Photo area: stable visual size, never viewport-sized. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{display:flex; gap:14px; align-items:flex-start;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{width:190px; min-width:190px; height:190px; max-height:190px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{width:100%; height:190px; object-fit:contain; border-radius:14px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{flex:1; min-width:130px;}
+
+  /* Inputs have readable, intentional heights and local widths. */
+  body.product-focus-mode #tab-products #products-list > .product.open .field input,
+  body.product-focus-mode #tab-products #products-list > .product.open .field select,
+  body.product-focus-mode #tab-products #products-list > .product.open .field textarea,
+  body.product-focus-mode #tab-products #products-list > .product.open .group-select{min-height:44px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .desc-textarea{min-height:104px; resize:vertical;}
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px 16px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field:nth-child(3),
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field:nth-child(4),
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field:nth-child(5){grid-column:span 2 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .dim-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .input-row{width:max-content;max-width:100%;}
+  body.product-focus-mode #tab-products #products-list > .product.open .input-row .num-input{width:64px;min-width:64px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card{min-height:120px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{min-width:0;}
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head-top{min-height:48px;}
   body.product-focus-mode #tab-products #products-list > .product.open .chev{transform:rotate(180deg);}
+}
+@media (min-width:900px) and (max-width:1200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{width:min(1100px,calc(100% - 32px));grid-template-columns:repeat(6,minmax(0,1fr));}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1){grid-column:1 / span 3;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){grid-column:4 / span 3;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field{grid-column:1 / -1;grid-row:auto;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field{grid-column:1 / -1;grid-row:auto;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{grid-column:1 / -1;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards{grid-column:1 / -1;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{width:180px;min-width:180px;height:180px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{height:180px;}
 }
 </style>
 </head>
@@ -10175,140 +10231,4 @@ setTimeout(()=>{
     width:100%;
   }
 }
-
-/* =========================================================
-   DESKTOP POLISH v28 — proportionate controls, media and forms
-   ========================================================= */
-@media (min-width:900px){
-  /* Keep the full workspace, but give content a comfortable reading gutter. */
-  main{padding:0 24px 44px!important;}
-  .tab-panel{padding-bottom:28px;}
-  .field{padding:12px 0;}
-  .field label,.photo-field>label,.stock-field>label{display:block;margin-bottom:8px;font-size:13px;font-weight:800;}
-
-  /* Inputs should grow with their column, not with the entire monitor. */
-  .field input,.field select,.field textarea,
-  .settings-section input,.settings-section select,.settings-section textarea,
-  .form-section input,.form-section select,.form-section textarea{
-    width:100%; max-width:100%; box-sizing:border-box;
-  }
-  input[type=text],input[type=number],input[type=email],input[type=password],textarea,select{
-    min-height:48px;
-  }
-  textarea{min-height:112px;resize:vertical;line-height:1.8;}
-
-  /* Wide forms use intentional columns instead of stretched single fields. */
-  #tab-sales #sale-form-wrap .field,
-  #tab-orders #order-form-wrap .field{min-width:0;}
-  #tab-settings .settings-section-body .grid-2,
-  #tab-sales .grid-2,#tab-orders .grid-2{gap:14px;}
-
-  /* Product editor: balanced two-column composition inside the full-screen card. */
-  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
-    padding:26px 34px 40px;
-    max-width:1540px;
-    margin:0 auto;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
-    min-height:104px;
-    padding-inline:18px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .head-thumb{
-    width:104px;height:104px;margin:0 6px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1),
-  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){
-    display:inline-block;vertical-align:top;width:calc(50% - 9px);box-sizing:border-box;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){margin-inline-start:14px;}
-
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
-    display:grid;grid-template-columns:minmax(300px,1fr) minmax(360px,1.25fr);gap:22px;
-    align-items:center;padding:18px 20px;margin:8px 0 16px;
-    background:var(--saas-surface-2);border:1px solid var(--line);border-radius:16px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-field>label{
-    grid-column:1/-1;margin:0 0 -4px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{gap:22px;min-width:0;}
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{width:190px;}
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{
-    width:180px;height:180px;border-radius:16px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{min-width:0;gap:10px;}
-  body.product-focus-mode #tab-products #products-list > .product.open .photo-btn{min-height:46px;}
-
-  body.product-focus-mode #tab-products #products-list > .product.open .desc-textarea{min-height:150px;}
-  body.product-focus-mode #tab-products #products-list > .product.open .stock-field{
-    margin:8px 0 18px;padding:18px 20px;
-    background:var(--saas-surface-2);border:1px solid var(--line);border-radius:16px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
-    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{
-    min-height:52px;padding:8px 10px;border-radius:12px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .color-stock-input{
-    width:64px;min-width:64px;height:38px;font-size:15px;text-align:center;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .color-add-row{
-    margin-top:12px;gap:10px;align-items:center;
-  }
-
-  body.product-focus-mode #tab-products #products-list > .product.open > .product-body .grid-2{
-    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;
-    padding:4px 0 8px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .dim-grid{
-    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .input-row{
-    display:flex;align-items:center;gap:8px;flex-wrap:nowrap;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .input-row .num-input{
-    width:90px;min-width:90px;text-align:center;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-toggle,
-  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-wrap,
-  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
-    max-width:100%;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
-    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .result-card{
-    min-height:132px;padding:18px 20px;border-radius:16px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .result-card .value{font-size:26px;}
-  body.product-focus-mode #tab-products #products-list > .product.open .margin-input{
-    display:flex;align-items:center;gap:8px;margin-top:12px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .margin-input .num-input{
-    width:100px;min-width:100px;text-align:center;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open [id^="saveSendBtn_"]{max-width:none;}
-
-  /* Long desktop lists: readable card proportions instead of tiny columns. */
-  #tab-sales #sales-list,#tab-orders #orders-list,#tab-customers #customers-list,#tab-consign #consign-list{
-    gap:16px;
-  }
-  #tab-sales .sale-item,#tab-orders .order-card,#tab-customers .customer-card,#tab-consign .consign-card{
-    border-radius:16px;
-  }
-
-  /* Settings: labels and controls stay visually paired. */
-  #tab-settings .settings-section-body{padding:4px 18px 18px;}
-  #tab-settings .field{padding:12px 0;}
-}
-
-@media (min-width:1200px){
-  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
-    padding-inline:42px;
-  }
-  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
-    grid-template-columns:repeat(5,minmax(0,1fr));
-  }
-}
-
 </style>
