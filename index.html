@@ -5041,8 +5041,8 @@ async function syncProductToTelegram(id){
   const existingIds = getTelegramMessageIds(prod);
 
   // اگر پست قبلی قابل ویرایش باشد، همان پست را به‌روز می‌کنیم.
-  // اگر به هر دلیل قابل ویرایش نباشد (مثلاً پست را ربات دیگری ساخته باشد)،
-  // حتماً یک پست جدید می‌فرستیم تا تغییر قیمت در کانال واقعاً اعمال شود.
+  // اگر پست قبلی قابل ویرایش نباشد، پست قبلی را حذف نمی‌کنیم و پست جدید هم
+  // خودکار نمی‌سازیم؛ تا هیچ‌وقت پست محصول بی‌دلیل جابه‌جا/حذف نشود.
   let edited = false;
   let editError = '';
 
@@ -5053,13 +5053,7 @@ async function syncProductToTelegram(id){
       else editError = data.description || 'ویرایش پیام قبلی ناموفق بود';
     }
     if(!edited){
-      const data = await telegramCall('sendMessage', { chat_id: channel, text: caption, parse_mode:'HTML' });
-      if(!data.ok) throw new Error(`ارسال پست جدید به تلگرام ناموفق بود: ${data.description || 'خطای نامشخص'}`);
-      setTelegramMessageIds(prod, [data.result.message_id]);
-      if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
-      await saveTelegramIdsToSupabase(prod);
-      try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
-      return {ok:true, mode:'new', warning:editError};
+      throw new Error(`ویرایش پست قبلی تلگرام ناموفق بود و برای جلوگیری از حذف پست قبلی، پست جدید ساخته نشد: ${editError || 'خطای نامشخص'}`);
     }
   } else if(images.length === 1){
     const photoUrl = images[0].url;
@@ -5073,13 +5067,7 @@ async function syncProductToTelegram(id){
       else editError = data.description || 'ویرایش پست قبلی ناموفق بود';
     }
     if(!edited){
-      const data = await telegramCall('sendPhoto', { chat_id: channel, photo:photoUrl, caption, parse_mode:'HTML' });
-      if(!data.ok) throw new Error(`ارسال پست جدید به تلگرام ناموفق بود: ${data.description || 'خطای نامشخص'}`);
-      setTelegramMessageIds(prod, [data.result.message_id]);
-      if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
-      await saveTelegramIdsToSupabase(prod);
-      try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
-      return {ok:true, mode:'new', warning:editError};
+      throw new Error(`ویرایش پست قبلی تلگرام ناموفق بود و برای جلوگیری از حذف پست قبلی، پست جدید ساخته نشد: ${editError || 'خطای نامشخص'}`);
     }
   } else {
     if(existingIds.length === images.length){
@@ -5098,16 +5086,7 @@ async function syncProductToTelegram(id){
       if(allOk) edited = true;
     }
     if(!edited){
-      const media = images.map((img,i)=>i===0
-        ? {type:'photo',media:img.url,caption,parse_mode:'HTML'}
-        : {type:'photo',media:img.url});
-      const data = await telegramCall('sendMediaGroup', {chat_id:channel,media});
-      if(!data.ok) throw new Error(`ارسال آلبوم جدید به تلگرام ناموفق بود: ${data.description || 'خطای نامشخص'}`);
-      setTelegramMessageIds(prod, data.result.map(m=>m.message_id));
-      if(existingIds.length) await deleteTelegramMessages(channel, existingIds);
-      await saveTelegramIdsToSupabase(prod);
-      try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
-      return {ok:true, mode:'new', warning:editError};
+      throw new Error(`ویرایش پست قبلی تلگرام ناموفق بود و برای جلوگیری از حذف پست قبلی، آلبوم جدید ساخته نشد: ${editError || 'خطای نامشخص'}`);
     }
   }
 
@@ -5123,6 +5102,8 @@ async function syncProductToTelegram(id){
 async function saveAndSendProduct(id){
   if(!isAdmin) return;
   clearTimeout(saveTimer);
+  clearTimeout(telegramSyncTimers[id]);
+  delete telegramSyncTimers[id];
   const btn = document.getElementById('saveSendBtn_' + id);
   if(btn) btn.disabled = true;
   showToast('در حال ذخیره در Supabase و ارسال به کانال تلگرام…', 'info', 3000);
