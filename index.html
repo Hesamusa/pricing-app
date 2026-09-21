@@ -1387,7 +1387,7 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   #tab-settings .settings-section{margin-bottom:0;}
 
   /* Modals remain centered relative to the full viewport, not the sidebar. */
-  .consign-modal,.modal,.overlay,.dialog,.confirm-modal{max-width:min(900px,calc(100vw - 80px));}
+  .modal,.overlay,.dialog,.confirm-modal{max-width:min(900px,calc(100vw - 80px));}
 }
 
 @media (min-width: 1200px){
@@ -1404,6 +1404,34 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
    Mobile remains unchanged; desktop sections use the available canvas.
    ========================================================= */
 @media (min-width:900px){
+  /* Consignment action modals: use the same desktop canvas as the app.
+     Mobile keeps the compact bottom-sheet layout above. */
+  #consign-modal, #new-store-modal{
+    align-items:center;
+    justify-content:center;
+    padding:24px 30px;
+  }
+  #consign-modal .consign-modal-box,
+  #new-store-modal .consign-modal-box{
+    width:min(1320px, calc(100vw - 300px));
+    max-width:none;
+    max-height:88vh;
+    border-radius:20px;
+    padding:22px 24px 18px;
+  }
+  #consign-modal .consign-modal-list{
+    max-height:64vh;
+  }
+  #new-store-modal .form-modal-body{
+    max-height:68vh;
+  }
+  #new-store-modal #consign-form-wrap{
+    width:100%;
+  }
+  #new-store-modal #consign-form-wrap .grid-2{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
   /* Shared surfaces */
   .section-title{font-size:16px;}
   .card{border-radius:16px;}
