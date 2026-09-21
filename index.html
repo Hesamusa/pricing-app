@@ -1623,11 +1623,13 @@ html:not([data-theme="dark"]) .bottom-nav{box-shadow:0 -8px 28px rgba(16,24,40,.
 
 <script>
 /* ===== Supabase Product Source — safe migration bridge =====
+   V13: wait for initial Supabase product load before saving; never fail merely due to timing.
    Supabase is the preferred product source when the new product tables exist.
    localStorage/GitHub remains a fallback so this build is reversible.
 */
 let SUPABASE_PRODUCTS_ENABLED = true;
 let supabaseProductsLoaded = false;
+let supabaseProductsLoadPromise = null;
 // Snapshot of the last server state seen by this browser.
 // It lets us send ONLY products changed on this device, preventing a stale
 // mobile/desktop copy from overwriting unrelated newer server data.
@@ -1731,6 +1733,19 @@ async function loadProductsFromSupabaseBridge(){
   }
 }
 
+async function ensureSupabaseProductsLoadedForSave(){
+  if(supabaseProductsLoaded) return true;
+  if(supabaseProductsLoadPromise) return await supabaseProductsLoadPromise;
+  supabaseProductsLoadPromise = (async()=>{
+    try{
+      return await loadProductsFromSupabaseBridge();
+    }finally{
+      supabaseProductsLoadPromise = null;
+    }
+  })();
+  return await supabaseProductsLoadPromise;
+}
+
 async function saveProductsToSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb || !Array.isArray(products)) return false;
   let stage = 'شروع';
@@ -1739,10 +1754,14 @@ async function saveProductsToSupabaseBridge(){
     if(sessionError) throw new Error('احراز هویت Supabase: ' + sessionError.message);
     if(!session || !session.user) throw new Error('کاربر وارد Supabase نشده است؛ نشست کاربر پیدا نشد.');
 
-    // Never use a stale local copy as a full-database overwrite.
-    // The snapshot was created by the last successful Supabase read.
+    // A save may fire before the asynchronous initial Supabase read finishes.
+    // Wait for that read instead of failing the save. If the read is unavailable,
+    // keep the local state untouched and return a useful error.
     if(!supabaseProductsLoaded){
-      throw new Error('هنوز وضعیت محصولات از Supabase دریافت نشده است؛ چند لحظه بعد دوباره ذخیره کن.');
+      const loaded = await ensureSupabaseProductsLoadedForSave();
+      if(!loaded || !supabaseProductsLoaded){
+        throw new Error('وضعیت محصولات از Supabase دریافت نشد؛ اتصال یا نشست کاربر را بررسی کن.');
+      }
     }
 
     const currentById = {};
