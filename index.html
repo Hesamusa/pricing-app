@@ -2145,7 +2145,7 @@ async function saveProductsToSupabaseBridge(){
         </div>
         <div class="field">
           <label>آدرس جایگزین API تلگرام (اختیاری)</label>
-          <input type="text" class="gh-field" id="s_tgApiBase" placeholder="خالی = api.telegram.org (پیش‌فرض)" style="direction:ltr; text-align:left;">
+          <input type="text" class="gh-field" id="s_tgApiBase" placeholder="خالی = relay اختصاصی تنظیم‌شده در برنامه (پیش‌فرض)" style="direction:ltr; text-align:left;">
           <div class="hint" style="line-height:1.8;">چون تلگرام توی ایران فیلتره، همگام‌سازی از داخل همین صفحه بدون وی‌پی‌ان معمولاً کار نمی‌کنه — این محدودیت شبکه‌ست، نه چیزی که با کد این اپ حل بشه. راه‌حل: یک پروکسی/relay کوچیک برای Bot API تلگرام (مثلاً یک Cloudflare Worker رایگان) بساز که در دسترس باشه، و آدرسش رو همینجا بذار؛ اپ به‌جای زدن مستقیم به api.telegram.org، از همون آدرس عبور می‌کنه.</div>
         </div>
         <div class="hint" id="telegram-sync-status" style="margin:6px 0 12px; font-weight:600;"></div>
@@ -5002,12 +5002,16 @@ function telegramConfigured(){
     settings.telegramBotToken && settings.telegramBotToken.trim() &&
     settings.telegramChannelId && settings.telegramChannelId.trim());
 }
+const DEFAULT_TELEGRAM_RELAY = 'https://gemini-proxy.hesamoddin-usa.workers.dev';
 function telegramApi(method){
   // اگه یه آدرس پروکسی/relay برای بات API تلگرام تنظیم شده باشه (برای دور زدن فیلترینگ)، از همون استفاده می‌کنیم؛
   // وگرنه مستقیم به api.telegram.org می‌زنیم.
-  const base = (settings.telegramApiBase && settings.telegramApiBase.trim())
+  const configuredBase = (settings.telegramApiBase && settings.telegramApiBase.trim())
     ? settings.telegramApiBase.trim().replace(/\/+$/, '')
-    : 'https://api.telegram.org';
+    : '';
+  // برای اجرای فایل محلی/بدون VPN، اگر کاربر relay اختصاصی تعریف نکرده باشد
+  // از Worker اختصاصی او عبور می‌کنیم تا Bot API از مرورگر مستقیماً صدا زده نشود.
+  const base = configuredBase || DEFAULT_TELEGRAM_RELAY;
   return `${base}/bot${settings.telegramBotToken.trim()}/${method}`;
 }
 // خط ابعاد محصول برای نمایش توی پست؛ اگه هیچ‌کدوم از سه عدد پر نباشه رشته‌ی خالی برمی‌گردونه
@@ -5082,7 +5086,21 @@ async function telegramCall(method, body){
     });
     data = await res.json().catch(()=>({}));
   }catch(e){
-    throw new Error('اتصال مستقیم مرورگر به Telegram Bot API برقرار نشد. اگر اپ را به‌صورت فایل محلی/بدون VPN باز کرده‌ای، باید Telegram API را از طریق یک relay/proxy عبور دهیم. جزئیات: ' + e.message);
+    // اگر relay سفارشی یا مسیر فعلی خطای شبکه/CORS داد، یک بار از relay پیش‌فرض تست می‌کنیم.
+    const fallbackBase = DEFAULT_TELEGRAM_RELAY;
+    const currentBase = ((settings.telegramApiBase || '').trim().replace(/\/+$/, '')) || DEFAULT_TELEGRAM_RELAY;
+    if(currentBase !== fallbackBase){
+      try{
+        const res2 = await fetch(`${fallbackBase}/bot${settings.telegramBotToken.trim()}/${method}`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+        });
+        data = await res2.json().catch(()=>({}));
+      }catch(e2){
+        throw new Error('اتصال به Telegram از طریق relay نیز برقرار نشد. جزئیات: ' + e2.message);
+      }
+    }else{
+      throw new Error('اتصال به Telegram از طریق relay برقرار نشد. جزئیات: ' + e.message);
+    }
   }
   return data;
 }
@@ -8943,6 +8961,7 @@ setInterval(() => {
   if(document.visibilityState === 'visible') refreshProductsFromSupabaseIfSafe(false);
 }, 5000);
 
+<!-- V15: Telegram relay default/fallback fix -->
 </body>
 </html>
 
