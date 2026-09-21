@@ -3463,6 +3463,12 @@ function getLiveConsignItemMeta(it){
     linked: !!prod && (!hasColor || !!color)
   };
 }
+function consignVariantLabel(it){
+  if(it && it.colorName) return it.colorName;
+  const prod = it ? products.find(p=>p.id===it.productId) : null;
+  return prod && (prod.colors||[]).length ? 'رنگ تعیین نشده' : '';
+}
+
 
 function openProductFromConsign(productId){
   if(!productId) return;
@@ -7914,7 +7920,7 @@ async function recordConsignSale(id){
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
     key: ciKey(it.productId, it.colorId),
-    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
+    group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
     value: 0
@@ -7972,7 +7978,7 @@ async function restockConsign(id){
     return {
       key: ciKey(it.productId, it.colorId),
       group: it.productName,
-      variant: it.colorName || 'بدون رنگ',
+      variant: consignVariantLabel(it),
       colorHex: it.colorHex || '',
       name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
       hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | انبار: ' + fa.format(prod ? productAvailableStock(prod, it.colorId) : 0) + (suggested>0 ? ' | پیشنهاد شارژ: ' + fa.format(suggested) : ''),
@@ -8082,7 +8088,7 @@ async function returnConsign(id){
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
     key: ciKey(it.productId, it.colorId),
     group: it.productName,
-    variant: it.colorName || 'بدون رنگ',
+    variant: consignVariantLabel(it),
     colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
@@ -8128,7 +8134,7 @@ async function editConsignTargets(id){
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
-    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
+    group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'فعلی: ' + fa.format(it.targetQty||0),
     value: it.targetQty||0
@@ -8156,7 +8162,7 @@ async function editConsignPrices(id){
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
-    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
+    group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'تومان',
     value: it.unitPrice||0
@@ -8195,7 +8201,7 @@ async function addProductsToConsign(id){
     }else{
       const key = ciKey(p.id, null);
       if(existingKeys.has(key)) return;
-      rows.push({ key, group:p.name, variant:'بدون رنگ', name: p.name, hint: 'انبار: ' + fa.format(p.stock||0), value: 0 });
+      rows.push({ key, group:p.name, variant:'', name: p.name, hint: 'انبار: ' + fa.format(p.stock||0), value: 0 });
     }
   });
   if(!rows.length){ await customAlert('همه‌ی محصول‌ها (و رنگ‌هاشون) از قبل توی لیست این فروشگاه هستن. برای اضافه‌کردن تعداد، از «شارژ مجدد» استفاده کن.'); return; }
@@ -8355,7 +8361,7 @@ async function editConsignSaleLog(consignId, logId){
   if(!log || !(log.items||[]).length) return;
   const rows = log.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
-    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
+    group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'فروش‌رفته', value: it.qty }]
   }));
@@ -8396,7 +8402,7 @@ async function editConsignDelivery(consignId, deliveryId){
   if(delivery.note === 'واگذاری اولیه'){ await customAlert('واگذاری اولیه از اینجا ویرایش نمی‌شه. برای اصلاح اون، خود واگذاری رو حذف و دوباره درست ثبت کن.'); return; }
   const rows = delivery.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
-    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
+    group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'شارژ', value: it.qty }]
   }));
@@ -8444,7 +8450,7 @@ async function editConsignItemTotals(id){
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
-    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
+    group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه فعلی: ' + fa.format(consignRemaining(it)),
     fields: [
@@ -8767,6 +8773,55 @@ async function migrateLegacyConsignItemColors(consignId, itemKey){
   }
 }
 
+async function editLegacyConsignItemColor(consignId, itemKey){
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه رنگ قلم امانی قدیمی رو ویرایش کنه.'); return; }
+  const c = consignments.find(x=>x.id===consignId);
+  if(!c) return;
+  const it = (c.items||[]).find(x=>ciKey(x.productId,x.colorId)===itemKey);
+  if(!it) return;
+  const prod = products.find(p=>p.id===it.productId);
+  const colors = (prod && prod.colors) || [];
+  if(!colors.length){ await customAlert('برای این محصول هنوز رنگی تعریف نشده است.'); return; }
+  const currentId = it.colorId || '';
+  const options = '<option value="">— انتخاب رنگ —</option>' + colors.map(col=>`<option value="${escapeHtml(col.id)}" ${col.id===currentId?'selected':''}>${escapeHtml(col.name)}</option>`).join('');
+  const overlay = document.getElementById('consign-modal');
+  const titleEl = document.getElementById('consign-modal-title');
+  const subEl = document.getElementById('consign-modal-sub');
+  const listEl = document.getElementById('consign-modal-list');
+  const okBtn = document.getElementById('consign-modal-ok');
+  const cancelBtn = document.getElementById('consign-modal-cancel');
+  if(!overlay || !listEl) return;
+  titleEl.textContent = 'تعیین رنگ واگذاری قدیمی';
+  subEl.textContent = 'این رنگ روی همین واگذاری و فروش‌های قبلیِ بدون رنگ همین قلم اعمال می‌شود.';
+  subEl.style.display = '';
+  okBtn.textContent = 'ذخیره';
+  listEl.innerHTML = `<div class="field" style="margin:0;"><label>رنگ محصول</label><div style="display:flex;align-items:center;gap:10px;"><span id="legacyConsignColorSwatch" class="common-color-swatch" style="flex:0 0 22px;width:22px;height:22px;border-radius:50%;"></span><select id="legacyConsignColorSelect" class="gh-field variant-select">${options}</select></div></div>`;
+  overlay.classList.add('show');
+  const sel=document.getElementById('legacyConsignColorSelect');
+  const sw=document.getElementById('legacyConsignColorSwatch');
+  const syncSw=()=>{const col=colors.find(x=>x.id===sel.value); if(sw){sw.style.background=col?col.hex:'transparent';sw.style.border='1px solid '+(col&&col.id==='color_white'?'var(--line)':'transparent');}};
+  sel.addEventListener('change',syncSw); syncSw();
+  const cleanup=()=>{overlay.classList.remove('show');okBtn.removeEventListener('click',onOk);cancelBtn.removeEventListener('click',onCancel);overlay.removeEventListener('click',onBackdrop);};
+  const onOk=async()=>{
+    const colorId=sel.value;
+    const col=colors.find(x=>x.id===colorId);
+    if(!col){ await customAlert('یک رنگ انتخاب کن.'); return; }
+    cleanup();
+    const snapshot=JSON.parse(JSON.stringify({items:c.items,saleLogs:c.saleLogs,deliveries:c.deliveries}));
+    const oldColorId=it.colorId||null;
+    it.colorId=col.id; it.colorName=col.name; it.colorHex=col.hex;
+    (c.saleLogs||[]).forEach(l=>(l.items||[]).forEach(x=>{if(x.productId===it.productId && (x.colorId||null)===oldColorId){x.colorId=col.id;x.colorName=col.name;x.colorHex=col.hex;}}));
+    (c.deliveries||[]).forEach(d=>(d.items||[]).forEach(x=>{if(x.productId===it.productId && (x.colorId||null)===oldColorId){x.colorId=col.id;x.colorName=col.name;x.colorHex=col.hex;}}));
+    renderConsignTab(); renderSummary();
+    const ok=await syncConsignmentToSupabase(c);
+    if(!ok){c.items=snapshot.items;c.saleLogs=snapshot.saleLogs;c.deliveries=snapshot.deliveries;renderConsignTab();renderSummary();return;}
+    showToast('رنگ واگذاری و سوابق قبلی به‌روزرسانی شد ✓','success');
+  };
+  const onCancel=()=>cleanup();
+  const onBackdrop=e=>{if(e.target===overlay)cleanup();};
+  okBtn.addEventListener('click',onOk); cancelBtn.addEventListener('click',onCancel); overlay.addEventListener('click',onBackdrop);
+}
+
 async function editConsignItemQuick(consignId, itemKey){
   if(!isAdmin){ await customAlert('فقط مدیر می‌تونه مشخصات قلم امانی رو ویرایش کنه.'); return; }
   const c = consignments.find(x=>x.id===consignId);
@@ -8776,7 +8831,7 @@ async function editConsignItemQuick(consignId, itemKey){
   const res = await openConsignQtyModal({
     title:'ویرایش ظرفیت مطلوب',
     sub:'این گزینه فقط هدف شارژ مجدد را تغییر می‌دهد؛ تعدادهای واقعی با فروش، شارژ و مرجوعی ثبت می‌شوند.',
-    rows:[{key:itemKey,group:it.productName,variant:it.colorName||'بدون رنگ',colorHex:it.colorHex||'',name:it.productName+(it.colorName?' — '+it.colorName:''),hint:'نزد فروشگاه: '+fa.format(consignRemaining(it)),value:it.targetQty||0}],
+    rows:[{key:itemKey,group:it.productName,variant:it.colorName || ((products.find(p=>p.id===it.productId)?.colors||[]).length ? 'رنگ تعیین نشده' : '' ),colorHex:it.colorHex||'',name:it.productName+(it.colorName?' — '+it.colorName:''),hint:'نزد فروشگاه: '+fa.format(consignRemaining(it)),value:it.targetQty||0}],
     okLabel:'ذخیره'
   });
   if(!res) return;
@@ -8874,13 +8929,13 @@ function renderConsignCard(c){
         <div class="consign-variant-row" data-product-row data-search="${escapeHtml(rowSearch)}">
           <span class="consign-variant-name">
             ${colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(colorHex)}"></span>` : ''}
-            <span>${escapeHtml(liveColor || 'بدون رنگ')}</span>
+            <span>${escapeHtml(liveColor || ((meta.prod && (meta.prod.colors||[]).length) ? 'رنگ تعیین نشده' : ''))}</span>
           </span>
           <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
           <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
           <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
           <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
-          ${(!it.colorId && meta.prod && (meta.prod.colors||[]).length && remain>0) ? `<button type="button" class="consign-item-edit" title="تطبیق رنگ این واگذاری قدیمی" ${isAdmin ? `onclick="event.stopPropagation(); migrateLegacyConsignItemColors('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'} style="color:var(--orange);">🎨</button>` : ''}
+          ${(!it.colorId && meta.prod && (meta.prod.colors||[]).length) ? `<button type="button" class="consign-item-edit" title="تعیین/ویرایش رنگ این واگذاری قدیمی" ${isAdmin ? `onclick="event.stopPropagation(); editLegacyConsignItemColor('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'} style="color:var(--orange);">🎨</button>` : ''}
           <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'}>✎</button>
         </div>`;
     }).join('');
