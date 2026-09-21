@@ -799,7 +799,7 @@
 .consign-selected-group .order-item-row{margin:0;border-top:1px solid var(--border);border-radius:0}
 .consign-products-tools{display:flex; gap:8px; align-items:center; margin:10px 0 8px;}
   .consign-products-search{position:relative; flex:1; min-width:0;}
-  .consign-products-search input{width:100%; height:44px; border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:10px 38px 10px 34px; font-size:14px; font-family:'Vazirmatn',sans-serif;}
+  .consign-products-search input{width:100%; height:44px; border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:10px 46px 10px 38px; font-size:14px; font-family:'Vazirmatn',sans-serif;}
   .consign-products-search svg{position:absolute; right:11px; top:50%; transform:translateY(-50%); color:var(--ink-soft); pointer-events:none;}
   .consign-products-search .clear{position:absolute; left:6px; top:50%; transform:translateY(-50%); width:28px; height:28px; border:0; border-radius:50%; background:var(--card); color:var(--ink-soft); display:none;}
   .consign-products-search.has-value .clear{display:flex; align-items:center; justify-content:center;}
@@ -834,7 +834,7 @@
   .consign-modal-sub{font-size:13px; font-weight:600; color:var(--ink-soft); line-height:1.8; margin:-4px 0 0;}
   .consign-modal-tools{display:flex;gap:8px;align-items:center;flex-shrink:0;margin:0 0 4px;}
   .consign-modal-search{position:relative;flex:1;min-width:0;}
-  .consign-modal-search input{width:100%;height:42px;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:8px 36px 8px 30px;font-size:13px;font-family:'Vazirmatn',sans-serif;}
+  .consign-modal-search input{width:100%;height:42px;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:8px 44px 8px 34px;font-size:13px;font-family:'Vazirmatn',sans-serif;}
   .consign-modal-search svg{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--ink-soft);pointer-events:none;}
   .consign-modal-sort{height:42px;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:0 8px;font-size:12px;font-family:'Vazirmatn',sans-serif;color:var(--ink);min-width:112px;}
   .consign-modal-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 2px 4px;max-height:min(52vh,430px);}
@@ -1046,9 +1046,14 @@ input[type=text]:focus,input[type=number]:focus,input[type=email]:focus,input[ty
   box-shadow:0 0 0 3px color-mix(in srgb,var(--orange) 13%,transparent),0 1px 2px rgba(0,0,0,.03);
 }
 .search-box{margin:0 2px 12px;}
-.search-box input{height:50px;border-radius:13px;padding-inline-start:42px;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+.search-box input{height:50px;border-radius:13px;padding-inline-end:48px;padding-inline-start:44px;box-shadow:0 1px 2px rgba(0,0,0,.03);}
 .search-box .search-icon{right:13px;}
 .search-box .search-clear{left:8px;}
+/* RTL search fields: reserve a dedicated zone for the magnifier on the right. */
+.search-box input[dir=rtl],
+.search-box input[style*='direction:rtl'],
+.search-box input{padding-right:48px !important;padding-left:44px !important;}
+.search-box .search-icon{right:14px;z-index:2;}
 .filter-row{margin:0 2px 14px;gap:7px;scrollbar-width:none;}
 .filter-row::-webkit-scrollbar{display:none;}
 .filter-chip{height:36px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:12px;font-weight:750;box-shadow:0 1px 2px rgba(0,0,0,.025);}
@@ -1529,6 +1534,89 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   #tab-orders #orders-list,
   #tab-consign #consign-list{grid-template-columns:repeat(4,minmax(0,1fr));}
 }
+
+
+/* Light mode contrast & separation */
+html:not([data-theme="dark"]){
+  --bg:#f1f3f6;
+  --card:#ffffff;
+  --line:#d5d9e0;
+  --ink:#17181b;
+  --ink-soft:#626873;
+  --saas-bg:#f1f3f6;
+  --saas-surface:#ffffff;
+  --saas-surface-2:#f8f9fb;
+  --saas-border:#d5d9e0;
+  --saas-shadow:0 1px 2px rgba(16,24,40,.05),0 5px 16px rgba(16,24,40,.07);
+  --saas-shadow-lg:0 12px 32px rgba(16,24,40,.14);
+}
+html:not([data-theme="dark"]) .card,
+html:not([data-theme="dark"]) .profile-card,
+html:not([data-theme="dark"]) .form-card,
+html:not([data-theme="dark"]) .form-section,
+html:not([data-theme="dark"]) .settings-section,
+html:not([data-theme="dark"]) .sale-item,
+html:not([data-theme="dark"]) .order-item,
+html:not([data-theme="dark"]) .result-card,
+html:not([data-theme="dark"]) .stat-card,
+html:not([data-theme="dark"]) .product-card,
+html:not([data-theme="dark"]) .consign-card{
+  border:1px solid var(--line);
+  background:var(--card);
+}
+html:not([data-theme="dark"]) .card,
+html:not([data-theme="dark"]) .form-card,
+html:not([data-theme="dark"]) .form-section,
+html:not([data-theme="dark"]) .profile-card,
+html:not([data-theme="dark"]) .settings-section,
+html:not([data-theme="dark"]) .product-card,
+html:not([data-theme="dark"]) .sale-item,
+html:not([data-theme="dark"]) .order-item,
+html:not([data-theme="dark"]) .consign-card{
+  box-shadow:var(--saas-shadow);
+}
+html:not([data-theme="dark"]) input[type=text],
+html:not([data-theme="dark"]) input[type=number],
+html:not([data-theme="dark"]) input[type=email],
+html:not([data-theme="dark"]) input[type=password],
+html:not([data-theme="dark"]) textarea,
+html:not([data-theme="dark"]) select{
+  background:#fbfcfd;
+  border-color:#cbd0d8;
+}
+html:not([data-theme="dark"]) input[type=text]:focus,
+html:not([data-theme="dark"]) input[type=number]:focus,
+html:not([data-theme="dark"]) input[type=email]:focus,
+html:not([data-theme="dark"]) input[type=password]:focus,
+html:not([data-theme="dark"]) textarea:focus,
+html:not([data-theme="dark"]) select:focus{
+  background:#fff;
+  border-color:var(--orange);
+}
+html:not([data-theme="dark"]) .search-box input,
+html:not([data-theme="dark"]) .consign-products-search input{
+  background:#fff;
+  border:1px solid #c8cdd5;
+  box-shadow:0 1px 3px rgba(16,24,40,.06);
+}
+html:not([data-theme="dark"]) .filter-chip,
+html:not([data-theme="dark"]) .product-picker,
+html:not([data-theme="dark"]) .product-picker-panel,
+html:not([data-theme="dark"]) .consign-product-group,
+html:not([data-theme="dark"]) .consign-variant-editor-card,
+html:not([data-theme="dark"]) .consign-qty-field,
+html:not([data-theme="dark"]) .consign-item-edit{
+  border-color:#cfd4dc;
+}
+html:not([data-theme="dark"]) .consign-product-group-head,
+html:not([data-theme="dark"]) .consign-modal-product,
+html:not([data-theme="dark"]) .consign-modal-group,
+html:not([data-theme="dark"]) .product-picker-item{
+  border-color:#d8dce2;
+}
+html:not([data-theme="dark"]) .section-title{color:#59616c;}
+html:not([data-theme="dark"]) .empty{border-color:#c7ccd4!important;background:#f8f9fb;}
+html:not([data-theme="dark"]) .bottom-nav{box-shadow:0 -8px 28px rgba(16,24,40,.12);}
 
 </style>
 </head>
