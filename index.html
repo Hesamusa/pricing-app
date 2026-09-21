@@ -2123,6 +2123,73 @@ async function saveProductsToSupabaseBridge(){
 }
 </style>
 
+
+<style id="consignment-sticky-header-v34">
+/* v34 — Consignment assignment table: sticky header + larger readable Persian text */
+#tab-consign .consign-card.open .consign-table{
+  position:relative;
+}
+#tab-consign .consign-card.open .consign-table > .consign-th{
+  position:sticky;
+  top:0;
+  z-index:12;
+  background:var(--card);
+  color:var(--ink);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 2px 7px rgba(0,0,0,.07);
+  padding-top:10px;
+  padding-bottom:10px;
+}
+#tab-consign .consign-card.open .consign-table > .consign-th span{
+  font-size:14px;
+  line-height:1.55;
+  font-weight:800;
+  white-space:nowrap;
+}
+#tab-consign .consign-card.open .consign-tr{
+  font-size:15px;
+  line-height:1.65;
+  min-height:48px;
+}
+#tab-consign .consign-card.open .consign-tr .cname,
+#tab-consign .consign-card.open .consign-tr .product-link{
+  font-size:15px;
+  line-height:1.65;
+  font-weight:800;
+}
+#tab-consign .consign-card.open .consign-tr .cnum{
+  font-size:15px;
+  line-height:1.5;
+  font-weight:750;
+}
+#tab-consign .consign-card.open .consign-tr .cnum.is-charged,
+#tab-consign .consign-card.open .consign-tr .is-need,
+#tab-consign .consign-card.open .consign-tr .is-zero{
+  font-size:15px;
+  font-weight:850;
+}
+#tab-consign .consign-card.open .consign-tr .consign-live-stock{
+  font-size:11px;
+  line-height:1.45;
+}
+@media(max-width:899px){
+  #tab-consign .consign-card.open .consign-table > .consign-th{
+    top:0;
+  }
+  #tab-consign .consign-card.open .consign-table > .consign-th span{
+    font-size:13px;
+  }
+  #tab-consign .consign-card.open .consign-tr,
+  #tab-consign .consign-card.open .consign-tr .cname,
+  #tab-consign .consign-card.open .consign-tr .product-link,
+  #tab-consign .consign-card.open .consign-tr .cnum,
+  #tab-consign .consign-card.open .consign-tr .cnum.is-charged,
+  #tab-consign .consign-card.open .consign-tr .is-need,
+  #tab-consign .consign-card.open .consign-tr .is-zero{
+    font-size:14px;
+  }
+}
+</style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
