@@ -1628,6 +1628,34 @@ html:not([data-theme="dark"]) .bottom-nav{box-shadow:0 -8px 28px rgba(16,24,40,.
 */
 let SUPABASE_PRODUCTS_ENABLED = true;
 let supabaseProductsLoaded = false;
+// Snapshot of the last server state seen by this browser.
+// It lets us send ONLY products changed on this device, preventing a stale
+// mobile/desktop copy from overwriting unrelated newer server data.
+let supabaseProductsSnapshot = {};
+
+function productSyncFingerprint(p){
+  if(!p) return '';
+  return JSON.stringify({
+    id:p.id, name:p.name||'', category:p.category||null,
+    weight:Number(p.weight||0), printHours:Number(p.printHours||0),
+    manualHours:Number(p.manualHours||0), paintHours:Number(p.paintHours||0),
+    accessoryCost:Number(p.accessoryCost||0), sizeL:Number(p.sizeL||0),
+    sizeW:Number(p.sizeW||0), sizeH:Number(p.sizeH||0),
+    marginW:p.marginW ?? null, marginR:p.marginR ?? null,
+    stock:Number(p.stock||0), catalogDescription:p.catalogDescription||'',
+    telegramMessageIds:Array.isArray(p.telegramMessageIds)?p.telegramMessageIds:[],
+    colors:Array.isArray(p.colors)?p.colors.map(c=>({id:c.id,name:c.name||'',hex:c.hex||null})):[],
+    colorStock:p.colorStock||{},
+    images:Array.isArray(p.images)?p.images.map(im=>({url:im.url||'',path:im.path||'',sha:im.sha||''})):[]
+  });
+}
+
+function rebuildSupabaseProductSnapshot(){
+  supabaseProductsSnapshot = {};
+  for(const p of (Array.isArray(products)?products:[])){
+    if(p && p.id) supabaseProductsSnapshot[p.id] = productSyncFingerprint(p);
+  }
+}
 
 async function loadProductsFromSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
@@ -1637,11 +1665,11 @@ async function loadProductsFromSupabaseBridge(){
       .order('created_at', { ascending:true });
     if(error) throw error;
     if(!Array.isArray(rows)) throw new Error('پاسخ نامعتبر از جدول products');
-    // حتی اگر جدول خالی باشد، خالی بودن Supabase خودش داده معتبر است؛
-    // نباید اطلاعات قدیمی localStorage روی موبایل باقی بماند.
+
     if(rows.length === 0){
       products = [];
       supabaseProductsLoaded = true;
+      supabaseProductsSnapshot = {};
       try{ localStorage.setItem('pricing_app_products_supabase_cache', '[]'); }catch(e){}
       return true;
     }
@@ -1667,9 +1695,9 @@ async function loadProductsFromSupabaseBridge(){
 
     products = rows.map(r => {
       const legacy = (r.legacy_payload && typeof r.legacy_payload === 'object') ? r.legacy_payload : {};
-      const productColors = colorRows.filter(x => x.product_id === r.id);
+      const productColors = colorsByProduct[r.id] || [];
       const colorStock = {};
-      for(const c of productColors) colorStock[c.id] = Number(c.stock || 0);
+      for(const c of colorRows.filter(x => x.product_id === r.id)) colorStock[c.id] = Number(c.stock || 0);
       return {
         ...legacy,
         id:r.id, name:r.name ?? legacy.name ?? '',
@@ -1687,13 +1715,14 @@ async function loadProductsFromSupabaseBridge(){
         stock:Number(r.stock ?? legacy.stock ?? 0),
         catalogDescription:r.catalog_description ?? legacy.catalogDescription ?? '',
         telegramMessageIds:Array.isArray(r.telegram_message_ids) ? r.telegram_message_ids : (legacy.telegramMessageIds || []),
-        colors:colorsByProduct[r.id] || legacy.colors || [],
+        colors:productColors.length ? productColors : (legacy.colors || []),
         colorStock,
         images:imagesByProduct[r.id] || legacy.images || []
       };
     });
 
     supabaseProductsLoaded = true;
+    rebuildSupabaseProductSnapshot();
     try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
     return true;
   }catch(err){
@@ -1701,79 +1730,6 @@ async function loadProductsFromSupabaseBridge(){
     return false;
   }
 }
-async function loadProductsFromSupabaseBridge(){
-  if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
-  try{
-    const { data: rows, error } = await sb.from('products')
-      .select('id,name,category,weight,print_hours,manual_hours,paint_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
-      .order('created_at', { ascending:true });
-    if(error) throw error;
-    if(!Array.isArray(rows)) throw new Error('پاسخ نامعتبر از جدول products');
-    // حتی اگر جدول خالی باشد، خالی بودن Supabase خودش داده معتبر است؛
-    // نباید اطلاعات قدیمی localStorage روی موبایل باقی بماند.
-    if(rows.length === 0){
-      products = [];
-      supabaseProductsLoaded = true;
-      try{ localStorage.setItem('pricing_app_products_supabase_cache', '[]'); }catch(e){}
-      return true;
-    }
-
-    const ids = rows.map(r => r.id).filter(Boolean);
-    let colorRows = [];
-    let imageRows = [];
-    if(ids.length){
-      const [cRes, iRes] = await Promise.all([
-        sb.from('product_colors').select('id,product_id,name,hex,stock,sort_order').in('product_id', ids).order('sort_order',{ascending:true}),
-        sb.from('product_images').select('product_id,url,path,sha,sort_order').in('product_id', ids).order('sort_order',{ascending:true})
-      ]);
-      if(cRes.error) throw cRes.error;
-      if(iRes.error) throw iRes.error;
-      colorRows = cRes.data || [];
-      imageRows = iRes.data || [];
-    }
-
-    const colorsByProduct = {};
-    const imagesByProduct = {};
-    for(const c of colorRows) (colorsByProduct[c.product_id] ||= []).push({id:c.id,name:c.name,hex:c.hex});
-    for(const im of imageRows) (imagesByProduct[im.product_id] ||= []).push({url:im.url,path:im.path,sha:im.sha});
-
-    products = rows.map(r => {
-      const legacy = (r.legacy_payload && typeof r.legacy_payload === 'object') ? r.legacy_payload : {};
-      const productColors = colorRows.filter(x => x.product_id === r.id);
-      const colorStock = {};
-      for(const c of productColors) colorStock[c.id] = Number(c.stock || 0);
-      return {
-        ...legacy,
-        id:r.id, name:r.name ?? legacy.name ?? '',
-        category:r.category ?? legacy.category ?? null,
-        weight:Number(r.weight ?? legacy.weight ?? 0),
-        printHours:Number(r.print_hours ?? legacy.printHours ?? 0),
-        manualHours:Number(r.manual_hours ?? legacy.manualHours ?? 0),
-        paintHours:Number(r.paint_hours ?? legacy.paintHours ?? 0),
-        accessoryCost:Number(r.accessory_cost ?? legacy.accessoryCost ?? 0),
-        sizeL:Number(r.size_l ?? legacy.sizeL ?? 0),
-        sizeW:Number(r.size_w ?? legacy.sizeW ?? 0),
-        sizeH:Number(r.size_h ?? legacy.sizeH ?? 0),
-        marginW:r.margin_w ?? legacy.marginW ?? null,
-        marginR:r.margin_r ?? legacy.marginR ?? null,
-        stock:Number(r.stock ?? legacy.stock ?? 0),
-        catalogDescription:r.catalog_description ?? legacy.catalogDescription ?? '',
-        telegramMessageIds:Array.isArray(r.telegram_message_ids) ? r.telegram_message_ids : (legacy.telegramMessageIds || []),
-        colors:colorsByProduct[r.id] || legacy.colors || [],
-        colorStock,
-        images:imagesByProduct[r.id] || legacy.images || []
-      };
-    });
-
-    supabaseProductsLoaded = true;
-    try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
-    return true;
-  }catch(err){
-    console.warn('Supabase product load failed; existing product source remains active.', err);
-    return false;
-  }
-}
-
 
 async function saveProductsToSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb || !Array.isArray(products)) return false;
@@ -1783,47 +1739,94 @@ async function saveProductsToSupabaseBridge(){
     if(sessionError) throw new Error('احراز هویت Supabase: ' + sessionError.message);
     if(!session || !session.user) throw new Error('کاربر وارد Supabase نشده است؛ نشست کاربر پیدا نشد.');
 
-    const productPayload = products.map(p => ({
-      id:p.id, name:p.name||'', category:p.category||null,
-      weight:Number(p.weight||0), print_hours:Number(p.printHours||0),
-      manual_hours:Number(p.manualHours||0), paint_hours:Number(p.paintHours||0),
-      accessory_cost:Number(p.accessoryCost||0), size_l:Number(p.sizeL||0),
-      size_w:Number(p.sizeW||0), size_h:Number(p.sizeH||0),
-      margin_w:p.marginW ?? null, margin_r:p.marginR ?? null,
-      stock:Number(p.stock||0), catalog_description:p.catalogDescription||'',
-      telegram_message_ids:Array.isArray(p.telegramMessageIds)?p.telegramMessageIds:[],
-      legacy_payload:p,
-      updated_at:new Date().toISOString()
-    }));
+    // Never use a stale local copy as a full-database overwrite.
+    // The snapshot was created by the last successful Supabase read.
+    if(!supabaseProductsLoaded){
+      throw new Error('هنوز وضعیت محصولات از Supabase دریافت نشده است؛ چند لحظه بعد دوباره ذخیره کن.');
+    }
 
-    if(productPayload.length){
+    const currentById = {};
+    for(const p of products){ if(p && p.id) currentById[p.id] = p; }
+    const changed = [];
+    for(const p of products){
+      if(!p || !p.id) continue;
+      const fp = productSyncFingerprint(p);
+      if(supabaseProductsSnapshot[p.id] !== fp) changed.push(p);
+    }
+    const deletedIds = Object.keys(supabaseProductsSnapshot).filter(id => !currentById[id]);
+
+    // Nothing changed on this device.
+    if(!changed.length && !deletedIds.length){
+      try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
+      return true;
+    }
+
+    if(deletedIds.length){
+      stage = 'حذف محصولات';
+      const {error:de} = await sb.from('products').delete().in('id', deletedIds);
+      if(de) throw new Error('حذف محصولات: ' + de.message + (de.code ? ' ['+de.code+']' : ''));
+    }
+
+    if(changed.length){
+      const productPayload = changed.map(p => ({
+        id:p.id, name:p.name||'', category:p.category||null,
+        weight:Number(p.weight||0), print_hours:Number(p.printHours||0),
+        manual_hours:Number(p.manualHours||0), paint_hours:Number(p.paintHours||0),
+        accessory_cost:Number(p.accessoryCost||0), size_l:Number(p.sizeL||0),
+        size_w:Number(p.sizeW||0), size_h:Number(p.sizeH||0),
+        margin_w:p.marginW ?? null, margin_r:p.marginR ?? null,
+        stock:Number(p.stock||0), catalog_description:p.catalogDescription||'',
+        telegram_message_ids:Array.isArray(p.telegramMessageIds)?p.telegramMessageIds:[],
+        legacy_payload:p,
+        updated_at:new Date().toISOString()
+      }));
       stage = 'ذخیره محصولات';
       const {error} = await sb.from('products').upsert(productPayload, {onConflict:'id'});
       if(error) throw new Error('ذخیره محصولات: ' + error.message + (error.code ? ' ['+error.code+']' : ''));
-    }
 
-    // V11: اول رنگ‌های فعلی را upsert می‌کنیم؛ حذف گروهی باعث می‌شد یک RLS policy نامناسب کل ذخیره را ناموفق اعلام کند.
-    const colorPayload=[];
-    for(const p of products){
-      for(let i=0;i<(p.colors||[]).length;i++){
-        const c=p.colors[i];
-        colorPayload.push({id:c.id, product_id:p.id, name:c.name||'', hex:c.hex||null,
-          stock:Number((p.colorStock||{})[c.id]||0), sort_order:i});
+      // Reconcile colors only for products actually changed on this device.
+      stage = 'همگام‌سازی رنگ‌ها';
+      const changedIds = changed.map(p=>p.id);
+      const {error:cd} = await sb.from('product_colors').delete().in('product_id', changedIds);
+      if(cd) throw new Error('حذف رنگ‌های قدیمی: ' + cd.message + (cd.code ? ' ['+cd.code+']' : ''));
+      const colorPayload=[];
+      for(const p of changed){
+        for(let i=0;i<(p.colors||[]).length;i++){
+          const c=p.colors[i];
+          colorPayload.push({id:c.id, product_id:p.id, name:c.name||'', hex:c.hex||null,
+            stock:Number((p.colorStock||{})[c.id]||0), sort_order:i});
+        }
+      }
+      if(colorPayload.length){
+        const {error:ci}=await sb.from('product_colors').insert(colorPayload);
+        if(ci) throw new Error('ذخیره رنگ‌ها: ' + ci.message + (ci.code ? ' ['+ci.code+']' : ''));
+      }
+
+      // Reconcile images for changed products too, so image edits are shared across devices.
+      stage = 'همگام‌سازی تصاویر';
+      const {error:idErr} = await sb.from('product_images').delete().in('product_id', changedIds);
+      if(idErr) throw new Error('حذف تصاویر قدیمی: ' + idErr.message + (idErr.code ? ' ['+idErr.code+']' : ''));
+      const imagePayload=[];
+      for(const p of changed){
+        for(let i=0;i<(p.images||[]).length;i++){
+          const im=p.images[i];
+          if(!im || !im.url) continue;
+          imagePayload.push({product_id:p.id,url:im.url,path:im.path||null,sha:im.sha||null,sort_order:i});
+        }
+      }
+      if(imagePayload.length){
+        const {error:ii}=await sb.from('product_images').insert(imagePayload);
+        if(ii) throw new Error('ذخیره تصاویر: ' + ii.message + (ii.code ? ' ['+ii.code+']' : ''));
       }
     }
-    if(colorPayload.length){
-      stage = 'ذخیره رنگ‌ها';
-      const {error:ie}=await sb.from('product_colors').upsert(colorPayload, {onConflict:'id'});
-      if(ie) throw new Error('ذخیره رنگ‌ها: ' + ie.message + (ie.code ? ' ['+ie.code+']' : ''));
-    }
 
+    rebuildSupabaseProductSnapshot();
     try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
     return true;
   }catch(err){
     const msg = err && err.message ? err.message : String(err);
     window.__lastSupabaseProductSaveError = {stage, message:msg, time:new Date().toISOString()};
     console.error('Supabase product save failed:', {stage, error:err});
-    // پیام دقیق را در کنسول و روی صفحه نگه می‌داریم تا اگر RLS/Policy باشد مشخص شود.
     try{ showToast('Supabase: ' + msg, 'error', 7000); }catch(e){}
     return false;
   }
@@ -1831,7 +1834,7 @@ async function saveProductsToSupabaseBridge(){
 </script>
 
 <style>#syncStatusV11{position:fixed;bottom:10px;left:10px;z-index:99999;display:none;max-width:min(92vw,520px);padding:10px 12px;border:1px solid rgba(255,90,90,.45);border-radius:12px;background:#1d1414;color:#ffd9d9;font:12px/1.6 sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.25)}</style>
-<script>window.APP_BUILD='V11';</script>
+<script>window.APP_BUILD='V12';</script>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
