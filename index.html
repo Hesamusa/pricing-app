@@ -7753,9 +7753,17 @@ function onConsignProductSearch(id, value){
   if(box) box.classList.toggle('has-value', !!value);
   const card = document.getElementById('consignCard_'+id);
   if(card){
-    const rows = card.querySelectorAll('.consign-tr[data-product-row]');
     const q = normalizeFaText(value || '');
-    rows.forEach(row => { row.style.display = !q || normalizeFaText(row.dataset.search || '').includes(q) ? '' : 'none'; });
+    card.querySelectorAll('.consign-product-group').forEach(group => {
+      const rows = [...group.querySelectorAll('.consign-variant-row[data-product-row]')];
+      let visible = 0;
+      rows.forEach(row => {
+        const match = !q || normalizeFaText(row.dataset.search || '').includes(q);
+        row.style.display = match ? '' : 'none';
+        if(match) visible++;
+      });
+      group.style.display = visible ? '' : 'none';
+    });
   }
 }
 function clearConsignProductSearch(id){
@@ -7869,8 +7877,9 @@ function renderConsignCard(c){
       const restock = consignRestockQty(it);
       const liveColor = meta.colorName || it.colorName || '';
       const colorHex = meta.colorHex || it.colorHex || '';
+      const rowSearch = normalizeFaText((g.name||'')+' '+(liveColor||'')+' '+(it.productName||'')+' '+(it.colorName||''));
       return `
-        <div class="consign-variant-row">
+        <div class="consign-variant-row" data-product-row data-search="${escapeHtml(rowSearch)}">
           <span class="consign-variant-name">
             ${colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(colorHex)}"></span>` : ''}
             <span>${escapeHtml(liveColor || 'بدون رنگ')}</span>
