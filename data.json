@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T12:54:16.932Z",
+  "updatedAt": "2026-09-21T12:54:30.553Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -1202,6 +1202,11 @@
           "id": "col_mub8yg0etdll",
           "name": "نارنجی",
           "hex": "#ff8000"
+        },
+        {
+          "id": "col_mub8yrwttb9b",
+          "name": "قرمز",
+          "hex": "#c0392b"
         }
       ],
       "images": [
@@ -1217,7 +1222,8 @@
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
         "col_mub8xx51vrcb": 1,
-        "col_mub8yg0etdll": 1
+        "col_mub8yg0etdll": 1,
+        "col_mub8yrwttb9b": 0
       },
       "paintHours": 0,
       "printHours": 1,
