@@ -1216,6 +1216,188 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   #sales-stats,#accounting-overview,#consign-summary-overview,#tab-consign #consign-stats{grid-template-columns:1fr}
 }
 
+/* =========================================================
+   DESKTOP APP SHELL — keep mobile UI intact, turn large screens
+   into a full-width real dashboard application.
+   ========================================================= */
+@media (min-width: 900px){
+  html,body{min-height:100%;}
+  body{overflow-x:hidden;}
+
+  header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    height:68px;
+  }
+  .header-row{
+    min-height:68px;
+    padding-inline:28px;
+    max-width:none;
+  }
+
+  #app-content{
+    min-height:calc(100vh - 68px);
+  }
+
+  /* Desktop sidebar */
+  nav{
+    position:fixed;
+    top:68px;
+    right:0;
+    bottom:0;
+    left:auto;
+    width:248px;
+    padding:18px 14px 20px;
+    display:block;
+    z-index:15;
+    border-left:1px solid var(--line);
+    background:color-mix(in srgb,var(--bg) 94%,transparent);
+    backdrop-filter:saturate(140%) blur(18px);
+    -webkit-backdrop-filter:saturate(140%) blur(18px);
+    overflow-y:auto;
+  }
+  nav .nav-inner{
+    width:100%;
+    max-width:none;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    padding:0;
+    background:transparent;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
+  nav button{
+    flex:none;
+    width:100%;
+    min-height:48px;
+    flex-direction:row;
+    justify-content:flex-start;
+    gap:12px;
+    padding:10px 13px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:700;
+    text-align:right;
+  }
+  nav button svg{width:20px;height:20px;flex-shrink:0;}
+  nav button.active{
+    box-shadow:inset -3px 0 0 var(--orange);
+  }
+
+  /* On desktop, don't hide secondary pages behind «بیشتر». */
+  #nav-more{display:none;}
+  nav .more-menu{
+    position:static;
+    display:block;
+    padding:0;
+    pointer-events:auto;
+  }
+  nav .more-menu-inner{
+    display:flex!important;
+    flex-direction:column;
+    width:100%;
+    max-width:none;
+    gap:5px;
+    background:transparent;
+    border:0;
+    border-radius:0;
+    padding:0;
+    margin:5px 0 0;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    pointer-events:auto;
+  }
+  nav .more-menu-inner button{
+    display:flex;
+    width:100%;
+    min-height:48px;
+    padding:10px 13px;
+    border-radius:12px;
+    font-size:13px;
+  }
+  nav .more-menu-inner button+button{border-top:0;border-radius:12px;}
+  .more-menu-backdrop{display:none!important;}
+
+  /* Main content uses all available desktop width. */
+  main{
+    max-width:none!important;
+    width:auto;
+    margin:0;
+    margin-right:248px;
+    padding:0 30px 40px!important;
+  }
+  .tab-panel{
+    width:100%;
+    max-width:1500px;
+    margin:0 auto;
+  }
+  .section-title{margin-inline:0;}
+
+  /* Product/catalog pages */
+  #tab-products #products-list{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
+  #tab-products .product-card{min-width:0;}
+
+  /* Lists and dashboards */
+  #tab-sales #sales-list,
+  #tab-orders #orders-list,
+  #tab-customers #customers-list,
+  #tab-consign #consign-list{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+  }
+  #tab-sales #sale-form-wrap,
+  #tab-orders #order-form-wrap{
+    max-width:1100px;
+  }
+
+  #sales-stats,
+  #accounting-overview,
+  #consign-summary-overview,
+  #tab-consign #consign-stats{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px!important;
+  }
+
+  /* Settings and summary become readable wide layouts instead of stretched
+     single columns. */
+  #tab-settings #settings-admin-content,
+  #tab-summary #summary-content{
+    max-width:1180px;
+  }
+  #tab-settings .settings-group,
+  #tab-summary #summary-content{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+    align-items:start;
+  }
+  #tab-settings .settings-group-label{
+    grid-column:1/-1;
+    margin:12px 0 0;
+  }
+  #tab-settings .settings-section{margin-bottom:0;}
+
+  /* Modals remain centered relative to the full viewport, not the sidebar. */
+  .consign-modal,.modal,.overlay,.dialog,.confirm-modal{max-width:min(900px,calc(100vw - 80px));}
+}
+
+@media (min-width: 1200px){
+  #tab-products #products-list{grid-template-columns:repeat(4,minmax(0,1fr));}
+  #tab-sales #sales-list,
+  #tab-orders #orders-list,
+  #tab-customers #customers-list,
+  #tab-consign #consign-list{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+
 </style>
 </head>
 <body>
