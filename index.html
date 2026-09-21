@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
 <meta name="telegram-sync-version" content="V6-EDIT-ONLY">
-  <title>دفترچه قیمت‌گذاری پرینت سه‌بعدی</title>
+  <title>V11 - دفترچه قیمت‌گذاری پرینت سه‌بعدی</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="پرینت پلاسی">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1777,7 +1777,12 @@ async function loadProductsFromSupabaseBridge(){
 
 async function saveProductsToSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb || !Array.isArray(products)) return false;
+  let stage = 'شروع';
   try{
+    const {data:{session}, error:sessionError} = await sb.auth.getSession();
+    if(sessionError) throw new Error('احراز هویت Supabase: ' + sessionError.message);
+    if(!session || !session.user) throw new Error('کاربر وارد Supabase نشده است؛ نشست کاربر پیدا نشد.');
+
     const productPayload = products.map(p => ({
       id:p.id, name:p.name||'', category:p.category||null,
       weight:Number(p.weight||0), print_hours:Number(p.printHours||0),
@@ -1787,40 +1792,46 @@ async function saveProductsToSupabaseBridge(){
       margin_w:p.marginW ?? null, margin_r:p.marginR ?? null,
       stock:Number(p.stock||0), catalog_description:p.catalogDescription||'',
       telegram_message_ids:Array.isArray(p.telegramMessageIds)?p.telegramMessageIds:[],
-      legacy_payload:p
+      legacy_payload:p,
+      updated_at:new Date().toISOString()
     }));
+
     if(productPayload.length){
+      stage = 'ذخیره محصولات';
       const {error} = await sb.from('products').upsert(productPayload, {onConflict:'id'});
-      if(error) throw error;
+      if(error) throw new Error('ذخیره محصولات: ' + error.message + (error.code ? ' ['+error.code+']' : ''));
     }
 
-    const ids = products.map(p=>p.id).filter(Boolean);
-    if(ids.length){
-      const {error:ce} = await sb.from('product_colors').delete().in('product_id', ids);
-      if(ce) throw ce;
-      const colorPayload=[];
-      for(const p of products){
-        for(let i=0;i<(p.colors||[]).length;i++){
-          const c=p.colors[i];
-          colorPayload.push({id:c.id, product_id:p.id, name:c.name||'', hex:c.hex||null,
-            stock:Number((p.colorStock||{})[c.id]||0), sort_order:i});
-        }
+    // V11: اول رنگ‌های فعلی را upsert می‌کنیم؛ حذف گروهی باعث می‌شد یک RLS policy نامناسب کل ذخیره را ناموفق اعلام کند.
+    const colorPayload=[];
+    for(const p of products){
+      for(let i=0;i<(p.colors||[]).length;i++){
+        const c=p.colors[i];
+        colorPayload.push({id:c.id, product_id:p.id, name:c.name||'', hex:c.hex||null,
+          stock:Number((p.colorStock||{})[c.id]||0), sort_order:i});
       }
-      if(colorPayload.length){
-        const {error:ie}=await sb.from('product_colors').insert(colorPayload);
-        if(ie) throw ie;
-      }
+    }
+    if(colorPayload.length){
+      stage = 'ذخیره رنگ‌ها';
+      const {error:ie}=await sb.from('product_colors').upsert(colorPayload, {onConflict:'id'});
+      if(ie) throw new Error('ذخیره رنگ‌ها: ' + ie.message + (ie.code ? ' ['+ie.code+']' : ''));
     }
 
     try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
     return true;
   }catch(err){
-    console.error('Supabase product save failed:', err);
+    const msg = err && err.message ? err.message : String(err);
+    window.__lastSupabaseProductSaveError = {stage, message:msg, time:new Date().toISOString()};
+    console.error('Supabase product save failed:', {stage, error:err});
+    // پیام دقیق را در کنسول و روی صفحه نگه می‌داریم تا اگر RLS/Policy باشد مشخص شود.
+    try{ showToast('Supabase: ' + msg, 'error', 7000); }catch(e){}
     return false;
   }
 }
 </script>
 
+<style>#syncStatusV11{position:fixed;bottom:10px;left:10px;z-index:99999;display:none;max-width:min(92vw,520px);padding:10px 12px;border:1px solid rgba(255,90,90,.45);border-radius:12px;background:#1d1414;color:#ffd9d9;font:12px/1.6 sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.25)}</style>
+<script>window.APP_BUILD='V11';</script>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
