@@ -633,7 +633,7 @@
     display:flex; align-items:center; gap:8px; font-size:14px; color:var(--green);
     font-weight:600; margin:14px 6px; opacity:0; transition:opacity .3s;
   }
-  .save-note.show{opacity:1;}
+  .save-note.show{opacity:0!important; pointer-events:none!important;}
 
   /* توست سراسری — جایگزین await customAlert() مرورگر، در همه تب‌ها دیده می‌شه */
   .toast-host{
@@ -1765,7 +1765,7 @@ async function loadProductsFromSupabaseBridge(){
   try{
     const { data: rows, error } = await sb.from('products')
       .select('id,name,category,weight,print_hours,manual_hours,paint_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
-      .order('created_at', { ascending:true });
+      .order('created_at', { ascending:false });
     if(error) throw error;
     if(!Array.isArray(rows)) throw new Error('پاسخ نامعتبر از جدول products');
 
@@ -3937,10 +3937,8 @@ function persist(opts){
   }, 250);
 }
 function flashSaved(){
-  // ذخیره‌های عادی نباید روی رابط کاربری مزاحمت ایجاد کنند یا منو/مودال باز را ببندند.
-  // فقط یک نشانگر بسیار کوتاه و غیرمزاحم در خود صفحه تنظیمات نگه می‌داریم.
-  const el = document.getElementById('save-note-settings');
-  if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 900); }
+  // ذخیره خودکار نباید هیچ پیام یا تغییر ظاهری ایجاد کند؛ مخصوصاً هنگام باز بودن منوها/کشوها.
+  return;
 }
 
 
@@ -5526,7 +5524,7 @@ function resizeImageToBase64(file, maxDim, quality, withWatermark){
 function githubHeaders(){
   const headers = { 'Accept': 'application/vnd.github+json' };
   if(settings.githubToken && settings.githubToken.trim()){
-    headers['Authorization'] = `token ${settings.githubToken.trim()}`;
+    headers['Authorization'] = `Bearer ${settings.githubToken.trim()}`;
   }
   return headers;
 }
@@ -6087,6 +6085,35 @@ function scheduleSync(){
   syncTimer = setTimeout(syncToGithub, 1500);
 }
 
+async function fileToBase64(file){
+  return await new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const comma = result.indexOf(',');
+      if(comma < 0) return reject(new Error('خواندن فایل عکس ناموفق بود'));
+      resolve(result.slice(comma+1));
+    };
+    reader.onerror = () => reject(new Error('خواندن فایل عکس ناموفق بود'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function prepareProductImageBase64(file){
+  // اول نسخه فشرده/واترمارک‌شده را امتحان می‌کنیم.
+  try{
+    return {base64: await resizeImageToBase64(file, 1280, 0.9, true), extension:'jpg'};
+  }catch(err){
+    // بعضی فرمت‌های موبایل (خصوصاً HEIC/HEIF) ممکن است توسط Image/Canvas مرورگر قابل decode نباشند.
+    // در این حالت فایل اصلی را مستقیماً به GitHub می‌فرستیم تا خود آپلود از بین نرود.
+    const mime = (file.type || '').toLowerCase();
+    if(mime === 'image/jpeg' || mime === 'image/png' || mime === 'image/webp' || mime === 'image/gif'){
+      return {base64: await fileToBase64(file), extension: mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : mime === 'image/gif' ? 'gif' : 'jpg'};
+    }
+    throw new Error('فرمت این عکس توسط مرورگر قابل تبدیل نیست. عکس را به JPG یا PNG تبدیل کن و دوباره انتخاب کن.');
+  }
+}
+
 async function handleImageFile(id, inputEl){
   if(!isAdmin) return;
   const files = inputEl.files ? Array.from(inputEl.files) : [];
@@ -6116,13 +6143,12 @@ async function handleImageFile(id, inputEl){
   let uploadedCount = 0;
   for(let i=0; i<toUpload.length; i++){
     const file = toUpload[i];
-    setPhotoStatus(id, toUpload.length>1 ? `در حال آپلود عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}...` : 'در حال فشرده‌سازی و آپلود عکس...', 'uploading');
+    setPhotoStatus(id, toUpload.length>1 ? `در حال آپلود عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}...` : 'در حال آماده‌سازی و آپلود عکس...', 'uploading');
     try{
-      const base64 = await resizeImageToBase64(file, 1280, 0.9, true);
-      const path = `${folder}/${id}_${Date.now()}_${i}.jpg`;
+      const prepared = await prepareProductImageBase64(file);
+      const path = `${folder}/${id}_${Date.now()}_${i}.${prepared.extension}`;
       const apiUrl = githubContentsUrl(path);
-
-      const body = { message: 'add product image '+id, content: base64, branch };
+      const body = { message: 'add product image '+id, content: prepared.base64, branch };
       const putRes = await fetch(apiUrl, {
         method: 'PUT',
         headers: {...githubHeaders(), 'Content-Type':'application/json'},
@@ -6130,6 +6156,7 @@ async function handleImageFile(id, inputEl){
       });
       const data = await putRes.json().catch(()=>({}));
       if(!putRes.ok) throw new Error(data.message || ('خطای گیت‌هاب: '+putRes.status));
+      if(!data.content || !data.content.download_url) throw new Error('گیت‌هاب فایل را ذخیره کرد ولی آدرس عکس را برنگرداند.');
 
       prod.images.push({
         url: data.content.download_url + (data.content.download_url.includes('?')?'&':'?') + 'v=' + Date.now(),
@@ -6137,11 +6164,11 @@ async function handleImageFile(id, inputEl){
         sha: data.content.sha
       });
       productCarouselIndex[id] = prod.images.length - 1;
-      persist();
       updateProductPhotoUI(id);
+      persist();
       uploadedCount++;
     }catch(err){
-      console.error(err);
+      console.error('handleImageFile:', err);
       setPhotoStatus(id, 'آپلود عکس ' + toFaNum(i+1,0) + ' ناموفق شد: ' + (err.message || 'خطای ناشناخته'), 'error');
       inputEl.value = '';
       return;
