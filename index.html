@@ -8651,6 +8651,64 @@ async function editConsignItemTotals(id){
   showToast('جدول اقلام ویرایش شد ✓', 'success');
 }
 
+async function deleteConsignItem(consignId, itemKey){
+  if(!isAdmin){ await customAlert('فقط مدیر می‌تونه یک قلم از واگذاری رو حذف کنه.'); return; }
+  const c = consignments.find(x => x.id === consignId);
+  if(!c) return;
+  const idx = (c.items||[]).findIndex(it => consignItemKey(c,it) === itemKey);
+  if(idx < 0) return;
+  const item = c.items[idx];
+  const remaining = consignRemaining(item);
+  const sold = Number(item.soldQty||0);
+  const returned = Number(item.returnedQty||0);
+  const label = (item.productName || 'محصول') + (item.colorName ? ' — ' + item.colorName : '');
+  let msg = '«' + label + '» از این واگذاری حذف بشه؟';
+  if(sold > 0) msg += '\nفروش ثبت‌شده: ' + fa.format(sold) + ' عدد.';
+  if(returned > 0) msg += '\nمرجوعی ثبت‌شده: ' + fa.format(returned) + ' عدد.';
+  if(remaining > 0) msg += '\n' + fa.format(remaining) + ' عدد موجود نزد فروشگاه به انبار برمی‌گرده.';
+  msg += '\nسوابق فروش و تحویل/شارژ مربوط به همین قلم هم از گزارش این واگذاری حذف می‌شن.';
+  if(!await customConfirm(msg)) return;
+
+  const snapshot = JSON.parse(JSON.stringify({items:c.items, saleLogs:c.saleLogs, deliveries:c.deliveries}));
+  const pid = item.productId;
+  const cid = item.colorId || null;
+
+  // چون کاربر حسابداری را دوباره تنظیم می‌کند، همه‌ی گزارش‌های مرتبط با همین قلم
+  // حذف می‌شوند؛ پرداخت‌های فروشگاه دست‌نخورده می‌مانند تا کاربر بتواند آن‌ها را جداگانه اصلاح کند.
+  c.saleLogs = (c.saleLogs||[]).map(log => ({
+    ...log,
+    items: (log.items||[]).filter(x => !(x.productId === pid && (x.colorId||null) === cid))
+  })).filter(log => (log.items||[]).length).map(log => ({
+    ...log,
+    total: (log.items||[]).reduce((sum,x)=>sum + Number(x.qty||0)*Number(x.unitPrice||0), 0)
+  }));
+
+  c.deliveries = (c.deliveries||[]).map(d => ({
+    ...d,
+    items: (d.items||[]).filter(x => !(x.productId === pid && (x.colorId||null) === cid))
+  })).filter(d => (d.items||[]).length);
+
+  c.items.splice(idx,1);
+  renderConsignTab();
+  renderSummary();
+  const ok = await syncConsignmentToSupabase(c);
+  if(!ok){
+    c.items = snapshot.items;
+    c.saleLogs = snapshot.saleLogs;
+    c.deliveries = snapshot.deliveries;
+    renderConsignTab();
+    renderSummary();
+    return;
+  }
+
+  // فقط موجودیِ هنوز نزد فروشگاه برمی‌گردد؛ فروش و مرجوعی قبلاً اثر خودشان را روی انبار گذاشته‌اند.
+  if(remaining > 0) applyItemStockDelta(pid, cid, remaining);
+  persist();
+  renderConsignTab();
+  renderSummary();
+  showToast('قلم از واگذاری حذف شد' + (remaining>0 ? ' و موجودی باقی‌مانده به انبار برگشت ✓' : ' ✓'), 'success');
+}
+
 async function editConsignmentStoreInfo(id){
   if(!isAdmin){ await customAlert('فقط مدیر می‌تونه اطلاعات فروشگاه رو ویرایش کنه.'); return; }
   const c = consignments.find(x=>x.id===id);
@@ -9132,7 +9190,10 @@ function renderConsignCard(c){
           <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
           <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
           <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
-          <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'}>✎</button>
+          <span style="display:flex;align-items:center;gap:2px;justify-content:flex-end;">
+            <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'}>✎</button>
+            <button type="button" class="consign-item-edit" title="حذف این رنگ/قلم از واگذاری" style="color:var(--red);" ${isAdmin ? `onclick="event.stopPropagation(); deleteConsignItem('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'}>🗑️</button>
+          </span>
         </div>`;
     }).join('');
     return `
