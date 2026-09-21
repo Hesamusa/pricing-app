@@ -9932,6 +9932,60 @@ setTimeout(()=>{
   }
 }
 </style>
+
+<style>
+/* PRODUCT CATALOG — full desktop canvas v26
+   Use the real available workspace instead of the old centered 1500px surface.
+   Mobile/tablet layouts remain unchanged. */
+@media (min-width:900px){
+  #tab-products{
+    width:100%;
+  }
+  #tab-products.tab-panel,
+  .tab-panel:has(#tab-products){
+    max-width:none !important;
+    width:100% !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+  }
+  #tab-products #products-list{
+    width:100% !important;
+    max-width:none !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:18px !important;
+  }
+  #tab-products .product-card{
+    width:100%;
+    min-width:0;
+  }
+  #tab-products #products-list .product-card.open{
+    grid-column:1 / -1;
+    width:100% !important;
+    max-width:none !important;
+    justify-self:stretch;
+  }
+  #tab-products .search-box,
+  #tab-products .products-toolbar,
+  #tab-products .section-title{
+    width:100%;
+    max-width:none !important;
+  }
+  /* Give the expanded editor the same full canvas as the product list. */
+  #tab-products .product-card.open .product-body-inner{
+    width:100%;
+    box-sizing:border-box;
+  }
+}
+
+@media (min-width:1400px){
+  #tab-products #products-list{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:20px !important;
+  }
+}
+</style>
 </body>
 </html>
 
