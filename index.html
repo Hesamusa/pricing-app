@@ -1636,7 +1636,15 @@ async function loadProductsFromSupabaseBridge(){
       .select('id,name,category,weight,print_hours,manual_hours,paint_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
       .order('created_at', { ascending:true });
     if(error) throw error;
-    if(!Array.isArray(rows) || rows.length === 0) return false;
+    if(!Array.isArray(rows)) throw new Error('پاسخ نامعتبر از جدول products');
+    // حتی اگر جدول خالی باشد، خالی بودن Supabase خودش داده معتبر است؛
+    // نباید اطلاعات قدیمی localStorage روی موبایل باقی بماند.
+    if(rows.length === 0){
+      products = [];
+      supabaseProductsLoaded = true;
+      try{ localStorage.setItem('pricing_app_products_supabase_cache', '[]'); }catch(e){}
+      return true;
+    }
 
     const ids = rows.map(r => r.id).filter(Boolean);
     let colorRows = [];
@@ -1700,7 +1708,15 @@ async function loadProductsFromSupabaseBridge(){
       .select('id,name,category,weight,print_hours,manual_hours,paint_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
       .order('created_at', { ascending:true });
     if(error) throw error;
-    if(!Array.isArray(rows) || rows.length === 0) return false;
+    if(!Array.isArray(rows)) throw new Error('پاسخ نامعتبر از جدول products');
+    // حتی اگر جدول خالی باشد، خالی بودن Supabase خودش داده معتبر است؛
+    // نباید اطلاعات قدیمی localStorage روی موبایل باقی بماند.
+    if(rows.length === 0){
+      products = [];
+      supabaseProductsLoaded = true;
+      try{ localStorage.setItem('pricing_app_products_supabase_cache', '[]'); }catch(e){}
+      return true;
+    }
 
     const ids = rows.map(r => r.id).filter(Boolean);
     let colorRows = [];
@@ -3309,7 +3325,7 @@ function persist(opts){
     }catch(e){ localOk = false; console.error('ذخیره‌سازی محلی ناموفق بود', e); }
 
     let cloudOk = true;
-    if(!(opts && opts.skipSupabase) && supabaseProductsLoaded){
+    if(!(opts && opts.skipSupabase) && SUPABASE_PRODUCTS_ENABLED){
       cloudOk = await saveProductsToSupabaseBridge();
       if(!cloudOk) console.error('ذخیره محصولات در Supabase ناموفق بود');
     }
@@ -3551,6 +3567,7 @@ async function tryAppLogin(){
   }
   if(passEl) passEl.value = '';
   await refreshAuthState();
+  setTimeout(() => refreshProductsFromSupabaseIfSafe(true), 100);
 }
 
 async function fetchUserRole(){
@@ -3670,7 +3687,14 @@ async function syncOrderToSupabase(order){
   }catch(e){ await customAlert('به‌روزرسانی سفارش ناموفق بود؛ اتصال رو چک کن.'); return false; }
 }
 
-sb.auth.onAuthStateChange(() => { refreshAuthState(); });
+sb.auth.onAuthStateChange(async (_event, session) => {
+  await refreshAuthState();
+  // روی موبایل معمولاً session کمی بعد از باز شدن صفحه بازیابی می‌شود؛
+  // بنابراین حتماً بعد از ورود/بازیابی session، محصولات را از Supabase بگیر.
+  if(session && session.user){
+    setTimeout(() => refreshProductsFromSupabaseIfSafe(true), 150);
+  }
+});
 
 async function onModeBadgeClick(){
   if(isAdmin){
@@ -5136,7 +5160,7 @@ async function saveAndSendProduct(id){
     // ذخیره محلی + Supabase را همینجا منتظر می‌مانیم؛ دیگر ارسال تلگرام قبل از ذخیره انجام نمی‌شود.
     localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
     localStorage.setItem('pricing_app_products', JSON.stringify(products));
-    const cloudOk = supabaseProductsLoaded ? await saveProductsToSupabaseBridge() : true;
+    const cloudOk = SUPABASE_PRODUCTS_ENABLED ? await saveProductsToSupabaseBridge() : true;
     if(!cloudOk) throw new Error('ذخیره محصول در Supabase ناموفق بود. اتصال یا مجوز جدول products را بررسی کن.');
 
     if(!telegramConfigured()){
@@ -8817,37 +8841,53 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
-async function refreshProductsFromSupabaseIfSafe(){
+async function refreshProductsFromSupabaseIfSafe(force=false){
   try{
+    if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
     const active = document.activeElement;
-    if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+    if(!force && active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return false;
+    const { data:{session} } = await sb.auth.getSession();
+    if(!session || !session.user) return false;
     const ok = await loadProductsFromSupabaseBridge();
     if(ok){
       try{
         if(typeof render === 'function') render();
         else if(typeof renderAll === 'function') renderAll();
+        else {
+          renderProducts(); renderSummary();
+          if(typeof renderSalesTab === 'function') renderSalesTab();
+          if(typeof renderOrdersTab === 'function') renderOrdersTab();
+          if(typeof renderConsignTab === 'function') renderConsignTab();
+        }
       }catch(e){ console.warn('Product render after Supabase refresh failed', e); }
+      return true;
     }
-  }catch(e){ console.warn('Supabase product refresh failed', e); }
+  }catch(e){ console.error('Supabase product refresh failed:', e); }
+  return false;
 }
-window.addEventListener('pageshow', () => setTimeout(refreshProductsFromSupabaseIfSafe, 300));
+
+
+// Supabase is the single source of truth for products on every device.
+// Always refresh on a fresh page load before the user starts editing.
+window.addEventListener('pageshow', () => setTimeout(() => refreshProductsFromSupabaseIfSafe(true), 150));
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible') setTimeout(refreshProductsFromSupabaseIfSafe, 300);
+  if(document.visibilityState === 'visible') setTimeout(() => refreshProductsFromSupabaseIfSafe(false), 200);
 });
 
 window.addEventListener('load', async () => {
+  // A fresh server read is mandatory; localStorage is only a temporary fallback.
   setTimeout(async () => {
-    const ok = await loadProductsFromSupabaseBridge();
-    if(ok){
-      try{
-        if(typeof render === 'function') render();
-        else if(typeof renderAll === 'function') renderAll();
-      }catch(e){ console.warn('Product render after Supabase load failed', e); }
-      console.info('Products loaded from Supabase:', Array.isArray(products) ? products.length : 0);
-    }
-  }, 900);
+    const ok = await refreshProductsFromSupabaseIfSafe(true);
+    if(ok) console.info('Products loaded from Supabase:', Array.isArray(products) ? products.length : 0);
+    else console.warn('Supabase product refresh did not return data; local fallback remains active.');
+  }, 250);
 });
-</script>
+
+// When this tab returns to foreground after another device has changed products,
+// pull the latest shared data again. Do not overwrite an active form field.
+setInterval(() => {
+  if(document.visibilityState === 'visible') refreshProductsFromSupabaseIfSafe(false);
+}, 5000);
 
 </body>
 </html>
