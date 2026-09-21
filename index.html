@@ -3444,6 +3444,14 @@ function applyItemStockDelta(productId, colorId, delta){
 }
 // کلید یکتا برای هر ترکیب محصول+رنگ (رنگ نداشته باشه یعنی '')
 function ciKey(productId, colorId){ return productId + '::' + (colorId || ''); }
+function consignItemKey(c, it){
+  if(!it) return '';
+  if(!it.itemId){
+    const idx=(c && Array.isArray(c.items)) ? c.items.indexOf(it) : -1;
+    it.itemId = 'ci_' + ((c&&c.id)||'legacy') + '_' + (idx>=0?idx:Math.random().toString(36).slice(2,8));
+  }
+  return it.itemId;
+}
 
 // اطلاعات نمایشی هر قلم امانی همیشه از رکورد اصلی محصول خوانده می‌شود.
 // نام/رنگ ذخیره‌شده داخل امانی فقط برای حفظ سابقه است؛ اگر محصول در تب «محصولات»
@@ -3466,7 +3474,7 @@ function getLiveConsignItemMeta(it){
 function consignVariantLabel(it){
   if(it && it.colorName) return it.colorName;
   const prod = it ? products.find(p=>p.id===it.productId) : null;
-  return prod && (prod.colors||[]).length ? 'رنگ تعیین نشده' : '';
+  return '';
 }
 
 
@@ -7268,7 +7276,8 @@ function makeConsignItem(prod, qty, unitPrice, targetQty, colorId, colorName, co
     returnedQty: 0,
     unitPrice: Math.max(0, Math.round(unitPrice) || 0),
     costPerUnit: c.total, // قیمت تمام‌شده در لحظه‌ی واگذاری، برای محاسبه‌ی سود
-    targetQty: Math.max(0, Math.round(targetQty) || 0)
+    targetQty: Math.max(0, Math.round(targetQty) || 0),
+    itemId: 'ci_' + Date.now().toString(36) + Math.random().toString(36).slice(2,9)
   };
 }
 
@@ -7919,7 +7928,7 @@ async function recordConsignSale(id){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)),
@@ -7937,10 +7946,10 @@ async function recordConsignSale(id){
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
   const logItems = [];
   for(const [key, qty] of entries){
-    const [pid, colorId] = key.split('::');
-    const cid = colorId || null;
-    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
+    const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
     if(!it) continue;
+    const pid = it.productId;
+    const cid = it.colorId || null;
     const avail = consignRemaining(it);
     const q = Math.min(qty, avail);
     if(q <= 0) continue;
@@ -7976,7 +7985,7 @@ async function restockConsign(id){
     const prod = products.find(p => p.id === it.productId);
     const suggested = consignRestockQty(it);
     return {
-      key: ciKey(it.productId, it.colorId),
+      key: consignItemKey(c, it),
       group: it.productName,
       variant: consignVariantLabel(it),
       colorHex: it.colorHex || '',
@@ -8001,9 +8010,9 @@ async function restockConsign(id){
   // فروش نباید موجودی نزد فروشگاه را منفی کند. برای اصلاح داده‌ی اشتباه،
   // از «ویرایش جدول» استفاده کن؛ این مسیر فقط فروش واقعی قابل ثبت را می‌پذیرد.
   for(const [key, qty] of soldEntries){
-    const [pid, colorId] = key.split('::');
-    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === (colorId||null));
+    const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
     if(!it) continue;
+    const pid = it.productId, colorId = it.colorId || null;
     const avail = consignRemaining(it);
     if(qty > avail){
       await customAlert('برای «' + it.productName + (it.colorName?' — '+it.colorName:'') + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه موجود است؛ فروش ' + fa.format(qty) + ' عدد قابل ثبت نیست.');
@@ -8012,16 +8021,18 @@ async function restockConsign(id){
   }
   // هشدار کمبود انبار برای شارژ
   const shortages = rechargeEntries.filter(([key, q]) => {
-    const [pid, colorId] = key.split('::');
+    const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
+    const pid = it ? it.productId : '';
+    const colorId = it ? (it.colorId || null) : null;
     const prod = products.find(p => p.id === pid);
-    return prod && q > productAvailableStock(prod, colorId||null);
+    return prod && q > productAvailableStock(prod, colorId);
   });
   if(shortages.length){
     const lines = shortages.map(([key,q]) => {
-      const [pid, colorId] = key.split('::');
-      const prod = products.find(p => p.id === pid);
-      const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === (colorId||null));
-      return '• ' + prod.name + (it&&it.colorName?' — '+it.colorName:'') + ': موجودی ' + fa.format(productAvailableStock(prod, colorId||null)) + ' — شارژ ' + fa.format(q);
+      const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
+      const prod = it ? products.find(p => p.id === it.productId) : null;
+      const colorId = it ? (it.colorId || null) : null;
+      return '• ' + (prod ? prod.name : 'محصول') + (it&&it.colorName?' — '+it.colorName:'') + ': موجودی ' + fa.format(prod ? productAvailableStock(prod, colorId) : 0) + ' — شارژ ' + fa.format(q);
     }).join('\n');
     const ok = await customConfirm('موجودی انبار این محصول‌ها بعد از شارژ منفی می‌شه:\n' + lines + '\nادامه بدم؟');
     if(!ok) return;
@@ -8030,19 +8041,19 @@ async function restockConsign(id){
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries, saleLogs: c.saleLogs}));
   const soldLogItems = [];
   soldEntries.forEach(([key, qty]) => {
-    const [pid, colorId] = key.split('::');
-    const cid = colorId || null;
-    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
+    const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
     if(!it) return;
+    const pid = it.productId;
+    const cid = it.colorId || null;
     it.soldQty = (it.soldQty||0) + qty;
     soldLogItems.push({productId: pid, productName: it.productName, colorId: cid, colorName: it.colorName||null, qty, unitPrice: it.unitPrice||0});
   });
   const deliveredItems = [];
   rechargeEntries.forEach(([key, qty]) => {
-    const [pid, colorId] = key.split('::');
-    const cid = colorId || null;
-    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
+    const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
     if(!it) return;
+    const pid = it.productId;
+    const cid = it.colorId || null;
     it.deliveredQty = (it.deliveredQty||0) + qty;
     it.rechargedQty = (it.rechargedQty||0) + qty;
     deliveredItems.push({productId: pid, productName: it.productName, colorId: cid, colorName: it.colorName||null, qty});
@@ -8086,7 +8097,7 @@ async function returnConsign(id){
   const c = consignments.find(x => x.id === id);
   if(!c) return;
   const rows = (c.items||[]).filter(it => consignRemaining(it) > 0).map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName,
     variant: consignVariantLabel(it),
     colorHex: it.colorHex || '',
@@ -8106,10 +8117,10 @@ async function returnConsign(id){
   const snapshot = JSON.parse(JSON.stringify(c.items));
   const returned = [];
   for(const [key, qty] of entries){
-    const [pid, colorId] = key.split('::');
-    const cid = colorId || null;
-    const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === cid);
+    const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
     if(!it) continue;
+    const pid = it.productId;
+    const cid = it.colorId || null;
     const q = Math.min(qty, consignRemaining(it));
     if(q <= 0) continue;
     it.returnedQty = (it.returnedQty||0) + q;
@@ -8133,7 +8144,7 @@ async function editConsignTargets(id){
   const c = consignments.find(x => x.id === id);
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'فعلی: ' + fa.format(it.targetQty||0),
@@ -8147,7 +8158,7 @@ async function editConsignTargets(id){
   if(!res) return;
   const snapshot = JSON.parse(JSON.stringify(c.items));
   c.items.forEach(it => {
-    const key = ciKey(it.productId, it.colorId);
+    const key = consignItemKey(c, it);
     if(res[key] !== undefined) it.targetQty = res[key];
   });
   renderConsignTab();
@@ -8161,7 +8172,7 @@ async function editConsignPrices(id){
   const c = consignments.find(x => x.id === id);
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'تومان',
@@ -8175,7 +8186,7 @@ async function editConsignPrices(id){
   if(!res) return;
   const snapshot = JSON.parse(JSON.stringify(c.items));
   c.items.forEach(it => {
-    const key = ciKey(it.productId, it.colorId);
+    const key = consignItemKey(c, it);
     if(res[key] !== undefined) it.unitPrice = res[key];
   });
   renderConsignTab();
@@ -8360,7 +8371,7 @@ async function editConsignSaleLog(consignId, logId){
   const log = (c.saleLogs||[]).find(l => l.id === logId);
   if(!log || !(log.items||[]).length) return;
   const rows = log.items.map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'فروش‌رفته', value: it.qty }]
@@ -8373,7 +8384,7 @@ async function editConsignSaleLog(consignId, logId){
   if(!res || !res.qty) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
   log.items.forEach(it => {
-    const key = ciKey(it.productId, it.colorId);
+    const key = consignItemKey(c, it);
     const newQty = res.qty[key];
     if(newQty === undefined) return;
     const delta = newQty - it.qty;
@@ -8401,7 +8412,7 @@ async function editConsignDelivery(consignId, deliveryId){
   if(!delivery || !(delivery.items||[]).length) return;
   if(delivery.note === 'واگذاری اولیه'){ await customAlert('واگذاری اولیه از اینجا ویرایش نمی‌شه. برای اصلاح اون، خود واگذاری رو حذف و دوباره درست ثبت کن.'); return; }
   const rows = delivery.items.map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'شارژ', value: it.qty }]
@@ -8415,7 +8426,7 @@ async function editConsignDelivery(consignId, deliveryId){
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
   const stockDeltas = [];
   delivery.items.forEach(it => {
-    const key = ciKey(it.productId, it.colorId);
+    const key = consignItemKey(c, it);
     const newQty = res.qty[key];
     if(newQty === undefined) return;
     const delta = newQty - it.qty;
@@ -8449,7 +8460,7 @@ async function editConsignItemTotals(id){
   const c = consignments.find(x => x.id === id);
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
-    key: ciKey(it.productId, it.colorId),
+    key: consignItemKey(c, it),
     group: it.productName, variant: consignVariantLabel(it), colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه فعلی: ' + fa.format(consignRemaining(it)),
@@ -8471,7 +8482,7 @@ async function editConsignItemTotals(id){
   const stockDeltas = [];
   // اول کل تغییرات را اعتبارسنجی می‌کنیم تا «موجودی نزد فروشگاه» منفی نشود.
   for(const it of c.items){
-    const key = ciKey(it.productId, it.colorId);
+    const key = consignItemKey(c, it);
     const newRecharged = res.recharged ? res.recharged[key] : undefined;
     const newSold = res.sold ? res.sold[key] : undefined;
     const newReturned = res.returned ? res.returned[key] : undefined;
@@ -8484,7 +8495,7 @@ async function editConsignItemTotals(id){
     }
   }
   c.items.forEach(it => {
-    const key = ciKey(it.productId, it.colorId);
+    const key = consignItemKey(c, it);
     const newRecharged = res.recharged ? res.recharged[key] : undefined;
     const newSold = res.sold ? res.sold[key] : undefined;
     const newReturned = res.returned ? res.returned[key] : undefined;
@@ -8678,7 +8689,7 @@ async function migrateLegacyConsignItemColors(consignId, itemKey){
   if(!isAdmin){ await customAlert('فقط مدیر می‌تونه رنگ اقلام امانی قدیمی رو تعیین کنه.'); return; }
   const c = consignments.find(x=>x.id===consignId);
   if(!c) return;
-  const it = (c.items||[]).find(x=>ciKey(x.productId,x.colorId)===itemKey);
+  const it = (c.items||[]).find(x=>consignItemKey(c,x)===itemKey);
   if(!it || it.colorId) return;
   const prod = products.find(p=>p.id===it.productId);
   const colors = (prod && prod.colors) || [];
@@ -8777,7 +8788,7 @@ async function editLegacyConsignItemColor(consignId, itemKey){
   if(!isAdmin){ await customAlert('فقط مدیر می‌تونه رنگ قلم امانی قدیمی رو ویرایش کنه.'); return; }
   const c = consignments.find(x=>x.id===consignId);
   if(!c) return;
-  const it = (c.items||[]).find(x=>ciKey(x.productId,x.colorId)===itemKey);
+  const it = (c.items||[]).find(x=>consignItemKey(c,x)===itemKey);
   if(!it) return;
   const prod = products.find(p=>p.id===it.productId);
   const colors = (prod && prod.colors) || [];
@@ -8909,12 +8920,12 @@ async function editConsignItemQuick(consignId, itemKey){
   if(!isAdmin){ await customAlert('فقط مدیر می‌تونه مشخصات قلم امانی رو ویرایش کنه.'); return; }
   const c = consignments.find(x=>x.id===consignId);
   if(!c) return;
-  const it = (c.items||[]).find(x=>ciKey(x.productId,x.colorId)===itemKey);
+  const it = (c.items||[]).find(x=>consignItemKey(c,x)===itemKey);
   if(!it) return;
   const res = await openConsignQtyModal({
     title:'ویرایش ظرفیت مطلوب',
     sub:'این گزینه فقط هدف شارژ مجدد را تغییر می‌دهد؛ تعدادهای واقعی با فروش، شارژ و مرجوعی ثبت می‌شوند.',
-    rows:[{key:itemKey,group:it.productName,variant:it.colorName || ((products.find(p=>p.id===it.productId)?.colors||[]).length ? 'رنگ تعیین نشده' : '' ),colorHex:it.colorHex||'',name:it.productName+(it.colorName?' — '+it.colorName:''),hint:'نزد فروشگاه: '+fa.format(consignRemaining(it)),value:it.targetQty||0}],
+    rows:[{key:itemKey,group:it.productName,variant:it.colorName || '',colorHex:it.colorHex||'',name:it.productName+(it.colorName?' — '+it.colorName:''),hint:'نزد فروشگاه: '+fa.format(consignRemaining(it)),value:it.targetQty||0}],
     okLabel:'ذخیره'
   });
   if(!res) return;
@@ -8994,14 +9005,16 @@ function renderConsignCard(c){
       const rowSearch = normalizeFaText((g.name||'')+' '+(meta.colorName||'')+' '+(it.productName||'')+' '+(it.colorName||''));
       return !productQuery || rowSearch.includes(productQuery);
     });
-    return { ...g, groupSearch, variants };
+    const legacy = variants.filter(({it,meta}) => !it.colorId && meta.prod && (meta.prod.colors||[]).length);
+    const displayVariants = variants.filter(({it,meta}) => !( !it.colorId && meta.prod && (meta.prod.colors||[]).length ));
+    return { ...g, groupSearch, variants, legacy, displayVariants };
   }).filter(g => g.variants.length);
   const rows = visibleGroups.map(g => {
     const gRemain = g.variants.reduce((n,x)=>n+consignRemaining(x.it),0);
     const gSold = g.variants.reduce((n,x)=>n+(x.it.soldQty||0),0);
     const gCharged = g.variants.reduce((n,x)=>n+(x.it.rechargedQty||0),0);
     const gNeed = g.variants.reduce((n,x)=>n+consignRestockQty(x.it),0);
-    const variantRows = g.variants.map(({it,meta}) => {
+    const variantRows = g.displayVariants.map(({it,meta}) => {
       const remain = consignRemaining(it);
       const charged = it.rechargedQty||0;
       const restock = consignRestockQty(it);
@@ -9012,23 +9025,26 @@ function renderConsignCard(c){
         <div class="consign-variant-row" data-product-row data-search="${escapeHtml(rowSearch)}">
           <span class="consign-variant-name">
             ${colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(colorHex)}"></span>` : ''}
-            <span>${escapeHtml(liveColor || ((meta.prod && (meta.prod.colors||[]).length) ? 'رنگ تعیین نشده' : ''))}</span>
+            <span>${escapeHtml(liveColor || '—')}</span>
           </span>
           <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
           <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
           <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
           <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
-          ${(!it.colorId && meta.prod && (meta.prod.colors||[]).length) ? `<button type="button" class="consign-item-edit" title="تعیین/ویرایش رنگ این واگذاری قدیمی" ${isAdmin ? `onclick="event.stopPropagation(); editLegacyConsignItemColor('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'} style="color:var(--orange);">🎨</button>` : ''}
-          <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'}>✎</button>
+          ${(!it.colorId && meta.prod && (meta.prod.colors||[]).length) ? `<button type="button" class="consign-item-edit" title="تعیین/ویرایش رنگ این واگذاری قدیمی" ${isAdmin ? `onclick="event.stopPropagation(); editLegacyConsignItemColor('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'} style="color:var(--orange);">🎨</button>` : ''}
+          <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${consignItemKey(c,it)}')"` : 'disabled'}>✎</button>
         </div>`;
     }).join('');
     return `
       <div class="consign-product-group">
         <div class="consign-product-group-head">
           <button type="button" class="cname product-link consign-product-group-name" title="مشاهده در محصولات" onclick="event.stopPropagation(); openProductFromConsign('${g.items[0].it.productId}')">${escapeHtml(g.name)}</button>
-          <span class="consign-product-group-count">${fa.format(g.variants.length)} رنگ · نزد ${fa.format(gRemain)} · فروش ${fa.format(gSold)}</span>
+          <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+            <span class="consign-product-group-count">${fa.format(g.displayVariants.length)} رنگ · نزد ${fa.format(gRemain)} · فروش ${fa.format(gSold)}</span>
+            ${g.legacy.length && isAdmin ? `<button type="button" class="consign-item-edit" title="تعیین رنگ واگذاری‌های قدیمی" onclick="event.stopPropagation(); editLegacyConsignItemColor('${c.id}','${consignItemKey(c,g.legacy[0].it)}')" style="color:var(--orange);font-size:12px;padding:3px 7px;border:1px solid var(--orange);border-radius:8px;">🎨 تعیین رنگ${g.legacy.length>1?' ('+fa.format(g.legacy.length)+')':''}</button>` : ''}
+          </span>
         </div>
-        ${variantRows}
+        ${variantRows || (g.legacy.length ? `<div class="hint" style="margin:8px 2px;">واگذاری قدیمی این محصول برای نمایش در رنگ‌ها نیاز به تعیین رنگ دارد.</div>` : '')}
       </div>`;
   }).join('');
   const totalsRow = items.length > 1 ? `
