@@ -5064,10 +5064,12 @@ async function syncProductToTelegram(id){
       });
       if(!data.ok) throw new Error(data.description || 'ویرایش پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.');
     } else {
-      if(existingIds.length !== images.length){
-        throw new Error(`تعداد عکس‌های فعلی (${images.length}) با تعداد پیام‌های ثبت‌شده برای این محصول (${existingIds.length}) یکسان نیست؛ برای جلوگیری از حذف یا ایجاد پست جدید، هیچ تغییری در تلگرام انجام نشد.`);
-      }
-      for(let i=0;i<images.length;i++){
+      // Telegram اجازه اضافه/حذف کردن تعداد پیام‌های یک media group موجود را با editMessageMedia نمی‌دهد.
+      // بنابراین اگر تعداد عکس‌های فعلی با تعداد پیام‌های قبلی فرق کرده، برای جلوگیری از حذف/ساخت پست جدید:
+      // فقط پیام‌های موجود را ویرایش می‌کنیم. این کار باعث می‌شود تغییر قیمت/نام/توضیحات حتی در این حالت هم انجام شود.
+      const editableCount = Math.min(images.length, existingIds.length);
+      if(editableCount < 1) throw new Error('برای این محصول هیچ پیام عکس قابل ویرایشی ثبت نشده است؛ پست قبلی دست‌نخورده باقی ماند.');
+      for(let i=0;i<editableCount;i++){
         const media = i === 0
           ? {type:'photo', media:images[i].url, caption, parse_mode:'HTML'}
           : {type:'photo', media:images[i].url};
@@ -5075,6 +5077,13 @@ async function syncProductToTelegram(id){
           chat_id:channel, message_id:existingIds[i], media
         });
         if(!data.ok) throw new Error(data.description || `ویرایش عکس ${i+1} پست تلگرام ناموفق بود؛ پست قبلی حذف نشد.`);
+      }
+      if(images.length !== existingIds.length){
+        const diff = images.length > existingIds.length
+          ? ` ${images.length - existingIds.length} عکس جدید به آلبوم تلگرام اضافه نشد، چون Telegram امکان اضافه‌کردن پیام به آلبوم موجود را با ویرایش فراهم نمی‌کند.`
+          : ` ${existingIds.length - images.length} پیام قدیمی تلگرام دست‌نخورده باقی ماند تا هیچ پستی حذف نشود.`;
+        console.warn('Telegram media-group count mismatch:', diff);
+        setTelegramSyncStatus('پست موجود به‌روزرسانی شد؛ تعداد عکس‌های تلگرام با محصول متفاوت است.' + diff, 'success');
       }
     }
 
