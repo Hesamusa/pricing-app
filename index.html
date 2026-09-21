@@ -1536,6 +1536,60 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   #tab-consign .consign-actions{gap:9px;}
   #tab-consign .consign-actions .order-status-btn{flex:0 1 auto;min-width:150px;}
 
+  /* Open consignment store card: table stays in the main area while
+     reports, financial summary and actions live in a dedicated side panel. */
+  #tab-consign .consign-workspace{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 330px;
+    gap:18px;
+    align-items:start;
+  }
+  #tab-consign .consign-main-panel{min-width:0;}
+  #tab-consign .consign-side-panel{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    position:sticky;
+    top:12px;
+  }
+  #tab-consign .consign-side-section{
+    background:var(--surface-2, var(--card));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px;
+  }
+  #tab-consign .consign-side-title{
+    font-weight:800;
+    font-size:13px;
+    margin-bottom:9px;
+  }
+  #tab-consign .consign-side-metrics{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  #tab-consign .consign-side-metrics>div{
+    min-width:0;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--card);
+  }
+  #tab-consign .consign-side-metrics span{display:block;font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
+  #tab-consign .consign-side-metrics b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #tab-consign .consign-report-toggle{width:100%;margin:0;}
+  #tab-consign .consign-side-section .sale-item-note{margin-top:8px;}
+  #tab-consign .consign-side-panel .consign-actions{display:grid;grid-template-columns:1fr;gap:7px;}
+  #tab-consign .consign-side-panel .consign-actions .order-status-btn{min-width:0;width:100%;}
+  @media (max-width:1100px){
+    #tab-consign .consign-workspace{grid-template-columns:minmax(0,1fr) 290px;gap:12px;}
+  }
+  @media (max-width:900px){
+    #tab-consign .consign-workspace{display:block;}
+    #tab-consign .consign-side-panel{position:static;margin-top:12px;}
+  }
+
   /* Consignment editor modals: grouped product / color rows become a real grid */
   .consign-modal{width:min(920px,calc(100vw - 80px));}
   .consign-modal .consign-modal-body{max-height:min(72vh,720px);overflow:auto;}
@@ -1988,6 +2042,87 @@ async function saveProductsToSupabaseBridge(){
   body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{height:180px;}
 }
 </style>
+
+<style id="product-focus-modern-v32">
+/* v32 — desktop product workspace: compact, one-screen, no stretched controls */
+@media (min-width:1201px){
+  body.product-focus-mode{overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open{
+    inset:10px !important; height:calc(100vh - 20px) !important; max-height:none !important;
+    border-radius:16px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    min-height:66px !important; height:66px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    overflow:hidden !important; height:calc(100% - 66px) !important; flex:1 1 auto !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    width:min(1580px,calc(100% - 32px)) !important; max-width:1580px !important;
+    height:100% !important; min-height:0 !important; overflow:hidden !important;
+    padding:12px 0 10px !important; gap:10px 12px !important;
+    grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+    grid-template-rows:44px 82px 118px 88px 66px 46px !important;
+    align-items:stretch !important;
+  }
+  /* top row */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1){grid-column:1 / span 4 !important;grid-row:1 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){grid-column:5 / span 3 !important;grid-row:1 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field{grid-column:1 / span 3 !important;grid-row:2 / span 3 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){grid-column:4 / span 5 !important;grid-row:2 / span 2 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field{grid-column:9 / span 4 !important;grid-row:1 / span 4 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{grid-column:4 / span 5 !important;grid-row:4 / span 2 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle{grid-column:1 / span 3 !important;grid-row:5 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{grid-column:1 / span 3 !important;grid-row:6 !important;overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards{grid-column:9 / span 4 !important;grid-row:5 / span 2 !important;align-self:stretch !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn{grid-column:4 / span 5 !important;grid-row:6 !important;width:100% !important;margin:0 !important;min-height:44px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{grid-column:8 / span 1 !important;grid-row:6 !important;width:100% !important;margin:0 !important;min-height:44px !important;}
+  /* compact media */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{height:100% !important;gap:10px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{width:150px !important;min-width:150px !important;height:150px !important;max-height:150px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{height:150px !important;border-radius:12px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{min-width:90px !important;}
+  /* compact controls */
+  body.product-focus-mode #tab-products #products-list > .product.open .field label,
+  body.product-focus-mode #tab-products #products-list > .product.open .stock-field > label,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field > label{font-size:11px !important;margin-bottom:4px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .field input,
+  body.product-focus-mode #tab-products #products-list > .product.open .field select,
+  body.product-focus-mode #tab-products #products-list > .product.open .group-select{height:36px !important;min-height:36px !important;padding:6px 9px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .desc-textarea{height:78px !important;min-height:78px !important;resize:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .hint{font-size:10px !important;line-height:1.35 !important;margin-top:3px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:7px 9px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field{grid-column:span 1 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field:nth-child(3){grid-column:1 / -1 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .dim-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:6px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .input-row{gap:3px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .input-row .num-input{width:48px !important;min-width:48px !important;height:32px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .unit{font-size:10px !important;}
+  /* stock stays compact and scroll-free */
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:6px !important;max-height:112px !important;overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{min-height:30px !important;padding:4px 6px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-stock-input{width:38px !important;min-width:38px !important;max-width:38px !important;height:26px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-stock-btn{width:24px !important;height:24px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row{gap:6px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row select{height:32px !important;min-height:32px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .add-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .delete-btn{font-size:12px !important;padding:0 10px !important;}
+  /* cost and price area */
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-toggle{min-height:36px !important;padding:7px 10px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-wrap{display:block !important;max-height:44px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown{display:grid !important;grid-template-columns:repeat(3,1fr) !important;gap:3px 8px !important;font-size:9px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row{padding:1px 0 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row.total{font-size:10px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:8px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card{min-height:112px !important;padding:10px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card .value{font-size:21px !important;}
+}
+@media (min-width:900px) and (max-width:1200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{overflow:auto !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{width:calc(100% - 28px) !important;grid-template-columns:repeat(6,minmax(0,1fr)) !important;grid-template-rows:auto !important;overflow:visible !important;padding:14px 0 20px !important;}
+}
+</style>
+
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -9447,7 +9582,9 @@ function renderConsignCard(c){
       <div class="consign-card-body-inner">
         ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
 
-        <div class="consign-table">
+        <div class="consign-workspace">
+          <div class="consign-main-panel">
+            <div class="consign-table">
           <div class="consign-products-tools">
           <div class="consign-products-search${productQuery?' has-value':''}" id="consign-products-search-box_${c.id}">
             <svg width=17 height=17 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -9462,20 +9599,27 @@ function renderConsignCard(c){
           ${totalsRow}
         </div>
 
-        <div class="sale-item-bottom" style="margin-top:6px;">
-          <span>ارزش فروش: <b>${fmt(soldValue)}</b></span>
-          <span class="${profit>=0?'profit-pos':'profit-neg'}">سود: <b>${fmt(profit)}</b></span>
-        </div>
-        <div class="sale-item-bottom">
-          <span class="profit-pos">تسویه‌شده: <b>${fmt(paid)}</b></span>
-          <span class="${debt>0?'profit-neg':'profit-pos'}">${debt>0 ? 'مانده طلب' : 'تسویه کامل'}: <b>${fmt(debt)}</b></span>
-        </div>
-        <button type="button" class="order-status-btn" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); toggleConsignHistory('${c.id}')">${historyOpen ? '▲' : '▼'} گزارش‌ها (${fa.format(historyCount)})</button>
-        ${historyPanel}
-        ${c.notes ? `<div class="sale-item-note">${escapeHtml(c.notes)}</div>` : ''}
-        ${paymentsHistory}
-
-        <div class="consign-actions">
+            </div>
+          </div>
+          <aside class="consign-side-panel">
+            <div class="consign-side-section">
+              <div class="consign-side-title">خلاصه فروشگاه</div>
+              <div class="consign-side-metrics">
+                <div><span>ارزش فروش</span><b>${fmt(soldValue)}</b></div>
+                <div><span>سود</span><b class="${profit>=0?'profit-pos':'profit-neg'}">${fmt(profit)}</b></div>
+                <div><span>تسویه‌شده</span><b class="profit-pos">${fmt(paid)}</b></div>
+                <div><span>${debt>0 ? 'مانده طلب' : 'تسویه کامل'}</span><b class="${debt>0?'profit-neg':'profit-pos'}">${fmt(debt)}</b></div>
+              </div>
+            </div>
+            <div class="consign-side-section">
+              <button type="button" class="order-status-btn consign-report-toggle" onclick="event.stopPropagation(); toggleConsignHistory('${c.id}')">${historyOpen ? '▲' : '▼'} گزارش‌ها (${fa.format(historyCount)})</button>
+              ${historyPanel}
+            </div>
+            ${c.notes ? `<div class="consign-side-section"><div class="consign-side-title">یادداشت</div><div class="sale-item-note">${escapeHtml(c.notes)}</div></div>` : ''}
+            ${paymentsHistory ? `<div class="consign-side-section"><div class="consign-side-title">تسویه‌ها</div>${paymentsHistory}</div>` : ''}
+            <div class="consign-side-section">
+              <div class="consign-side-title">عملیات</div>
+              <div class="consign-actions">
           ${c.status !== 'closed' ? `
             <button type="button" class="order-status-btn done" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
             <button type="button" class="order-status-btn" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
@@ -9490,6 +9634,9 @@ function renderConsignCard(c){
           ${isAdmin ? (c.status === 'closed'
             ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
             : `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
