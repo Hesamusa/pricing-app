@@ -433,6 +433,23 @@
   }
   .product-picker-item:active{background:var(--bg);}
   .product-picker-item.active{background:var(--orange-soft); color:var(--orange); font-weight:700;}
+  .product-picker-item-inner{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;}
+  .product-picker-item-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .product-picker-item-meta{font-size:11px;color:var(--ink-soft);white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:5px;}
+  .product-picker-item-meta .picker-dot{width:7px;height:7px;border-radius:50%;background:var(--orange);display:inline-block;}
+  .variant-select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:9px 11px;font-family:'Vazirmatn',sans-serif;font-size:13px;outline:none;}
+  .variant-select:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-soft);}
+  .consign-product-group{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:7px;background:var(--card);}
+  .consign-product-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:var(--bg);border-bottom:1px solid var(--line);}
+  .consign-product-group-name{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .consign-product-group-count{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
+  .consign-variant-row{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px 44px 50px 30px;gap:3px;align-items:center;padding:6px 7px;border-bottom:1px solid var(--line-soft,var(--line));}
+  .consign-variant-row:last-child{border-bottom:0;}
+  .consign-variant-name{display:flex;align-items:center;gap:5px;min-width:0;font-size:12px;}
+  .consign-variant-name span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .consign-product-summary{font-size:11px;color:var(--ink-soft);display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
+  @media(max-width:380px){.consign-variant-row{grid-template-columns:minmax(0,1fr) 38px 38px 38px 42px 28px;font-size:11px;gap:2px}.consign-product-summary{font-size:10px;gap:4px}.consign-product-group-head{padding:8px}.variant-select{min-height:42px;}}
+
 
   .group-select-row{display:flex; align-items:center; gap:8px;}
   select.group-select{
@@ -1747,7 +1764,7 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
       </div>
       <div class="field" id="sale_color_field" style="display:none;">
         <label>رنگ محصول</label>
-        <select class="gh-field" id="sale_color" onchange="onSaleColorChange(this.value)"></select>
+        <select class="gh-field variant-select" id="sale_color" onchange="onSaleColorChange(this.value)"></select>
       </div>
       <div class="field">
         <label>نوع فروش</label>
@@ -1855,7 +1872,7 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
       </div>
       <div class="field" id="order_color_field" style="display:none;">
         <label>رنگ محصول</label>
-        <select class="gh-field" id="order_item_color" onchange="orderItemColorId=this.value"></select>
+        <select class="gh-field variant-select" id="order_item_color" onchange="orderItemColorId=this.value"></select>
       </div>
       <div class="grid-2">
         <div class="field">
@@ -2168,7 +2185,7 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
         <div class="hint" id="consign_item_stock_hint"></div>
       </div>
       <div class="field" id="consign_item_color_field" style="display:none;">
-        <label>رنگ</label>
+        <label>واریانت رنگ</label>
         <div class="color-option-row" id="consign_item_color_row"></div>
       </div>
       <div class="grid-2">
@@ -3598,7 +3615,7 @@ function renderProducts(){
           </div>
 
           <div class="stock-field">
-            <label>رنگ‌ها و موجودی در انبار</label>
+            <label>واریانت‌های رنگی و موجودی در انبار</label>
             ${(prod.colors && prod.colors.length) ? `
             <div class="color-chip-list" id="colorList_${prod.id}">
               ${prod.colors.map(col => `
@@ -5526,7 +5543,7 @@ function renderProductPickerList(){
     listEl.innerHTML = `<div class="empty" style="padding:16px 8px;"><p>نتیجه‌ای پیدا نشد.</p></div>`;
     return;
   }
-  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===saleProductId?'active':''}" onclick="selectSaleProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
+  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===saleProductId?'active':''}" onclick="selectSaleProduct('${p.id}')"><span class="product-picker-item-inner"><span class="product-picker-item-name">${escapeHtml(p.name)}</span><span class="product-picker-item-meta">${p.colors&&p.colors.length ? `<span class="picker-dot"></span>${fa.format(p.colors.length)} رنگ` : 'بدون رنگ'}</span></span></button>`).join('');
 }
 function selectSaleProduct(id){
   saleProductId = id; saleColorId = null;
@@ -6072,7 +6089,7 @@ function renderOrderItemPickerList(){
     listEl.innerHTML = `<div class="empty" style="padding:16px 8px;"><p>نتیجه‌ای پیدا نشد.</p></div>`;
     return;
   }
-  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===orderItemProductId?'active':''}" onclick="selectOrderItemProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
+  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===orderItemProductId?'active':''}" onclick="selectOrderItemProduct('${p.id}')"><span class="product-picker-item-inner"><span class="product-picker-item-name">${escapeHtml(p.name)}</span><span class="product-picker-item-meta">${p.colors&&p.colors.length ? `<span class="picker-dot"></span>${fa.format(p.colors.length)} رنگ` : 'بدون رنگ'}</span></span></button>`).join('');
 }
 function selectOrderItemProduct(id){
   orderItemProductId=id; orderItemColorId=null;
@@ -6512,7 +6529,7 @@ function renderConsignItemPickerList(){
     listEl.innerHTML = `<div class="empty" style="padding:16px 8px;"><p>نتیجه‌ای پیدا نشد.</p></div>`;
     return;
   }
-  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===consignItemProductId?'active':''}" onclick="selectConsignItemProduct('${p.id}')">${escapeHtml(p.name)}</button>`).join('');
+  listEl.innerHTML = filtered.map(p => `<button type="button" class="product-picker-item ${p.id===consignItemProductId?'active':''}" onclick="selectConsignItemProduct('${p.id}')"><span class="product-picker-item-inner"><span class="product-picker-item-name">${escapeHtml(p.name)}</span><span class="product-picker-item-meta">${p.colors&&p.colors.length ? `<span class="picker-dot"></span>${fa.format(p.colors.length)} رنگ` : 'بدون رنگ'}</span></span></button>`).join('');
 }
 function selectConsignItemProduct(id){
   consignItemProductId = id;
@@ -7695,31 +7712,59 @@ function renderConsignCard(c){
   const needs = consignNeedsRestock(c);
   let totalRemain = 0, totalSold = 0, totalCharged = 0, totalRestockNeed = 0;
   const productQuery = normalizeFaText(consignProductSearch[c.id] || '');
-  const rows = items.map(it => {
-    const meta = getLiveConsignItemMeta(it);
-    const remain = consignRemaining(it);
-    const rowSearch = normalizeFaText((meta.productName||'')+' '+(meta.colorName||'')+' '+(it.productName||'')+' '+(it.colorName||''));
-    const restock = consignRestockQty(it);
-    const charged = it.rechargedQty||0;
-    totalRemain += remain;
+  items.forEach(it => {
+    totalRemain += consignRemaining(it);
     totalSold += (it.soldQty||0);
-    totalCharged += charged;
-    totalRestockNeed += restock;
-    const liveLabel = meta.prod ? meta.productName + (meta.colorName ? ' — ' + meta.colorName : '') : (it.productName || 'محصول حذف‌شده');
+    totalCharged += (it.rechargedQty||0);
+    totalRestockNeed += consignRestockQty(it);
+  });
+  const groupsMap = new Map();
+  items.forEach(it => {
+    const meta = getLiveConsignItemMeta(it);
+    const pid = it.productId || ('legacy_' + (it.productName||''));
+    if(!groupsMap.has(pid)) groupsMap.set(pid, { id:pid, name: meta.productName || it.productName || 'محصول حذف‌شده', meta, items:[] });
+    groupsMap.get(pid).items.push({it, meta});
+  });
+  const groups = [...groupsMap.values()];
+  const visibleGroups = groups.map(g => {
+    const groupSearch = normalizeFaText([g.name, ...(g.items||[]).flatMap(x => [x.meta.colorName||'', x.it.colorName||''])].join(' '));
+    const variants = g.items.filter(({it,meta}) => {
+      const rowSearch = normalizeFaText((g.name||'')+' '+(meta.colorName||'')+' '+(it.productName||'')+' '+(it.colorName||''));
+      return !productQuery || rowSearch.includes(productQuery);
+    });
+    return { ...g, groupSearch, variants };
+  }).filter(g => g.variants.length);
+  const rows = visibleGroups.map(g => {
+    const gRemain = g.variants.reduce((n,x)=>n+consignRemaining(x.it),0);
+    const gSold = g.variants.reduce((n,x)=>n+(x.it.soldQty||0),0);
+    const gCharged = g.variants.reduce((n,x)=>n+(x.it.rechargedQty||0),0);
+    const gNeed = g.variants.reduce((n,x)=>n+consignRestockQty(x.it),0);
+    const variantRows = g.variants.map(({it,meta}) => {
+      const remain = consignRemaining(it);
+      const charged = it.rechargedQty||0;
+      const restock = consignRestockQty(it);
+      const liveColor = meta.colorName || it.colorName || '';
+      const colorHex = meta.colorHex || it.colorHex || '';
+      return `
+        <div class="consign-variant-row">
+          <span class="consign-variant-name">
+            ${colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(colorHex)}"></span>` : ''}
+            <span>${escapeHtml(liveColor || 'بدون رنگ')}</span>
+          </span>
+          <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
+          <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
+          <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
+          <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
+          <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'}>✎</button>
+        </div>`;
+    }).join('');
     return `
-      <div class="consign-tr product-row" data-product-row data-search="${escapeHtml(rowSearch)}" style="${productQuery && !rowSearch.includes(productQuery)?'display:none;':''}">
-        <span class="cname-wrap">
-          <button type="button" class="cname product-link" title="مشاهده در محصولات" onclick="event.stopPropagation(); openProductFromConsign('${it.productId}')">
-            ${meta.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(meta.colorHex)}"></span>` : ''}
-            <span>${escapeHtml(liveLabel)}</span>
-          </button>
-          ${meta.prod ? `<span class="consign-live-stock">انبار: ${fa.format(meta.warehouseStock)}</span>` : `<span class="consign-live-stock" style="color:var(--red);">محصول در تب محصولات موجود نیست</span>`}
-        </span>
-        <span class="cnum ${remain===0?'is-zero':''}">${fa.format(remain)}</span>
-        <span class="cnum ${(it.soldQty||0)===0?'is-zero':''}">${fa.format(it.soldQty||0)}</span>
-        <span class="cnum ${charged>0?'is-charged':'is-zero'}">${fa.format(charged)}</span>
-        <span class="cnum ${restock>0?'is-need':'is-zero'}">${restock>0 ? '+'+fa.format(restock) : '—'}</span>
-        <button type="button" class="consign-item-edit" title="ویرایش قلم" ${isAdmin ? `onclick="event.stopPropagation(); editConsignItemQuick('${c.id}','${ciKey(it.productId,it.colorId)}')"` : 'disabled'}>✎</button>
+      <div class="consign-product-group">
+        <div class="consign-product-group-head">
+          <button type="button" class="cname product-link consign-product-group-name" title="مشاهده در محصولات" onclick="event.stopPropagation(); openProductFromConsign('${g.items[0].it.productId}')">${escapeHtml(g.name)}</button>
+          <span class="consign-product-group-count">${fa.format(g.variants.length)} رنگ · نزد ${fa.format(gRemain)} · فروش ${fa.format(gSold)}</span>
+        </div>
+        ${variantRows}
       </div>`;
   }).join('');
   const totalsRow = items.length > 1 ? `
