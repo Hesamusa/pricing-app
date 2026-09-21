@@ -2245,6 +2245,12 @@ async function saveProductsToSupabaseBridge(){
   }
 }
 </style>
+
+<style id="nonblocking-save-toast-v39">
+/* ذخیره خودکار نباید روی منوها، dropdownها یا لمس صفحه اثر بگذارد. */
+#toast-host{pointer-events:none !important;}
+#toast-host .toast{pointer-events:none !important;}
+</style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3931,11 +3937,12 @@ function persist(opts){
   }, 250);
 }
 function flashSaved(){
-  // نکته تنظیمات (اگه اون تب بازه) + توست سراسری که توی هر تبی دیده می‌شه
+  // ذخیره‌های عادی نباید روی رابط کاربری مزاحمت ایجاد کنند یا منو/مودال باز را ببندند.
+  // فقط یک نشانگر بسیار کوتاه و غیرمزاحم در خود صفحه تنظیمات نگه می‌داریم.
   const el = document.getElementById('save-note-settings');
-  if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 1200); }
-  showToast('ذخیره شد ✓', 'success', 1400);
+  if(el){ el.classList.add('show'); setTimeout(()=>el.classList.remove('show'), 900); }
 }
+
 
 // توست سبک — جایگزین await customAlert() مرورگر برای پیام‌های کوتاه
 function showToast(message, type, duration){
