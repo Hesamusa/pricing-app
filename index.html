@@ -3228,10 +3228,16 @@ function loadState(){
         // products = Array.isArray(remote.products) ? remote.products : products;
         // مشتریان و سفارش‌ها از این فایل بازگردانی نمی‌شن (منبع‌شون Supabase‌ه، نه گیت‌هاب)
         renderSettings();
-        renderProducts();
+        // Products are now owned by Supabase. A late GitHub response must never
+        // rebuild the product cards from the pre-Supabase/local state. Re-render
+        // product cards only after the Supabase snapshot has been loaded.
+        if(!SUPABASE_PRODUCTS_ENABLED || !supabaseProductsLoaded){
+          renderProducts();
+        }
         renderSummary();
         renderCustomersTab();
-        persist({skipSync:true});
+        // Do not persist a GitHub-only settings refresh as a product snapshot.
+        persist({skipSync:true, skipSupabase:true});
         const canWrite = githubConfigured();
         setSyncStatus(
           (canWrite ? 'همگام با گیت‌هاب ✓ (' : 'داده‌ها دریافت شد؛ فقط نمایش (') + formatTimeFa(new Date(remote.updatedAt || Date.now())) + ')' + (canWrite ? '' : ' — برای ویرایش، توکن رو در تنظیمات وارد کن'),
@@ -8923,14 +8929,19 @@ async function refreshProductsFromSupabaseIfSafe(force=false){
     const ok = await loadProductsFromSupabaseBridge();
     if(ok){
       try{
-        if(typeof render === 'function') render();
-        else if(typeof renderAll === 'function') renderAll();
-        else {
-          renderProducts(); renderSummary();
-          if(typeof renderSalesTab === 'function') renderSalesTab();
-          if(typeof renderOrdersTab === 'function') renderOrdersTab();
-          if(typeof renderConsignTab === 'function') renderConsignTab();
-        }
+        // Product cards must be rebuilt from the same Supabase snapshot that was
+        // just loaded. This prevents the collapsed card preview from retaining
+        // a stale local price while the expanded card shows the newer value.
+        if(typeof renderProducts === 'function') renderProducts();
+        if(typeof renderSummary === 'function') renderSummary();
+        if(typeof renderSalesTab === 'function') renderSalesTab();
+        if(typeof renderOrdersTab === 'function') renderOrdersTab();
+        if(typeof renderConsignTab === 'function') renderConsignTab();
+        requestAnimationFrame(()=>{
+          if(Array.isArray(products)) products.forEach(p=>{
+            if(p && p.id && typeof updateProductDisplay === 'function') updateProductDisplay(p.id);
+          });
+        });
       }catch(e){ console.warn('Product render after Supabase refresh failed', e); }
       return true;
     }
@@ -8962,7 +8973,6 @@ setInterval(() => {
 }, 5000);
 
 
-<script>
 /* =========================================================
    V15.1 — Supabase Realtime cross-device sync
    هدف: تغییرات موبایل/دسکتاپ بدون Refresh بین دستگاه‌ها پخش شوند.
@@ -8975,6 +8985,15 @@ let realtimeSyncChannel = null;
 let realtimeSyncGeneration = 0;
 const realtimeSyncTimers = Object.create(null);
 const realtimeSyncPending = Object.create(null);
+let realtimeSyncFallbackTimer = null;
+let realtimeSyncLastFallbackAt = 0;
+let realtimeSyncRunning = false;
+
+// Realtime is the primary path. A lightweight server check remains active as a
+// safety net because a Supabase project can have Realtime connected while a
+// table is not yet present in the Realtime publication. This keeps mobile and
+// desktop synchronized without requiring a manual Refresh.
+const REALTIME_FALLBACK_MS = 1800;
 
 function realtimeFocusedFormField(){
   const el = document.activeElement;
@@ -9009,18 +9028,24 @@ function realtimeSchedule(key, fn, delay=450){
 }
 
 async function realtimeRefreshProducts(){
+  const before = JSON.stringify(products || []);
   const ok = await loadProductsFromSupabaseBridge();
   if(!ok) return;
   try{
-    if(typeof render === 'function') render();
-    else if(typeof renderAll === 'function') renderAll();
-    else {
-      if(typeof renderProducts === 'function') renderProducts();
-      if(typeof renderSummary === 'function') renderSummary();
-      if(typeof renderSalesTab === 'function') renderSalesTab();
-      if(typeof renderOrdersTab === 'function') renderOrdersTab();
-      if(typeof renderConsignTab === 'function') renderConsignTab();
-    }
+    // Only rebuild the UI when the server snapshot actually changed. This avoids
+    // flicker and prevents the fallback check from disturbing active cards.
+    const after = JSON.stringify(products || []);
+    if(before === after) return;
+    if(typeof renderProducts === 'function') renderProducts();
+    if(typeof renderSummary === 'function') renderSummary();
+    if(typeof renderSalesTab === 'function') renderSalesTab();
+    if(typeof renderOrdersTab === 'function') renderOrdersTab();
+    if(typeof renderConsignTab === 'function') renderConsignTab();
+    requestAnimationFrame(()=>{
+      if(Array.isArray(products) && typeof updateProductDisplay === 'function'){
+        products.forEach(p=>p && p.id && updateProductDisplay(p.id));
+      }
+    });
   }catch(e){ console.warn('Realtime product render failed:', e); }
 }
 
@@ -9045,8 +9070,45 @@ async function realtimeRefreshConsignments(){
   if(typeof renderConsignTab === 'function') renderConsignTab();
 }
 
+async function realtimeFallbackTick(){
+  if(!currentUser || realtimeSyncRunning) return;
+  realtimeSyncRunning = true;
+  try{
+    // Product changes are the most important cross-device state. Check the
+    // server frequently enough to feel live even if Postgres Realtime is not
+    // delivering table events in this project.
+    const active = document.activeElement;
+    if(!(active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName))){
+      await realtimeRefreshProducts();
+    }
+  }catch(e){
+    console.warn('Realtime fallback check failed:', e);
+  }finally{
+    realtimeSyncRunning = false;
+    realtimeSyncLastFallbackAt = Date.now();
+  }
+}
+
+function startRealtimeFallback(){
+  if(realtimeSyncFallbackTimer) clearInterval(realtimeSyncFallbackTimer);
+  realtimeSyncFallbackTimer = setInterval(()=>{
+    if(document.visibilityState === 'visible' && currentUser){
+      void realtimeFallbackTick();
+    }
+  }, REALTIME_FALLBACK_MS);
+}
+
+function stopRealtimeFallback(){
+  if(realtimeSyncFallbackTimer){
+    clearInterval(realtimeSyncFallbackTimer);
+    realtimeSyncFallbackTimer = null;
+  }
+  realtimeSyncRunning = false;
+}
+
 function stopRealtimeSync(){
   realtimeSyncGeneration++;
+  stopRealtimeFallback();
   Object.keys(realtimeSyncTimers).forEach(k=>clearTimeout(realtimeSyncTimers[k]));
   Object.keys(realtimeSyncTimers).forEach(k=>delete realtimeSyncTimers[k]);
   Object.keys(realtimeSyncPending).forEach(k=>delete realtimeSyncPending[k]);
@@ -9059,6 +9121,7 @@ function stopRealtimeSync(){
 function startRealtimeSync(){
   if(typeof sb === 'undefined' || !sb || !currentUser) return;
   stopRealtimeSync();
+  startRealtimeFallback();
   const generation = realtimeSyncGeneration;
   const channelName = 'app-realtime-sync-' + currentUser.id + '-' + Date.now();
   const channel = sb.channel(channelName);
@@ -9126,12 +9189,20 @@ document.addEventListener('focusout', ()=>{
 const __originalRealtimeRefreshAuthState = refreshAuthState;
 refreshAuthState = async function(){
   await __originalRealtimeRefreshAuthState();
-  if(currentUser) startRealtimeSync();
-  else stopRealtimeSync();
+  if(currentUser){
+    startRealtimeSync();
+    // Do one immediate server snapshot after the session is available.
+    setTimeout(()=>{ if(currentUser) void realtimeFallbackTick(); }, 120);
+  }else{
+    stopRealtimeSync();
+  }
 };
 
 // Auth state can fire more than once during session recovery; the wrapper above
 // handles it safely and replaces the old channel instead of creating duplicates.
+setTimeout(()=>{
+  if(currentUser) startRealtimeSync();
+}, 300);
 </script>
 
 <!-- V15: Telegram relay default/fallback fix -->
