@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T12:53:50.402Z",
+  "updatedAt": "2026-09-21T12:53:57.312Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -626,44 +626,6 @@
       ]
     },
     {
-      "id": "p_1789353746923bh4pe",
-      "name": "سگ طرح بافتنی",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 0,
-      "colors": [
-        {
-          "id": "col_mub8xx51vrcb",
-          "name": "صورتی",
-          "hex": "#ff80c0"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789353746923bh4pe_1789658797467_0.jpg?v=1789658811922",
-          "path": "product-images/p_1789353746923bh4pe_1789658797467_0.jpg",
-          "sha": "078d3c05934df0c15f9f17e44781aef96d83a98b"
-        }
-      ],
-      "weight": 13,
-      "marginR": 90,
-      "marginW": 75,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "col_mub8xx51vrcb": 0
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
-      "telegramMessageIds": [
-        138
-      ]
-    },
-    {
       "id": "p_17893536103524v8zn",
       "name": "گربه طرح بافتنی",
       "stock": 0,
@@ -1221,6 +1183,44 @@
         209,
         210,
         211
+      ]
+    },
+    {
+      "id": "p_1789353746923bh4pe",
+      "name": "سگ طرح بافتنی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [
+        {
+          "id": "col_mub8xx51vrcb",
+          "name": "صورتی",
+          "hex": "#ff80c0"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789353746923bh4pe_1789658797467_0.jpg?v=1789658811922",
+          "path": "product-images/p_1789353746923bh4pe_1789658797467_0.jpg",
+          "sha": "078d3c05934df0c15f9f17e44781aef96d83a98b"
+        }
+      ],
+      "weight": 13,
+      "marginR": 90,
+      "marginW": 75,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "col_mub8xx51vrcb": 1
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
+      "telegramMessageIds": [
+        138
       ]
     },
     {
