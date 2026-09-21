@@ -8791,10 +8791,10 @@ async function editLegacyConsignItemColor(consignId, itemKey){
   const okBtn = document.getElementById('consign-modal-ok');
   const cancelBtn = document.getElementById('consign-modal-cancel');
   if(!overlay || !listEl) return;
-  titleEl.textContent = 'تعیین رنگ واگذاری قدیمی';
-  subEl.textContent = 'این رنگ روی همین واگذاری و فروش‌های قبلیِ بدون رنگ همین قلم اعمال می‌شود.';
+  titleEl.textContent = 'انتقال واگذاری قدیمی به یک رنگ';
+  subEl.textContent = 'با انتخاب رنگ، ردیف «رنگ تعیین نشده» حذف می‌شود و سوابق آن داخل همان رنگ قرار می‌گیرد. اگر آن رنگ از قبل در این فروشگاه وجود داشته باشد، دو ردیف با هم یکی می‌شوند.';
   subEl.style.display = '';
-  okBtn.textContent = 'ذخیره';
+  okBtn.textContent = 'انتقال به رنگ';
   listEl.innerHTML = `<div class="field" style="margin:0;"><label>رنگ محصول</label><div style="display:flex;align-items:center;gap:10px;"><span id="legacyConsignColorSwatch" class="common-color-swatch" style="flex:0 0 22px;width:22px;height:22px;border-radius:50%;"></span><select id="legacyConsignColorSelect" class="gh-field variant-select">${options}</select></div></div>`;
   overlay.classList.add('show');
   const sel=document.getElementById('legacyConsignColorSelect');
@@ -8807,15 +8807,98 @@ async function editLegacyConsignItemColor(consignId, itemKey){
     const col=colors.find(x=>x.id===colorId);
     if(!col){ await customAlert('یک رنگ انتخاب کن.'); return; }
     cleanup();
+
     const snapshot=JSON.parse(JSON.stringify({items:c.items,saleLogs:c.saleLogs,deliveries:c.deliveries}));
     const oldColorId=it.colorId||null;
-    it.colorId=col.id; it.colorName=col.name; it.colorHex=col.hex;
-    (c.saleLogs||[]).forEach(l=>(l.items||[]).forEach(x=>{if(x.productId===it.productId && (x.colorId||null)===oldColorId){x.colorId=col.id;x.colorName=col.name;x.colorHex=col.hex;}}));
-    (c.deliveries||[]).forEach(d=>(d.items||[]).forEach(x=>{if(x.productId===it.productId && (x.colorId||null)===oldColorId){x.colorId=col.id;x.colorName=col.name;x.colorHex=col.hex;}}));
-    renderConsignTab(); renderSummary();
-    const ok=await syncConsignmentToSupabase(c);
-    if(!ok){c.items=snapshot.items;c.saleLogs=snapshot.saleLogs;c.deliveries=snapshot.deliveries;renderConsignTab();renderSummary();return;}
-    showToast('رنگ واگذاری و سوابق قبلی به‌روزرسانی شد ✓','success');
+    try{
+      // اگر همین رنگ از قبل در این واگذاری وجود داشته باشد، ردیف قدیمی و ردیف رنگی
+      // یکی می‌شوند؛ بنابراین دیگر «بدون رنگ» به‌صورت یک خط جدا باقی نمی‌ماند.
+      let target=(c.items||[]).find(x=>x!==it && x.productId===it.productId && (x.colorId||null)===col.id);
+
+      // اگر قبلاً از ابزار تطبیق رنگ استفاده شده، ردیف رنگیِ ساخته‌شده برای همین
+      // منبع هم باید با مقصد ادغام شود تا اطلاعات تکراری ایجاد نشود.
+      const generatedForSource=(c.items||[]).filter(x=>x!==it && x.legacyColorSourceId===it.legacyColorSourceId && x.colorId);
+      if(!target && generatedForSource.length){
+        target=generatedForSource.find(x=>x.colorId===col.id) || null;
+      }
+
+      const srcDelivered=Math.max(0,Number(it.deliveredQty||0));
+      const srcSold=Math.max(0,Number(it.soldQty||0));
+      const srcReturned=Math.max(0,Number(it.returnedQty||0));
+      const srcRecharged=Math.max(0,Number(it.rechargedQty||0));
+      const allocated=Math.max(0,Number(it.legacyColorAllocatedQty||0));
+      // اگر موجودی فعلی قبلاً بین چند رنگ تقسیم شده، آن بخش را دوباره به مقصد اضافه
+      // نمی‌کنیم؛ ردیف‌های رنگیِ موجود همان موجودی فعلی را نگه می‌دارند.
+      const mergeDelivered=Math.max(0,srcDelivered-allocated);
+
+      if(target){
+        const oldTargetSold=Math.max(0,Number(target.soldQty||0));
+        const oldTargetCost=Number(target.costPerUnit||0);
+        const srcCost=Number(it.costPerUnit||0);
+        const totalSold=oldTargetSold+srcSold;
+        if(totalSold>0){
+          target.unitPrice=Math.round(((oldTargetSold*Number(target.unitPrice||0))+(srcSold*Number(it.unitPrice||0)))/totalSold);
+          target.costPerUnit=((oldTargetSold*oldTargetCost)+(srcSold*srcCost))/totalSold;
+        }
+        target.deliveredQty=Math.max(0,Number(target.deliveredQty||0)+mergeDelivered);
+        target.rechargedQty=Math.max(0,Number(target.rechargedQty||0)+srcRecharged);
+        target.soldQty=Math.max(0,oldTargetSold+srcSold);
+        target.returnedQty=Math.max(0,Number(target.returnedQty||0)+srcReturned);
+        target.targetQty=Math.max(0,Number(target.targetQty||0)+Number(it.targetQty||0)-Number(it.legacyColorAllocatedTargetQty||0));
+        target.colorId=col.id; target.colorName=col.name; target.colorHex=col.hex;
+        if(it.legacyColorSourceId && !target.legacyColorSourceId) target.legacyColorSourceId=it.legacyColorSourceId;
+
+        // ردیف منبع حذف می‌شود؛ اگر ردیف رنگیِ تولیدشده برای همین منبع همان مقصد باشد
+        // نیز حذف می‌شود چون اطلاعاتش در target ادغام شده است.
+        c.items=(c.items||[]).filter(x=>x!==it && !(x!==target && x.legacyColorSourceId===it.legacyColorSourceId && x.colorId===col.id));
+      }else{
+        // اگر رنگ مقصد هنوز در این واگذاری وجود ندارد، خود ردیف قدیمی به همان رنگ
+        // تبدیل می‌شود و دیگر هیچ ردیف «بدون رنگ» باقی نمی‌ماند.
+        it.colorId=col.id; it.colorName=col.name; it.colorHex=col.hex;
+        delete it.legacyColorAllocatedQty;
+        delete it.legacyColorAllocatedTargetQty;
+      }
+
+      // تمام سوابق فروش و تحویلِ بدون رنگ این محصول در همین واگذاری به رنگ جدید وصل می‌شوند.
+      // با این کار گزارش‌های قبلی هم دیگر «بدون رنگ» نشان داده نمی‌شوند.
+      (c.saleLogs||[]).forEach(l=>(l.items||[]).forEach(x=>{
+        if(x.productId===it.productId && (x.colorId||null)===oldColorId){
+          x.colorId=col.id; x.colorName=col.name; x.colorHex=col.hex;
+        }
+      }));
+      (c.deliveries||[]).forEach(d=>(d.items||[]).forEach(x=>{
+        if(x.productId===it.productId && (x.colorId||null)===oldColorId){
+          x.colorId=col.id; x.colorName=col.name; x.colorHex=col.hex;
+        }
+      }));
+
+      // تاریخچه‌ی انتقال برای ممیزی و جلوگیری از ابهام در آینده.
+      if(!Array.isArray(c.colorMigrations)) c.colorMigrations=[];
+      c.colorMigrations.unshift({
+        id:'cm_'+Date.now()+Math.random().toString(36).slice(2,5),
+        date:new Date().toISOString().slice(0,10),
+        type:'legacy-to-existing-color',
+        productId:it.productId,
+        productName:it.productName,
+        fromColorId:oldColorId,
+        toColorId:col.id,
+        toColorName:col.name,
+        mergedExistingColor:!!target,
+        soldQty:srcSold,
+        returnedQty:srcReturned,
+        deliveredQty:mergeDelivered,
+        rechargedQty:srcRecharged
+      });
+
+      renderConsignTab(); renderSummary();
+      const ok=await syncConsignmentToSupabase(c);
+      if(!ok) throw new Error('sync failed');
+      showToast('ردیف بدون رنگ حذف و اطلاعات آن داخل «'+col.name+'» منتقل شد ✓','success');
+    }catch(e){
+      c.items=snapshot.items; c.saleLogs=snapshot.saleLogs; c.deliveries=snapshot.deliveries;
+      renderConsignTab(); renderSummary();
+      if(e.message !== 'sync failed') await customAlert('انتقال رنگ انجام نشد؛ اطلاعات قبلی حفظ شد.');
+    }
   };
   const onCancel=()=>cleanup();
   const onBackdrop=e=>{if(e.target===overlay)cleanup();};
