@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T12:59:09.584Z",
+  "updatedAt": "2026-09-21T13:14:01.658Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -73,9 +73,9 @@
           "hex": "#52d6fc"
         },
         {
-          "id": "col_mua2hdn02pae",
+          "id": "color_pink",
           "name": "صورتی",
-          "hex": "#efcaff"
+          "hex": "#ec407a"
         }
       ],
       "images": [
@@ -107,7 +107,7 @@
       "colorStock": {
         "col_mua2g2dwby3k": 4,
         "col_mua2gs728zwd": 4,
-        "col_mua2hdn02pae": 4
+        "color_pink": 4
       },
       "paintHours": 0,
       "printHours": 1,
@@ -131,9 +131,9 @@
       "stock": 0,
       "colors": [
         {
-          "id": "col_mua27qtgbsd6",
+          "id": "color_purple",
           "name": "بنفش",
-          "hex": "#7a219e"
+          "hex": "#8e24aa"
         }
       ],
       "images": [
@@ -168,7 +168,7 @@
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
-        "col_mua27qtgbsd6": 0
+        "color_purple": 0
       },
       "paintHours": 0,
       "printHours": 1,
@@ -193,9 +193,9 @@
       "stock": 8,
       "colors": [
         {
-          "id": "col_mua2ecobfg6w",
+          "id": "color_pink",
           "name": "صورتی",
-          "hex": "#efcaff"
+          "hex": "#ec407a"
         }
       ],
       "images": [
@@ -230,7 +230,7 @@
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
-        "col_mua2ecobfg6w": 8
+        "color_pink": 8
       },
       "paintHours": 0,
       "printHours": 0.5,
@@ -255,7 +255,7 @@
       "stock": 6,
       "colors": [
         {
-          "id": "col_mua2lml2d2y2",
+          "id": "color_white",
           "name": "سفید",
           "hex": "#ffffff"
         }
@@ -277,7 +277,7 @@
       "marginW": 85,
       "category": "g_mtqsahf4t778",
       "colorStock": {
-        "col_mua2lml2d2y2": 6
+        "color_white": 6
       },
       "paintHours": 0,
       "printHours": 1,
@@ -601,8 +601,14 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 6,
-      "colors": [],
+      "stock": 0,
+      "colors": [
+        {
+          "id": "color_brown",
+          "name": "قهوه‌ای",
+          "hex": "#795548"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
@@ -614,7 +620,9 @@
       "marginR": 200,
       "marginW": 100,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_brown": 0
+      },
       "paintHours": 0,
       "printHours": 0.75,
       "manualHours": 0,
@@ -1090,24 +1098,24 @@
       "stock": 0,
       "colors": [
         {
-          "id": "col_mub8hd33us0m",
-          "name": "قهوه ای",
-          "hex": "#804040"
+          "id": "color_brown",
+          "name": "قهوه‌ای",
+          "hex": "#795548"
         },
         {
-          "id": "col_mub8hva4niuv",
+          "id": "color_red",
           "name": "قرمز",
-          "hex": "#c0392b"
+          "hex": "#e53935"
         },
         {
-          "id": "col_mub8i760gdvl",
+          "id": "color_pink",
           "name": "صورتی",
-          "hex": "#ff80c0"
+          "hex": "#ec407a"
         },
         {
-          "id": "col_mub8ijbw7h2m",
+          "id": "color_orange",
           "name": "نارنجی",
-          "hex": "#ff8000"
+          "hex": "#fb8c00"
         }
       ],
       "images": [
@@ -1137,10 +1145,10 @@
       "marginW": 65,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "col_mub8hd33us0m": 0,
-        "col_mub8hva4niuv": 0,
-        "col_mub8i760gdvl": 0,
-        "col_mub8ijbw7h2m": 0
+        "color_brown": 0,
+        "color_red": 0,
+        "color_pink": 0,
+        "color_orange": 0
       },
       "paintHours": 0.5,
       "printHours": 1.5,
@@ -1164,14 +1172,14 @@
       "stock": 1,
       "colors": [
         {
-          "id": "col_mub8z9ipdz21",
+          "id": "color_orange",
           "name": "نارنجی",
-          "hex": "#ff8000"
+          "hex": "#fb8c00"
         },
         {
-          "id": "col_mub8zojwf6s1",
+          "id": "color_pink",
           "name": "صورتی",
-          "hex": "#ff80c0"
+          "hex": "#ec407a"
         }
       ],
       "images": [
@@ -1186,8 +1194,8 @@
       "marginW": null,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "col_mub8z9ipdz21": 1,
-        "col_mub8zojwf6s1": 0
+        "color_orange": 1,
+        "color_pink": 0
       },
       "paintHours": 0,
       "printHours": 1,
@@ -1208,24 +1216,24 @@
       "stock": 0,
       "colors": [
         {
-          "id": "col_mub8xx51vrcb",
+          "id": "color_pink",
           "name": "صورتی",
-          "hex": "#ff80c0"
+          "hex": "#ec407a"
         },
         {
-          "id": "col_mub8yg0etdll",
+          "id": "color_orange",
           "name": "نارنجی",
-          "hex": "#ff8000"
+          "hex": "#fb8c00"
         },
         {
-          "id": "col_mub8yrwttb9b",
+          "id": "color_red",
           "name": "قرمز",
-          "hex": "#c0392b"
+          "hex": "#e53935"
         },
         {
-          "id": "col_mub911q6o6c1",
+          "id": "color_purple",
           "name": "بنفش",
-          "hex": "#ff00ff"
+          "hex": "#8e24aa"
         }
       ],
       "images": [
@@ -1240,10 +1248,10 @@
       "marginW": 75,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "col_mub8xx51vrcb": 0,
-        "col_mub8yg0etdll": 0,
-        "col_mub8yrwttb9b": 0,
-        "col_mub911q6o6c1": 0
+        "color_pink": 0,
+        "color_orange": 0,
+        "color_red": 0,
+        "color_purple": 0
       },
       "paintHours": 0,
       "printHours": 1,
