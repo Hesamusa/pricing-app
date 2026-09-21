@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T11:03:57.216Z",
+  "updatedAt": "2026-09-21T11:04:46.705Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -54,35 +54,6 @@
     "adminPin": "373763"
   },
   "products": [
-    {
-      "id": "p_1789987874096oumgl",
-      "name": "پنجه گربه مینی",
-      "weight": 10,
-      "printHours": 0.75,
-      "manualHours": 0,
-      "paintHours": 0,
-      "accessoryCost": 10000,
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0,
-      "marginW": null,
-      "marginR": 85,
-      "images": [],
-      "stock": 2,
-      "colors": [
-        {
-          "id": "col_mub4ph7hmw6b",
-          "name": "صورتی",
-          "hex": "#ff80c0"
-        }
-      ],
-      "colorStock": {
-        "col_mub4ph7hmw6b": 2
-      },
-      "catalogDescription": "",
-      "telegramMessageIds": [],
-      "category": "g_mu0mydrdz7a1"
-    },
     {
       "id": "p_1789909666043x7sfu",
       "name": "چارم بگ ابر با بند پاراکورد",
