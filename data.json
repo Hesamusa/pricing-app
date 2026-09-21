@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T13:14:01.658Z",
+  "updatedAt": "2026-09-21T13:14:51.170Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -594,44 +594,6 @@
       "sizeL": 0,
       "sizeW": 0,
       "sizeH": 0
-    },
-    {
-      "id": "p_178941010031173kks",
-      "name": "فلکسی بیبی گروت چوبی",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 0,
-      "colors": [
-        {
-          "id": "color_brown",
-          "name": "قهوه‌ای",
-          "hex": "#795548"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
-          "path": "product-images/p_178941010031173kks_1789457302131_0.jpg",
-          "sha": "fee9df6ef5cdd787e2af0074aae8f14cacd71f50"
-        }
-      ],
-      "weight": 7,
-      "marginR": 200,
-      "marginW": 100,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_brown": 0
-      },
-      "paintHours": 0,
-      "printHours": 0.75,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "مفاصل متحرکش انقدر نرم و جذابه که اصلاً از بازی کردن باهاش خسته نمی‌شی! با ظاهر چوبیِ خاص و وزن فوق‌العاده سبکش، بهترین اکسسوری برای کلید یا کیفته تا همه‌جا یه حس خوب همراهت باشه 🌱",
-      "telegramMessageIds": [
-        137
-      ]
     },
     {
       "id": "p_1789318632241mto8f",
@@ -1261,6 +1223,44 @@
       "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
       "telegramMessageIds": [
         138
+      ]
+    },
+    {
+      "id": "p_178941010031173kks",
+      "name": "فلکسی بیبی گروت چوبی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 2,
+      "colors": [
+        {
+          "id": "color_brown",
+          "name": "قهوه‌ای",
+          "hex": "#795548"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
+          "path": "product-images/p_178941010031173kks_1789457302131_0.jpg",
+          "sha": "fee9df6ef5cdd787e2af0074aae8f14cacd71f50"
+        }
+      ],
+      "weight": 7,
+      "marginR": 200,
+      "marginW": 100,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_brown": 2
+      },
+      "paintHours": 0,
+      "printHours": 0.75,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "مفاصل متحرکش انقدر نرم و جذابه که اصلاً از بازی کردن باهاش خسته نمی‌شی! با ظاهر چوبیِ خاص و وزن فوق‌العاده سبکش، بهترین اکسسوری برای کلید یا کیفته تا همه‌جا یه حس خوب همراهت باشه 🌱",
+      "telegramMessageIds": [
+        137
       ]
     },
     {
