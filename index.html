@@ -289,6 +289,7 @@
   .photo-btn.danger{color:var(--red); border-color:var(--red);}
   .photo-limit-note{font-size:12px; color:var(--ink-soft); font-weight:600;}
   .photo-status{font-size:12px; font-weight:600; margin-top:8px;}
+  .product-image-file-input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;overflow:hidden!important;pointer-events:none!important;}
   .photo-status:empty{display:none;}
   .photo-status.uploading{color:var(--ink-soft);}
   .photo-status.error{color:var(--red); line-height:1.6;}
@@ -5173,7 +5174,10 @@ async function removeCompanyLogo(){
 function triggerImageUpload(id){
   if(!isAdmin) return;
   const el = document.getElementById('imgfile_'+id);
-  if(el) el.click();
+  if(!el) return;
+  // در iPhone/iPad اگر همان فایل دوباره انتخاب شود، بدون reset ممکن است change اجرا نشود.
+  try{ el.value = ''; }catch(e){}
+  el.click();
 }
 
 function setPhotoStatus(id, text, kind){
@@ -5211,7 +5215,7 @@ function photoActionsInnerHTML(prod, lk){
     ${remaining > 0
       ? `<button type="button" class="photo-btn" onclick="event.stopPropagation(); triggerImageUpload('${prod.id}')">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</button>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
-    <input type="file" accept="image/*" multiple id="imgfile_${prod.id}" style="display:none" onclick="event.stopPropagation()" onchange="handleImageFile('${prod.id}', this)">
+    <input type="file" accept="image/*,.heic,.heif" multiple id="imgfile_${prod.id}" class="product-image-file-input" onclick="event.stopPropagation()" onchange="handleImageFile('${prod.id}', this)">
   `;
 }
 
@@ -6141,7 +6145,11 @@ async function prepareProductImageBase64(file){
 async function handleImageFile(id, inputEl){
   if(!isAdmin) return;
   const files = inputEl.files ? Array.from(inputEl.files) : [];
-  if(!files.length) return;
+  if(!files.length){
+    setPhotoStatus(id, 'فایلی انتخاب نشد.', 'error');
+    return;
+  }
+  setPhotoStatus(id, 'فایل انتخاب شد؛ در حال بررسی و آپلود...', 'uploading');
   const prod = products.find(p=>p.id===id);
   if(!prod){ inputEl.value=''; return; }
   if(!Array.isArray(prod.images)) prod.images = [];
@@ -6193,7 +6201,9 @@ async function handleImageFile(id, inputEl){
       uploadedCount++;
     }catch(err){
       console.error('handleImageFile:', err);
-      setPhotoStatus(id, 'آپلود عکس ' + toFaNum(i+1,0) + ' ناموفق شد: ' + (err.message || 'خطای ناشناخته'), 'error');
+      const errText = err.message || 'خطای ناشناخته';
+      setPhotoStatus(id, 'آپلود عکس ' + toFaNum(i+1,0) + ' ناموفق شد: ' + errText, 'error');
+      if(typeof showToast === 'function') showToast('آپلود عکس ناموفق بود: '+errText, 'error', 6000);
       inputEl.value = '';
       return;
     }
@@ -6202,6 +6212,7 @@ async function handleImageFile(id, inputEl){
   let msg = uploadedCount > 1 ? `${toFaNum(uploadedCount,0)} عکس با موفقیت آپلود شد ✓` : 'عکس با موفقیت آپلود شد ✓';
   if(skipped > 0) msg += ` (${toFaNum(skipped,0)} عکس دیگه به‌خاطر محدودیت ۵ تایی نادیده گرفته شد)`;
   setPhotoStatus(id, msg, 'success');
+  if(typeof showToast === 'function') showToast(msg, 'success', 3000);
   setTimeout(()=>setPhotoStatus(id,'',''), 3500);
   inputEl.value = '';
 }
