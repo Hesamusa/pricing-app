@@ -7188,9 +7188,12 @@ function consignRemaining(it){
   return Math.max(0, (it.deliveredQty||0) - (it.soldQty||0) - (it.returnedQty||0));
 }
 function productConsignedQty(productId){
+  // A product can have multiple color variants in the same consignment.
+  // Sum every matching variant instead of only the first one.
   return consignments.reduce((sum, c) => {
-    const it = (c.items||[]).find(x => x.productId === productId);
-    return sum + (it ? consignRemaining(it) : 0);
+    return sum + (c.items||[])
+      .filter(it => it.productId === productId)
+      .reduce((n, it) => n + consignRemaining(it), 0);
   }, 0);
 }
 function consignRestockQty(it){
@@ -7881,15 +7884,16 @@ async function restockConsign(id){
   const rechargeEntries = Object.entries(res.recharge||{}).filter(([,q]) => q > 0);
   if(!soldEntries.length && !rechargeEntries.length) return;
 
-  // هشدار فروش بیشتر از چیزی که نزد فروشگاه بوده (شاید شارژ قبلی درست ثبت نشده)
+  // فروش نباید موجودی نزد فروشگاه را منفی کند. برای اصلاح داده‌ی اشتباه،
+  // از «ویرایش جدول» استفاده کن؛ این مسیر فقط فروش واقعی قابل ثبت را می‌پذیرد.
   for(const [key, qty] of soldEntries){
     const [pid, colorId] = key.split('::');
     const it = (c.items||[]).find(x => x.productId === pid && (x.colorId||null) === (colorId||null));
     if(!it) continue;
     const avail = consignRemaining(it);
     if(qty > avail){
-      const ok = await customConfirm('برای «' + it.productName + (it.colorName?' — '+it.colorName:'') + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه بود ولی ' + fa.format(qty) + ' عدد فروش رفته ثبت کردی. ادامه بدم؟');
-      if(!ok) return;
+      await customAlert('برای «' + it.productName + (it.colorName?' — '+it.colorName:'') + '» فقط ' + fa.format(avail) + ' عدد نزد فروشگاه موجود است؛ فروش ' + fa.format(qty) + ' عدد قابل ثبت نیست.');
+      return;
     }
   }
   // هشدار کمبود انبار برای شارژ
@@ -8351,6 +8355,20 @@ async function editConsignItemTotals(id){
   const saleFixItems = [];
   const deliveryFixItems = [];
   const stockDeltas = [];
+  // اول کل تغییرات را اعتبارسنجی می‌کنیم تا «موجودی نزد فروشگاه» منفی نشود.
+  for(const it of c.items){
+    const key = ciKey(it.productId, it.colorId);
+    const newRecharged = res.recharged ? res.recharged[key] : undefined;
+    const newSold = res.sold ? res.sold[key] : undefined;
+    const newReturned = res.returned ? res.returned[key] : undefined;
+    const deliveredAfter = Math.max(0, (it.deliveredQty||0) + (newRecharged !== undefined ? newRecharged - (it.rechargedQty||0) : 0));
+    const soldAfter = Math.max(0, newSold !== undefined ? newSold : (it.soldQty||0));
+    const returnedAfter = Math.max(0, newReturned !== undefined ? newReturned : (it.returnedQty||0));
+    if(soldAfter + returnedAfter > deliveredAfter){
+      await customAlert('مقادیر «' + it.productName + (it.colorName?' — '+it.colorName:'') + '» ناسازگار است: فروش‌رفته + مرجوعی نمی‌تواند بیشتر از کل تحویلی باشد.');
+      return;
+    }
+  }
   c.items.forEach(it => {
     const key = ciKey(it.productId, it.colorId);
     const newRecharged = res.recharged ? res.recharged[key] : undefined;
@@ -8363,13 +8381,13 @@ async function editConsignItemTotals(id){
     if(dRecharged === 0 && dSold === 0 && dReturned === 0) return;
     if(newRecharged !== undefined){
       it.rechargedQty = Math.max(0, newRecharged);
-      it.deliveredQty = Math.max(0, (it.deliveredQty||0) + dRecharged); // شارژ همیشه به جمع کل تحویلی هم اضافه می‌شه
+      it.deliveredQty = Math.max(0, (it.deliveredQty||0) + dRecharged);
     }
     if(newSold !== undefined) it.soldQty = Math.max(0, newSold);
     if(newReturned !== undefined) it.returnedQty = Math.max(0, newReturned);
     if(dSold !== 0) saleFixItems.push({productId: it.productId, productName: it.productName, colorId: it.colorId||null, colorName: it.colorName||null, qty: dSold, unitPrice: it.unitPrice||0});
     if(dRecharged !== 0) deliveryFixItems.push({productId: it.productId, productName: it.productName, colorId: it.colorId||null, colorName: it.colorName||null, qty: dRecharged});
-    const stockDelta = dReturned - dRecharged; // شارژ بیشتر یعنی انبار کمتر؛ مرجوعی بیشتر یعنی انبار بیشتر
+    const stockDelta = dReturned - dRecharged;
     if(stockDelta !== 0) stockDeltas.push({productId: it.productId, colorId: it.colorId||null, delta: stockDelta});
   });
   if(!saleFixItems.length && !deliveryFixItems.length){ return; }
@@ -8773,11 +8791,13 @@ function renderConsignCard(c){
         ${paymentsHistory}
 
         <div class="consign-actions">
-          <button type="button" class="order-status-btn done" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
-          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
-          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); addConsignPayment('${c.id}')">ثبت تسویه</button>
-          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>` : ''}
+          ${c.status !== 'closed' ? `
+            <button type="button" class="order-status-btn done" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
+            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
+            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); addConsignPayment('${c.id}')">ثبت تسویه</button>
+            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
+            ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>` : ''}
+          ` : ''}
           ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignmentStoreInfo('${c.id}')">اطلاعات فروشگاه</button>` : ''}
           <button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
           ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
@@ -9082,6 +9102,9 @@ async function realtimeFallbackTick(){
     const active = document.activeElement;
     if(!(active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName))){
       await realtimeRefreshProducts();
+      // Consignments also need a polling safety-net when the table is not
+      // enabled in the Supabase Realtime publication.
+      await realtimeRefreshConsignments();
     }
   }catch(e){
     console.warn('Realtime fallback check failed:', e);
