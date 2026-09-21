@@ -822,7 +822,19 @@
   .consign-modal-sort{height:42px;border:1px solid var(--line);background:var(--bg);border-radius:11px;padding:0 8px;font-size:12px;font-family:'Vazirmatn',sans-serif;color:var(--ink);min-width:112px;}
   .consign-modal-list{overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 2px 4px;max-height:min(52vh,430px);}
   .consign-modal-list-empty{padding:18px 10px;text-align:center;color:var(--ink-soft);font-size:13px;font-weight:600;}
-  .consign-qty-row{display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:14px; padding:10px 12px;}
+  .consign-qty-row{display:flex; flex-direction:column; align-items:stretch; gap:8px; background:var(--bg); border:1px solid var(--line); border-radius:14px; padding:10px 12px;}
+  .consign-qty-row-head{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;}
+  .consign-qty-product{font-size:14px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .consign-qty-variant{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ink-soft);min-width:0;}
+  .consign-qty-variant .color-swatch-mini{width:13px;height:13px;flex:0 0 13px;border-radius:50%;border:1px solid var(--line);}
+  .consign-qty-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;}
+  .consign-qty-field{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 7px;}
+  .consign-qty-field .qhint{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+  .consign-qty-field input{width:78px!important;flex:0 0 78px;}
+  .consign-modal-group{margin:4px 0 0;padding:8px 10px 4px;font-size:12px;font-weight:900;color:var(--ink);background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2;}
+  .consign-color-select{width:100%;height:44px;padding:0 12px;font-family:'Vazirmatn',sans-serif;}
+  .consign-modal-group:first-child{margin-top:0;}
+  @media(max-width:380px){.consign-qty-fields{grid-template-columns:1fr}.consign-qty-field input{width:92px!important;flex-basis:92px}.consign-modal-tools{flex-direction:column;align-items:stretch}.consign-modal-sort{width:100%;}}
   .consign-qty-row .qname{flex:1; min-width:0; font-size:14px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .consign-qty-row .qhint{font-size:11.5px; font-weight:600; color:var(--ink-soft); flex-shrink:0; white-space:nowrap;}
   .consign-qty-row input{
@@ -2185,8 +2197,8 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
         <div class="hint" id="consign_item_stock_hint"></div>
       </div>
       <div class="field" id="consign_item_color_field" style="display:none;">
-        <label>واریانت رنگ</label>
-        <div class="color-option-row" id="consign_item_color_row"></div>
+        <label>رنگ محصول</label>
+        <div id="consign_item_color_row"></div>
       </div>
       <div class="grid-2">
         <div class="field">
@@ -6557,10 +6569,10 @@ function renderConsignItemColorOptions(){
     return;
   }
   field.style.display = '';
-  row.innerHTML = colors.map(col => `
-    <button type="button" class="color-option-chip${col.id===consignItemColorId?' active':''}" onclick="event.stopPropagation(); selectConsignItemColor('${col.id}')">
-      <span class="color-swatch-mini" style="background:${escapeHtml(col.hex)}"></span>${escapeHtml(col.name)}
-    </button>`).join('');
+  row.innerHTML = `<select class="gh-field consign-color-select" onchange="selectConsignItemColor(this.value)">
+    <option value="">— انتخاب رنگ —</option>
+    ${colors.map(col => `<option value="${escapeHtml(col.id)}" ${col.id===consignItemColorId?'selected':''}>${escapeHtml(col.name)} — موجودی ${fa.format(productColorStock(prod,col.id))}</option>`).join('')}
+  </select>`;
 }
 function selectConsignItemColor(colorId){
   consignItemColorId = colorId;
@@ -6766,12 +6778,21 @@ function openConsignQtyModal(opts){
           <option value="value_asc">مقدار: کمتر</option>
         </select>
       </div>` : '';
-    listEl.innerHTML = toolsHtml + rows.map(r => `
-      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText(r.name||''))}" data-value="${Number(r.value)||0}">
-        <span class="qname">${escapeHtml(r.name)}</span>
-        ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
+    const groupedRows = [];
+    let lastGroup = null;
+    [...rows].forEach(r => {
+      const group = r.group || '';
+      if(group && group !== lastGroup){ groupedRows.push(`<div class="consign-modal-group" data-group-header>${escapeHtml(group)}</div>`); lastGroup = group; }
+      groupedRows.push(`
+      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')))}" data-value="${Number(r.value)||0}">
+        <div class="consign-qty-row-head">
+          <span class="consign-qty-variant">${r.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(r.colorHex)}"></span>` : ''}${escapeHtml(r.variant || (r.group ? (r.name||'') : (r.name||'')))}</span>
+          ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
+        </div>
         <input type="text" inputmode="numeric" data-key="${escapeHtml(r.key)}" value="${r.value ? toFaNum(r.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
-      </div>`).join('');
+      </div>`);
+    });
+    listEl.innerHTML = toolsHtml + groupedRows.join('');
     overlay.classList.add('show');
     const searchEl = document.getElementById('consign_modal_search');
     const sortEl = document.getElementById('consign_modal_sort');
@@ -6779,15 +6800,21 @@ function openConsignQtyModal(opts){
       const q = normalizeFaText(searchEl ? searchEl.value : '');
       const rowsEls = Array.from(listEl.querySelectorAll('[data-modal-row]'));
       rowsEls.forEach(row => row.style.display = (!q || row.dataset.search.includes(q)) ? '' : 'none');
-      if(sortEl){
-        const mode = sortEl.value;
-        rowsEls.sort((a,b) => {
-          if(mode==='name_desc') return b.dataset.name.localeCompare(a.dataset.name,'fa');
-          if(mode==='value_desc') return Number(b.dataset.value)-Number(a.dataset.value);
-          if(mode==='value_asc') return Number(a.dataset.value)-Number(b.dataset.value);
-          return a.dataset.name.localeCompare(b.dataset.name,'fa');
-        }).forEach(row => listEl.appendChild(row));
-      }
+      const mode = sortEl ? sortEl.value : 'name';
+      rowsEls.sort((a,b) => {
+        if(mode==='name_desc') return b.dataset.name.localeCompare(a.dataset.name,'fa');
+        if(mode==='value_desc') return Number(b.dataset.value)-Number(a.dataset.value);
+        if(mode==='value_asc') return Number(a.dataset.value)-Number(b.dataset.value);
+        return a.dataset.name.localeCompare(b.dataset.name,'fa');
+      });
+      rowsEls.forEach(row => listEl.appendChild(row));
+      listEl.querySelectorAll('[data-group-header]').forEach(h => h.remove());
+      let currentGroup='';
+      rowsEls.forEach(row => {
+        const name=row.dataset.name || '';
+        const group=(name.split(' — ')[0] || name);
+        if(group!==currentGroup){ currentGroup=group; const h=document.createElement('div'); h.className='consign-modal-group'; h.dataset.groupHeader=''; h.textContent=group; row.parentNode.insertBefore(h,row); }
+      });
       let empty = listEl.querySelector('.consign-modal-list-empty');
       const visible = rowsEls.some(row => row.style.display !== 'none');
       if(!visible){
@@ -6854,18 +6881,27 @@ function openConsignMultiFieldModal(opts){
           <option value="value_asc">مقدار: کمتر</option>
         </select>
       </div>` : '';
-    listEl.innerHTML = toolsHtml + rows.map(r => `
-      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText(r.name||''))}" data-value="${Number((r.fields||[]).reduce((sum,f)=>sum+(Number(f.value)||0),0))}">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="qname" style="flex:1;">${escapeHtml(r.name)}</span>
+    const groupedRows = [];
+    let lastGroup = null;
+    [...rows].forEach(r => {
+      const group = r.group || '';
+      if(group && group !== lastGroup){ groupedRows.push(`<div class="consign-modal-group" data-group-header>${escapeHtml(group)}</div>`); lastGroup = group; }
+      groupedRows.push(`
+      <div class="consign-qty-row" data-modal-row data-search="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')+' '+(r.hint||'')))}" data-name="${escapeHtml(normalizeFaText((r.group||'')+' '+(r.variant||'')+' '+(r.name||'')))}" data-value="${Number((r.fields||[]).reduce((sum,f)=>sum+(Number(f.value)||0),0))}">
+        <div class="consign-qty-row-head">
+          <span class="consign-qty-variant">${r.colorHex ? `<span class="color-swatch-mini" style="background:${escapeHtml(r.colorHex)}"></span>` : ''}${escapeHtml(r.variant || (r.group ? (r.name||'') : (r.name||'')))}</span>
           ${r.hint ? `<span class="qhint">${escapeHtml(r.hint)}</span>` : ''}
         </div>
-        ${(r.fields||[]).map(f => `
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="qhint" style="width:76px;flex-shrink:0;">${escapeHtml(f.label)}</span>
-          <input type="text" inputmode="numeric" data-role="${escapeHtml(f.role)}" data-key="${escapeHtml(r.key)}" value="${(f.value !== undefined && f.value !== null && f.value !== '') ? toFaNum(f.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
-        </div>`).join('')}
-      </div>`).join('');
+        <div class="consign-qty-fields">
+          ${(r.fields||[]).map(f => `
+          <div class="consign-qty-field">
+            <span class="qhint">${escapeHtml(f.label)}</span>
+            <input type="text" inputmode="numeric" data-role="${escapeHtml(f.role)}" data-key="${escapeHtml(r.key)}" value="${(f.value !== undefined && f.value !== null && f.value !== '') ? toFaNum(f.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
+          </div>`).join('')}
+        </div>
+      </div>`);
+    });
+    listEl.innerHTML = toolsHtml + groupedRows.join('');
     overlay.classList.add('show');
     const searchEl = document.getElementById('consign_modal_search');
     const sortEl = document.getElementById('consign_modal_sort');
@@ -6873,15 +6909,21 @@ function openConsignMultiFieldModal(opts){
       const q = normalizeFaText(searchEl ? searchEl.value : '');
       const rowsEls = Array.from(listEl.querySelectorAll('[data-modal-row]'));
       rowsEls.forEach(row => row.style.display = (!q || row.dataset.search.includes(q)) ? '' : 'none');
-      if(sortEl){
-        const mode = sortEl.value;
-        rowsEls.sort((a,b) => {
-          if(mode==='name_desc') return b.dataset.name.localeCompare(a.dataset.name,'fa');
-          if(mode==='value_desc') return Number(b.dataset.value)-Number(a.dataset.value);
-          if(mode==='value_asc') return Number(a.dataset.value)-Number(b.dataset.value);
-          return a.dataset.name.localeCompare(b.dataset.name,'fa');
-        }).forEach(row => listEl.appendChild(row));
-      }
+      const mode = sortEl ? sortEl.value : 'name';
+      rowsEls.sort((a,b) => {
+        if(mode==='name_desc') return b.dataset.name.localeCompare(a.dataset.name,'fa');
+        if(mode==='value_desc') return Number(b.dataset.value)-Number(a.dataset.value);
+        if(mode==='value_asc') return Number(a.dataset.value)-Number(b.dataset.value);
+        return a.dataset.name.localeCompare(b.dataset.name,'fa');
+      });
+      rowsEls.forEach(row => listEl.appendChild(row));
+      listEl.querySelectorAll('[data-group-header]').forEach(h => h.remove());
+      let currentGroup='';
+      rowsEls.forEach(row => {
+        const name=row.dataset.name || '';
+        const group=(name.split(' — ')[0] || name);
+        if(group!==currentGroup){ currentGroup=group; const h=document.createElement('div'); h.className='consign-modal-group'; h.dataset.groupHeader=''; h.textContent=group; row.parentNode.insertBefore(h,row); }
+      });
       let empty = listEl.querySelector('.consign-modal-list-empty');
       const visible = rowsEls.some(row => row.style.display !== 'none');
       if(!visible){
@@ -7130,6 +7172,7 @@ async function editConsignTargets(id){
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'فعلی: ' + fa.format(it.targetQty||0),
     value: it.targetQty||0
@@ -7157,6 +7200,7 @@ async function editConsignPrices(id){
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'تومان',
     value: it.unitPrice||0
@@ -7190,12 +7234,12 @@ async function addProductsToConsign(id){
       p.colors.forEach(col => {
         const key = ciKey(p.id, col.id);
         if(existingKeys.has(key)) return;
-        rows.push({ key, name: p.name + ' — ' + col.name, hint: 'انبار: ' + fa.format(productColorStock(p, col.id)), value: 0 });
+        rows.push({ key, group:p.name, variant:col.name, colorHex:col.hex, name: p.name + ' — ' + col.name, hint: 'انبار: ' + fa.format(productColorStock(p, col.id)), value: 0 });
       });
     }else{
       const key = ciKey(p.id, null);
       if(existingKeys.has(key)) return;
-      rows.push({ key, name: p.name, hint: 'انبار: ' + fa.format(p.stock||0), value: 0 });
+      rows.push({ key, group:p.name, variant:'بدون رنگ', name: p.name, hint: 'انبار: ' + fa.format(p.stock||0), value: 0 });
     }
   });
   if(!rows.length){ await customAlert('همه‌ی محصول‌ها (و رنگ‌هاشون) از قبل توی لیست این فروشگاه هستن. برای اضافه‌کردن تعداد، از «شارژ مجدد» استفاده کن.'); return; }
@@ -7355,6 +7399,7 @@ async function editConsignSaleLog(consignId, logId){
   if(!log || !(log.items||[]).length) return;
   const rows = log.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'فروش‌رفته', value: it.qty }]
   }));
@@ -7395,6 +7440,7 @@ async function editConsignDelivery(consignId, deliveryId){
   if(delivery.note === 'واگذاری اولیه'){ await customAlert('واگذاری اولیه از اینجا ویرایش نمی‌شه. برای اصلاح اون، خود واگذاری رو حذف و دوباره درست ثبت کن.'); return; }
   const rows = delivery.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     fields: [{ role:'qty', label:'شارژ', value: it.qty }]
   }));
@@ -7442,6 +7488,7 @@ async function editConsignItemTotals(id){
   if(!c || !(c.items||[]).length) return;
   const rows = c.items.map(it => ({
     key: ciKey(it.productId, it.colorId),
+    group: it.productName, variant: it.colorName || 'بدون رنگ', colorHex: it.colorHex || '',
     name: it.productName + (it.colorName ? ' — ' + it.colorName : ''),
     hint: 'نزد فروشگاه فعلی: ' + fa.format(consignRemaining(it)),
     fields: [
@@ -7652,7 +7699,7 @@ async function editConsignItemQuick(consignId, itemKey){
   const res = await openConsignQtyModal({
     title:'ویرایش ظرفیت مطلوب',
     sub:'این گزینه فقط هدف شارژ مجدد را تغییر می‌دهد؛ تعدادهای واقعی با فروش، شارژ و مرجوعی ثبت می‌شوند.',
-    rows:[{key:itemKey,name:it.productName+(it.colorName?' — '+it.colorName:''),hint:'نزد فروشگاه: '+fa.format(consignRemaining(it)),value:it.targetQty||0}],
+    rows:[{key:itemKey,group:it.productName,variant:it.colorName||'بدون رنگ',colorHex:it.colorHex||'',name:it.productName+(it.colorName?' — '+it.colorName:''),hint:'نزد فروشگاه: '+fa.format(consignRemaining(it)),value:it.targetQty||0}],
     okLabel:'ذخیره'
   });
   if(!res) return;
