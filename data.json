@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T18:19:01.660Z",
+  "updatedAt": "2026-09-21T18:19:06.705Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -1331,7 +1331,7 @@
       "weight": 50,
       "marginR": null,
       "marginW": null,
-      "category": null,
+      "category": "g_mu0mydrdz7a1",
       "colorStock": {},
       "paintHours": 0,
       "printHours": 3,
