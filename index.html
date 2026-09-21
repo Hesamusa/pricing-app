@@ -2950,6 +2950,27 @@ const DEFAULT_SETTINGS = {
   aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true, aiSendImage: true
 };
 let settings = {...DEFAULT_SETTINGS};
+
+// قیمت‌های کارت محصول باید بعد از Refresh از تنظیمات قیمت‌گذاری فعلی همین دستگاه
+// محاسبه شوند؛ نسخه قدیمی تنظیمات که از GitHub می‌آید نباید قیمت کارت را برگرداند.
+// محصولات خودشان از Supabase می‌آیند و GitHub فقط برای تنظیمات جانبی/سازگاری استفاده می‌شود.
+const PRICE_CALC_SETTING_KEYS = [
+  'filPrice','resinPrice','power','elec','depr','labor','paint',
+  'marginW','marginR','roundStep'
+];
+function mergeGithubSettingsWithoutPriceRollback(remoteSettings){
+  const localPricing = {};
+  for(const key of PRICE_CALC_SETTING_KEYS){
+    if(Object.prototype.hasOwnProperty.call(settings, key)) localPricing[key] = settings[key];
+  }
+  settings = {...DEFAULT_SETTINGS, ...(remoteSettings || {}), ...localPricing,
+    githubToken: settings.githubToken,
+    telegramBotToken: settings.telegramBotToken,
+    aiApiKey: settings.aiApiKey,
+    aiApiKeyGemini: settings.aiApiKeyGemini
+  };
+}
+
 let products = [];
 let sales = [];
 let customers = [];
@@ -3200,7 +3221,7 @@ function loadState(){
     setSyncStatus('در حال دریافت آخرین نسخه از گیت‌هاب...', '');
     fetchRemoteData().then(remote => {
       if(remote){
-        settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken, aiApiKey: settings.aiApiKey, aiApiKeyGemini: settings.aiApiKeyGemini};
+        mergeGithubSettingsWithoutPriceRollback(remote.settings);
         // محصولات از اینجا دیگر خوانده نمی‌شوند؛ منبع اصلی محصولات Supabase است.
         // GitHub فقط برای تنظیمات/تصاویر و سازگاری نسخه‌های قدیمی باقی می‌ماند.
         // این خط عمداً حذف شده تا نسخه قدیمی GitHub بعد از Refresh روی محصولات Supabase overwrite نشود.
@@ -3981,7 +4002,7 @@ async function maybeInitGithubSync(){
   if(remote){
     const useRemote = await customConfirm('یک نسخه از داده‌ها از قبل روی این مخزن گیت‌هاب هست.\nبرای بارگذاری همون نسخه «OK» بزن، یا برای جایگزین کردنش با اطلاعات همین دستگاه «Cancel» رو بزن.');
     if(useRemote){
-      settings = {...DEFAULT_SETTINGS, ...remote.settings, githubToken: settings.githubToken, telegramBotToken: settings.telegramBotToken, aiApiKey: settings.aiApiKey, aiApiKeyGemini: settings.aiApiKeyGemini};
+      mergeGithubSettingsWithoutPriceRollback(remote.settings);
       products = Array.isArray(remote.products) ? remote.products : products;
       sales = Array.isArray(remote.sales) ? remote.sales : sales;
       orders = Array.isArray(remote.orders) ? remote.orders : orders;
