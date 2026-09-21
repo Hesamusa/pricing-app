@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T14:01:15.442Z",
+  "updatedAt": "2026-09-21T14:01:37.344Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -60,13 +60,8 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 15,
+      "stock": 11,
       "colors": [
-        {
-          "id": "col_mua2g2dwby3k",
-          "name": "مشکلی",
-          "hex": "#000000"
-        },
         {
           "id": "col_mua2gs728zwd",
           "name": "آبی پاستلی",
@@ -110,7 +105,6 @@
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
-        "col_mua2g2dwby3k": 4,
         "col_mua2gs728zwd": 4,
         "color_pink": 4,
         "color_black": 3
