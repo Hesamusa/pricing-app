@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T06:00:31.997Z",
+  "updatedAt": "2026-09-22T06:01:08.225Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -80,7 +80,7 @@
           "sha": "7fefda1b82a29a752a8b156470031c50bb7468f0"
         }
       ],
-      "weight": 50,
+      "weight": 8,
       "marginR": null,
       "marginW": null,
       "category": "g_mtqsahf4t778",
@@ -88,7 +88,7 @@
         "color_pink": 2
       },
       "paintHours": 0,
-      "printHours": 3,
+      "printHours": 0.5,
       "manualHours": 0,
       "accessoryCost": 0,
       "catalogDescription": "",
