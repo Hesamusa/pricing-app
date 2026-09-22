@@ -3412,6 +3412,12 @@ let consignItemColorId = null;
 let consignItemPickerQuery = '';
 let consignFilter = 'all';
 let consignHistoryOpen = new Set();
+let consignAccountingOpen = new Set();
+function toggleConsignAccounting(id){
+  if(consignAccountingOpen.has(id)) consignAccountingOpen.delete(id);
+  else consignAccountingOpen.add(id);
+  renderConsignTab();
+}
 function toggleConsignHistory(id){
   if(consignHistoryOpen.has(id)) consignHistoryOpen.delete(id);
   else consignHistoryOpen.add(id);
@@ -9800,6 +9806,70 @@ function flushConsignProductNotes(){
   Object.keys(consignProductNoteTimers).forEach(key => clearTimeout(consignProductNoteTimers[key]));
 }
 
+function consignAccountingLedger(c){
+  const entries = [];
+  (c.saleLogs||[]).forEach(log => {
+    const amount = Number(log.total||0);
+    if(amount > 0) entries.push({type:'sale', date:log.date, amount, label:'فروش ثبت‌شده', note:log.note||'', icon:'↗'});
+  });
+  (c.payments||[]).forEach(p => {
+    const amount = Number(p.amount||0);
+    if(amount > 0) entries.push({type:'payment', date:p.date, amount, label:'تسویه دریافتی', note:p.note||'', icon:'✓'});
+  });
+  entries.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  return entries;
+}
+
+function renderConsignAccountingPanel(c){
+  const soldValue = consignSoldValue(c);
+  const paid = consignPaidTotal(c);
+  const debt = consignDebt(c);
+  const stockValue = (c.items||[]).reduce((s,it)=>s + consignRemaining(it)*Number(it.unitPrice||0), 0);
+  const profit = consignProfit(c);
+  const soldQty = (c.items||[]).reduce((s,it)=>s + Number(it.soldQty||0), 0);
+  const remainQty = consignStockAtStore(c);
+  const settlementPct = soldValue > 0 ? Math.min(100, Math.round((paid/soldValue)*100)) : 0;
+  const open = consignAccountingOpen.has(c.id);
+  const ledger = consignAccountingLedger(c);
+  const ledgerHtml = open ? `
+    <div class="consign-accounting-ledger">
+      ${ledger.length ? ledger.map(e=>`
+        <div class="consign-ledger-row">
+          <div class="consign-ledger-icon ${e.type}">${e.icon}</div>
+          <div class="consign-ledger-main">
+            <b>${e.label}</b>
+            <span>${formatDateFa(e.date)}${e.note ? ' · '+escapeHtml(e.note) : ''}</span>
+          </div>
+          <strong class="${e.type==='payment'?'payment':'sale'}">${e.type==='payment'?'+':'−'} ${fmt(e.amount)}</strong>
+        </div>`).join('') : `<div class="consign-ledger-empty">هنوز گردش مالی برای این فروشگاه ثبت نشده.</div>`}
+    </div>` : '';
+  return `
+    <div class="consign-accounting-card">
+      <div class="consign-accounting-head">
+        <div>
+          <div class="consign-side-title">حسابداری امانی</div>
+          <div class="consign-accounting-sub">فروش، تسویه و مانده حساب این فروشگاه</div>
+        </div>
+        <span class="consign-accounting-status ${debt>0?'due':'paid'}">${debt>0?'طلب باز':'تسویه'}</span>
+      </div>
+      <div class="consign-accounting-grid">
+        <div class="consign-accounting-metric primary"><span>فروش ثبت‌شده</span><b>${fmt(soldValue)}</b><small>${fa.format(soldQty)} عدد</small></div>
+        <div class="consign-accounting-metric"><span>دریافتی</span><b>${fmt(paid)}</b><small>${settlementPct}% از فروش</small></div>
+        <div class="consign-accounting-metric ${debt>0?'due':''}"><span>مانده طلب</span><b>${fmt(debt)}</b><small>${debt>0?'نیاز به تسویه':'تسویه کامل'}</small></div>
+        <div class="consign-accounting-metric"><span>ارزش موجودی نزد فروشگاه</span><b>${fmt(stockValue)}</b><small>${fa.format(remainQty)} عدد</small></div>
+        <div class="consign-accounting-metric"><span>سود محقق‌شده</span><b class="${profit>=0?'profit-pos':'profit-neg'}">${fmt(profit)}</b><small>بر اساس قیمت تسویه و بهای تمام‌شده</small></div>
+      </div>
+      <div class="consign-settlement-bar">
+        <div class="consign-settlement-label"><span>وضعیت تسویه فروش</span><b>${fa.format(settlementPct)}٪</b></div>
+        <div class="consign-settlement-track"><span style="width:${settlementPct}%;"></span></div>
+      </div>
+      <button type="button" class="consign-accounting-ledger-btn" onclick="event.stopPropagation(); toggleConsignAccounting('${c.id}')">
+        <span>${open ? 'بستن دفتر حساب' : 'مشاهده دفتر حساب'}</span><span>${open?'▲':'▼'}</span>
+      </button>
+      ${ledgerHtml}
+    </div>`;
+}
+
 function renderConsignCard(c){
   const items = c.items || [];
   const soldValue = consignSoldValue(c);
@@ -9993,15 +10063,7 @@ function renderConsignCard(c){
             </div>
           </div>
           <aside class="consign-side-panel">
-            <div class="consign-side-section">
-              <div class="consign-side-title">خلاصه فروشگاه</div>
-              <div class="consign-side-metrics">
-                <div><span>ارزش فروش</span><b>${fmt(soldValue)}</b></div>
-                <div><span>سود</span><b class="${profit>=0?'profit-pos':'profit-neg'}">${fmt(profit)}</b></div>
-                <div><span>تسویه‌شده</span><b class="profit-pos">${fmt(paid)}</b></div>
-                <div><span>${debt>0 ? 'مانده طلب' : 'تسویه کامل'}</span><b class="${debt>0?'profit-neg':'profit-pos'}">${fmt(debt)}</b></div>
-              </div>
-            </div>
+            ${renderConsignAccountingPanel(c)}
             <div class="consign-side-section">
               <button type="button" class="order-status-btn consign-report-toggle" onclick="event.stopPropagation(); toggleConsignHistory('${c.id}')">${historyOpen ? '▲' : '▼'} گزارش‌ها (${fa.format(historyCount)})</button>
               ${historyPanel}
@@ -10044,16 +10106,41 @@ function renderConsignSummaryBlock(){
   const soldValue = consignments.reduce((s,c)=> s + consignSoldValue(c), 0);
   const paid = consignments.reduce((s,c)=> s + consignPaidTotal(c), 0);
   const debt = consignments.reduce((s,c)=> s + consignDebt(c), 0);
-  const stockValue = active.reduce((s,c)=> s + (c.items||[]).reduce((n,it)=> n + consignRemaining(it)*(it.unitPrice||0), 0), 0);
+  const stockValue = active.reduce((s,c)=> s + (c.items||[]).reduce((n,it)=> n + consignRemaining(it)*Number(it.unitPrice||0), 0), 0);
+  const profit = consignments.reduce((s,c)=> s + consignProfit(c), 0);
+  const settlementPct = soldValue > 0 ? Math.min(100, Math.round((paid/soldValue)*100)) : 0;
+  const storeRows = [...consignments].sort((a,b)=>consignDebt(b)-consignDebt(a)).map(c=>{
+    const sv=consignSoldValue(c), pp=consignPaidTotal(c), dd=consignDebt(c), rem=consignStockAtStore(c);
+    const pct=sv>0?Math.min(100,Math.round(pp/sv*100)):0;
+    return `<div class="consign-accounting-store-row">
+      <div class="consign-accounting-store-name"><b>${escapeHtml(c.storeName||'بدون نام')}</b><span>${c.status==='closed'?'بسته‌شده':'فعال'}</span></div>
+      <div><small>فروش</small><b>${fmt(sv)}</b></div>
+      <div><small>دریافتی</small><b>${fmt(pp)}</b></div>
+      <div class="${dd>0?'due':''}"><small>مانده</small><b>${fmt(dd)}</b></div>
+      <div><small>موجودی</small><b>${fa.format(rem)}</b></div>
+      <div class="consign-mini-progress"><span style="width:${pct}%;"></span></div>
+    </div>`;
+  }).join('');
   el.innerHTML = `
-    <div class="stat-card"><span class="stat-label">فروشگاه‌های امانی فعال</span><span class="stat-value">${fa.format(active.length)}</span></div>
-    <div class="stat-card"><span class="stat-label">اقلام امانی نزد فروشگاه‌ها (عدد)</span><span class="stat-value">${fa.format(totalAtStores)}</span></div>
-    <div class="stat-card"><span class="stat-label">ارزش اقلام امانی (قیمت تسویه)</span><span class="stat-value">${fmt(stockValue)}</span></div>
-    <div class="stat-card" style="${totalRestock>0?'background:var(--orange-soft);':''}"><span class="stat-label">نیاز به شارژ مجدد (عدد)</span><span class="stat-value" style="${totalRestock>0?'color:var(--orange);':''}">${fa.format(totalRestock)}</span></div>
-    <div class="stat-card"><span class="stat-label">جمع فروش فروشگاه‌های امانی</span><span class="stat-value">${fmt(soldValue)}</span></div>
-    <div class="stat-card highlight"><span class="stat-label">دریافتی از فروشگاه‌ها</span><span class="stat-value">${fmt(paid)}</span></div>
-    <div class="stat-card" style="${debt>0?'background:var(--orange-soft);':''}"><span class="stat-label">مانده طلب از فروشگاه‌ها</span><span class="stat-value" style="${debt>0?'color:var(--red);':''}">${fmt(debt)}</span></div>
-  `;
+    <div class="consign-accounting-dashboard">
+      <div class="consign-accounting-dashboard-head">
+        <div><h3>حسابداری امانی</h3><p>تصویر مالی واگذاری‌ها، بدون احتساب قیمت‌گذاری پیشنهادی محصولات</p></div>
+        <div class="consign-accounting-kpi-main"><span>مانده کل طلب</span><b>${fmt(debt)}</b></div>
+      </div>
+      <div class="consign-accounting-kpis">
+        <div><span>فروش ثبت‌شده</span><b>${fmt(soldValue)}</b><small>${fa.format(consignments.reduce((s,c)=>s+(c.items||[]).reduce((n,it)=>n+Number(it.soldQty||0),0),0))} عدد</small></div>
+        <div><span>دریافتی</span><b>${fmt(paid)}</b><small>${fa.format(settlementPct)}٪ تسویه</small></div>
+        <div><span>ارزش موجودی نزد فروشگاه</span><b>${fmt(stockValue)}</b><small>${fa.format(totalAtStores)} عدد</small></div>
+        <div><span>سود محقق‌شده</span><b>${fmt(profit)}</b><small>فقط فروش ثبت‌شده</small></div>
+        <div class="${totalRestock>0?'warn':''}"><span>نیاز به شارژ</span><b>${fa.format(totalRestock)}</b><small>عدد</small></div>
+      </div>
+      <div class="consign-global-settlement"><div><span>نسبت تسویه فروش‌ها</span><b>${fa.format(settlementPct)}٪</b></div><div class="consign-settlement-track"><span style="width:${settlementPct}%;"></span></div></div>
+      <div class="consign-accounting-store-title">حساب هر فروشگاه</div>
+      <div class="consign-accounting-store-table">
+        <div class="consign-accounting-store-head"><span>فروشگاه</span><span>فروش</span><span>دریافتی</span><span>مانده</span><span>موجودی</span><span>تسویه</span></div>
+        ${storeRows || '<div class="consign-ledger-empty">هنوز واگذاری امانی ثبت نشده.</div>'}
+      </div>
+    </div>`;
 }
 
 async function exportData(){
@@ -11186,4 +11273,48 @@ setTimeout(()=>{
     font-size:17px !important;
   }
 }
+
+/* Professional consignment accounting dashboard */
+.consign-accounting-card{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;box-shadow:0 2px 10px rgba(16,24,40,.05);}
+.consign-accounting-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:13px 14px 10px;border-bottom:1px solid var(--line);}
+.consign-accounting-sub{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.6;}
+.consign-accounting-status{font-size:11px;font-weight:800;border-radius:999px;padding:5px 9px;white-space:nowrap;}
+.consign-accounting-status.due{background:var(--orange-soft);color:var(--red);}
+.consign-accounting-status.paid{background:rgba(34,197,94,.10);color:var(--green);}
+.consign-accounting-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px;}
+.consign-accounting-metric{padding:10px;border:1px solid var(--line);border-radius:11px;background:var(--bg);min-width:0;}
+.consign-accounting-metric.primary{grid-column:1/-1;background:var(--orange-soft);border-color:rgba(198,93,46,.25);}
+.consign-accounting-metric span,.consign-accounting-metric small{display:block;color:var(--ink-soft);font-size:11px;line-height:1.55;}
+.consign-accounting-metric b{display:block;font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:15px;line-height:1.6;margin-top:2px;color:var(--ink);direction:rtl;}
+.consign-accounting-metric small{font-size:10px;margin-top:1px;}
+.consign-accounting-metric.due b{color:var(--red);}
+.consign-settlement-bar{padding:0 12px 11px;}
+.consign-settlement-label{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--ink-soft);margin-bottom:5px;}
+.consign-settlement-label b{font-family:'IBM Plex Mono','Vazirmatn',monospace;color:var(--ink);}
+.consign-settlement-track{height:7px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--line);}
+.consign-settlement-track span{display:block;height:100%;border-radius:99px;background:var(--green);transition:width .2s ease;}
+.consign-accounting-ledger-btn{width:calc(100% - 20px);margin:0 10px 10px;min-height:40px!important;border:1px solid var(--line)!important;background:var(--bg)!important;border-radius:10px!important;display:flex;align-items:center;justify-content:space-between;padding:7px 11px!important;color:var(--ink)!important;font-size:12px!important;font-weight:700!important;cursor:pointer;}
+.consign-accounting-ledger{border-top:1px solid var(--line);padding:5px 10px 10px;max-height:260px;overflow:auto;}
+.consign-ledger-row{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px dashed var(--line);}
+.consign-ledger-row:last-child{border-bottom:0;}
+.consign-ledger-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex:0 0 28px;}
+.consign-ledger-icon.sale{background:var(--orange-soft);color:var(--orange);}
+.consign-ledger-icon.payment{background:rgba(34,197,94,.10);color:var(--green);}
+.consign-ledger-main{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px;}
+.consign-ledger-main b{font-size:11px;color:var(--ink);}
+.consign-ledger-main span{font-size:10px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.consign-ledger-row strong{font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:11px;white-space:nowrap;direction:rtl;}
+.consign-ledger-row strong.sale{color:var(--orange);}.consign-ledger-row strong.payment{color:var(--green);}
+.consign-ledger-empty{padding:14px;text-align:center;color:var(--ink-soft);font-size:12px;}
+.consign-accounting-dashboard{grid-column:1/-1;border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;box-shadow:0 3px 14px rgba(16,24,40,.06);}
+.consign-accounting-dashboard-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-bottom:1px solid var(--line);}
+.consign-accounting-dashboard-head h3{margin:0;font-size:17px;}.consign-accounting-dashboard-head p{margin:4px 0 0;color:var(--ink-soft);font-size:12px;}
+.consign-accounting-kpi-main{padding:9px 13px;border-radius:12px;background:var(--orange-soft);min-width:150px;text-align:center;}
+.consign-accounting-kpi-main span{display:block;font-size:11px;color:var(--ink-soft);}.consign-accounting-kpi-main b{font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:17px;color:var(--red);}
+.consign-accounting-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;padding:12px;}
+.consign-accounting-kpis>div{border:1px solid var(--line);border-radius:12px;padding:11px;background:var(--bg);min-width:0;}
+.consign-accounting-kpis span,.consign-accounting-kpis small{display:block;color:var(--ink-soft);font-size:11px;}.consign-accounting-kpis b{display:block;font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:14px;margin:3px 0;direction:rtl;}.consign-accounting-kpis small{font-size:10px;}.consign-accounting-kpis .warn{background:var(--orange-soft);border-color:rgba(198,93,46,.25);}.consign-accounting-kpis .warn b{color:var(--orange);}
+.consign-global-settlement{padding:0 14px 14px;}.consign-global-settlement>div:first-child{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-bottom:5px;}.consign-global-settlement b{color:var(--ink);}
+.consign-accounting-store-title{padding:11px 14px;border-top:1px solid var(--line);font-size:13px;font-weight:800;}.consign-accounting-store-table{overflow:auto;}.consign-accounting-store-head,.consign-accounting-store-row{display:grid;grid-template-columns:minmax(150px,1.6fr) repeat(4,minmax(90px,1fr)) minmax(80px,.8fr);gap:8px;align-items:center;min-width:650px;padding:10px 14px;}.consign-accounting-store-head{background:var(--bg);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:10px;color:var(--ink-soft);font-weight:800;}.consign-accounting-store-row{border-bottom:1px solid var(--line);font-size:11px;}.consign-accounting-store-row:last-child{border-bottom:0;}.consign-accounting-store-row>div:not(.consign-accounting-store-name):not(.consign-mini-progress){display:flex;flex-direction:column;gap:1px;}.consign-accounting-store-row small{color:var(--ink-soft);font-size:9px;}.consign-accounting-store-row b{font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:11px;direction:rtl;}.consign-accounting-store-row .due b{color:var(--red);}.consign-accounting-store-name{display:flex;flex-direction:column;gap:2px;min-width:0;}.consign-accounting-store-name b{font-family:'Vazirmatn',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.consign-accounting-store-name span{font-size:9px;color:var(--ink-soft);}.consign-mini-progress{height:6px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden;}.consign-mini-progress span{display:block;height:100%;background:var(--green);border-radius:99px;}
+@media(max-width:700px){.consign-accounting-dashboard-head{align-items:stretch;flex-direction:column;}.consign-accounting-kpi-main{min-width:0;text-align:right;}.consign-accounting-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.consign-accounting-kpis>div:first-child{grid-column:1/-1;}.consign-accounting-grid{grid-template-columns:1fr 1fr;}.consign-accounting-metric.primary{grid-column:1/-1;}}
 </style>
