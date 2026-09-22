@@ -2620,6 +2620,16 @@ async function saveProductsToSupabaseBridge(){
 #consign-modal .consign-operation-date label{display:block;margin:0 0 6px;font-size:11px;font-weight:800;color:var(--ink-soft);}
 #consign-modal .consign-operation-date input{width:100%;height:40px;box-sizing:border-box;}
 .consign-date-input{direction:ltr!important;text-align:left!important;}
+#consign-modal .consign-jalali-date-row{display:grid;grid-template-columns:78px minmax(110px,1fr) 92px;gap:7px;direction:rtl;}
+#consign-modal .consign-jalali-date-row select{width:100%;height:40px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:0 8px;font:inherit;font-size:13px;}
+#consign-modal .consign-jalali-date-row select:focus{outline:2px solid var(--orange);outline-offset:0;}
+#consign-modal .consign-operation-note{margin:0 2px 10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;}
+#consign-modal .consign-operation-note label{display:block;margin:0 0 6px;font-size:11px;font-weight:800;color:var(--ink-soft);}
+#consign-modal .consign-operation-note textarea{width:100%;min-height:70px;box-sizing:border-box;resize:vertical;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:9px 10px;font:inherit;font-size:13px;line-height:1.8;outline:none;}
+#new-store-modal .consign-jalali-date-row{display:grid;grid-template-columns:78px minmax(110px,1fr) 92px;gap:7px;direction:rtl;}
+#new-store-modal .consign-jalali-date-row select{width:100%;height:40px;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:0 8px;font:inherit;font-size:13px;}
+@media(max-width:380px){#consign-modal .consign-jalali-date-row,#new-store-modal .consign-jalali-date-row{grid-template-columns:1fr 1.25fr 1fr;gap:5px;}}
+
 </style>
 <style id="consign-modal-field-label-fix-v74">
 /* v74 — جلوگیری از افتادن/پنهان شدن عنوان فیلدهای عملیات امانی زیر ورودی */
@@ -3710,7 +3720,12 @@ async function saveProductsToSupabaseBridge(){
 
       <div class="field">
         <label>تاریخ واگذاری</label>
-        <input type="date" class="gh-field consign-date-input" id="consign_date" dir="ltr">
+        <div class="consign-jalali-date-row">
+          <select id="consign_date_day" onchange="onConsignJalaliDateChange()"></select>
+          <select id="consign_date_month" onchange="onConsignJalaliDateChange()"></select>
+          <select id="consign_date_year" onchange="onConsignJalaliDateChange()"></select>
+        </div>
+        <input type="hidden" id="consign_date">
         <div class="hint">تاریخی که این واگذاری/تحویل واقعاً انجام شده.</div>
       </div>
       <div class="field">
@@ -8569,7 +8584,9 @@ function openNewStoreModal(){
   modal.classList.add('show');
   updateConsignItemPickerLabel();
   const dateEl = document.getElementById('consign_date');
-  if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
+  const todayIso = new Date().toISOString().slice(0,10);
+  if(dateEl && !dateEl.value) dateEl.value = todayIso;
+  setConsignJalaliDateFromIso('consign_date', dateEl?.value || todayIso);
   closeConsignItemPicker();
   renderConsignItemsList();
   renderConsignItemColorOptions();
@@ -8801,7 +8818,7 @@ function resetConsignForm(){
     if(el) el.value = '';
   });
   const dateEl = document.getElementById('consign_date');
-  if(dateEl) dateEl.value = new Date().toISOString().slice(0,10);
+  if(dateEl){ dateEl.value = new Date().toISOString().slice(0,10); setConsignJalaliDateFromIso('consign_date', dateEl.value); }
   const qtyEl = document.getElementById('consign_item_qty');
   if(qtyEl) qtyEl.value = '۱';
   const phoneHint = document.getElementById('consign_contact_phone_hint');
@@ -8875,6 +8892,49 @@ async function submitConsignment(){
   showToast('واگذاری امانی ثبت شد ✓', 'success');
 }
 
+// انتخابگر تاریخ شمسی برای عملیات امانی؛ مقدار ذخیره‌شده همچنان ISO است تا سازگاری داده‌ها حفظ شود.
+function populateConsignJalaliDateSelects(prefix, iso){
+  const safeIso = iso || new Date().toISOString().slice(0,10);
+  const [jy,jm,jd] = isoToJalali(safeIso);
+  const dayEl=document.getElementById(prefix+'_day'), monthEl=document.getElementById(prefix+'_month'), yearEl=document.getElementById(prefix+'_year');
+  if(!dayEl || !monthEl || !yearEl) return;
+  monthEl.innerHTML=JALALI_MONTH_NAMES.map((name,i)=>`<option value="${i+1}">${name}</option>`).join('');
+  const [thisJy]=todayJalali();
+  const yearSet=new Set(Array.from({length:12},(_,i)=>thisJy+1-i)); yearSet.add(jy); yearEl.innerHTML=[...yearSet].sort((a,b)=>b-a).map(y=>`<option value="${y}">${toFaDigitsOnly(y)}</option>`).join('');
+  const dayCount=jalaliMonthLength(jy,jm);
+  dayEl.innerHTML=Array.from({length:dayCount},(_,i)=>`<option value="${i+1}">${toFaNum(i+1,0)}</option>`).join('');
+  dayEl.value=String(Math.min(jd,dayCount)); monthEl.value=String(jm); yearEl.value=String(jy);
+  const hidden=document.getElementById(prefix.replace(/_day$/,'').replace(/_month$/,'').replace(/_year$/,''));
+  if(hidden) hidden.value=safeIso;
+}
+function setConsignJalaliDateFromIso(prefix, iso){
+  const safeIso=iso || new Date().toISOString().slice(0,10);
+  populateConsignJalaliDateSelects(prefix,safeIso);
+}
+function onConsignJalaliDateChange(){
+  const prefix='consign_date';
+  const y=parseInt(document.getElementById(prefix+'_year')?.value,10), m=parseInt(document.getElementById(prefix+'_month')?.value,10);
+  let d=parseInt(document.getElementById(prefix+'_day')?.value,10);
+  if(!y||!m||!d) return;
+  const max=jalaliMonthLength(y,m); if(d>max){d=max;document.getElementById(prefix+'_day').value=String(d);}
+  document.getElementById(prefix).value=jalaliToIso(y,m,d);
+}
+function onConsignOperationJalaliDateChange(){
+  const prefix='consign_operation_date';
+  const y=parseInt(document.getElementById(prefix+'_year')?.value,10), m=parseInt(document.getElementById(prefix+'_month')?.value,10);
+  let d=parseInt(document.getElementById(prefix+'_day')?.value,10);
+  if(!y||!m||!d) return;
+  const max=jalaliMonthLength(y,m); if(d>max){d=max;document.getElementById(prefix+'_day').value=String(d);}
+  const hidden=document.getElementById(prefix); if(hidden) hidden.value=jalaliToIso(y,m,d);
+}
+function consignOperationDateHtml(iso){
+  const safeIso=iso || new Date().toISOString().slice(0,10);
+  return `<div class="consign-operation-date"><label>تاریخ عملیات</label><div class="consign-jalali-date-row"><select id="consign_operation_date_day" onchange="onConsignOperationJalaliDateChange()"></select><select id="consign_operation_date_month" onchange="onConsignOperationJalaliDateChange()"></select><select id="consign_operation_date_year" onchange="onConsignOperationJalaliDateChange()"></select></div><input type="hidden" id="consign_operation_date" value="${escapeHtml(safeIso)}"><div class="hint" style="margin-top:5px;">تاریخ را به تقویم شمسی وارد کن.</div></div>`;
+}
+function consignOperationNoteHtml(value){
+  return `<div class="consign-operation-note"><label>توضیحات (اختیاری)</label><textarea id="consign_operation_note" placeholder="مثلاً فروش با قیمت بالاتر، شرایط تسویه، توضیح توافق با فروشگاه و…">${escapeHtml(value||'')}</textarea></div>`;
+}
+
 // ————— مودال ورود تعداد/مبلغ برای چند قلم به‌صورت یکجا —————
 // rows: [{key, name, hint, value}] — خروجی: null (انصراف) یا {key: عدد}
 function openConsignQtyModal(opts){
@@ -8918,8 +8978,10 @@ function openConsignQtyModal(opts){
         <input type="text" inputmode="numeric" data-key="${escapeHtml(r.key)}" value="${r.value ? toFaNum(r.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
       </div>`);
     });
-    const dateHtml = opts.includeDate ? `<div class="consign-operation-date"><label>تاریخ عملیات</label><input id="consign_operation_date" type="date" class="gh-field consign-date-input" value="${escapeHtml(opts.dateValue || new Date().toISOString().slice(0,10))}"><div class="hint" style="margin-top:5px;">تاریخ واقعی انجام این عملیات را انتخاب کن.</div></div>` : '';
-    listEl.innerHTML = dateHtml + toolsHtml + groupedRows.join('');
+    const dateHtml = opts.includeDate ? consignOperationDateHtml(opts.dateValue) : '';
+    const noteHtml = opts.includeNote ? consignOperationNoteHtml(opts.noteValue) : '';
+    listEl.innerHTML = dateHtml + noteHtml + toolsHtml + groupedRows.join('');
+    if(opts.includeDate) setTimeout(()=>setConsignJalaliDateFromIso('consign_operation_date', opts.dateValue || new Date().toISOString().slice(0,10)),0);
     overlay.classList.add('show');
     const searchEl = document.getElementById('consign_modal_search');
     const sortEl = document.getElementById('consign_modal_sort');
@@ -8972,6 +9034,7 @@ function openConsignQtyModal(opts){
         out[inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0);
       });
       if(opts.includeDate) out._date = document.getElementById('consign_operation_date')?.value || new Date().toISOString().slice(0,10);
+      if(opts.includeNote) out._note = document.getElementById('consign_operation_note')?.value || '';
       cleanup(out);
     };
     const onCancel = () => cleanup(null);
@@ -9036,8 +9099,10 @@ function openConsignMultiFieldModal(opts){
         </div>
       </div>`);
     });
-    const dateHtml = opts.includeDate ? `<div class="consign-operation-date"><label>تاریخ عملیات</label><input id="consign_operation_date" type="date" class="gh-field consign-date-input" value="${escapeHtml(opts.dateValue || new Date().toISOString().slice(0,10))}"><div class="hint" style="margin-top:5px;">تاریخ واقعی انجام این عملیات را انتخاب کن.</div></div>` : '';
-    listEl.innerHTML = dateHtml + toolsHtml + groupedRows.join('');
+    const dateHtml = opts.includeDate ? consignOperationDateHtml(opts.dateValue) : '';
+    const noteHtml = opts.includeNote ? consignOperationNoteHtml(opts.noteValue) : '';
+    listEl.innerHTML = dateHtml + noteHtml + toolsHtml + groupedRows.join('');
+    if(opts.includeDate) setTimeout(()=>setConsignJalaliDateFromIso('consign_operation_date', opts.dateValue || new Date().toISOString().slice(0,10)),0);
     overlay.classList.add('show');
     const searchEl = document.getElementById('consign_modal_search');
     const sortEl = document.getElementById('consign_modal_sort');
@@ -9092,6 +9157,7 @@ function openConsignMultiFieldModal(opts){
         out[role][inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0);
       });
       if(opts.includeDate) out._date = document.getElementById('consign_operation_date')?.value || new Date().toISOString().slice(0,10);
+      if(opts.includeNote) out._note = document.getElementById('consign_operation_note')?.value || '';
       cleanup(out);
     };
     const onCancel = () => cleanup(null);
@@ -9123,7 +9189,7 @@ async function recordConsignSale(id){
   const res = await openConsignMultiFieldModal({
     title: 'ثبت فروش فروشگاه',
     sub: 'تعداد فروش را وارد کن. اگر فروشگاه گران‌تر فروخته و مبلغ بیشتری با شما تسویه کرده، «قیمت فروش فروشگاه» و «مبلغ تسویه هر عدد با من» را جدا ثبت کن. سود شما بر اساس مبلغ تسویه واقعی محاسبه می‌شود.',
-    rows, okLabel: 'ثبت فروش', includeDate: true
+    rows, okLabel: 'ثبت فروش', includeDate: true, includeNote: true
   });
   if(!res || !res.qty) return;
   const entries = Object.entries(res.qty).filter(([,q]) => q > 0);
@@ -9151,7 +9217,7 @@ async function recordConsignSale(id){
     date: res._date || new Date().toISOString().slice(0,10),
     items: logItems,
     total: logItems.reduce((s,l)=> s + l.qty*l.settlementUnitPrice, 0),
-    note: 'فروش ثبت‌شده با مبلغ تسویه واقعی'
+    note: res._note || 'فروش ثبت‌شده با مبلغ تسویه واقعی'
   });
   renderConsignTab();
   renderSummary();
@@ -9188,7 +9254,7 @@ async function restockConsign(id){
   const res = await openConsignMultiFieldModal({
     title: 'ثبت فروش و شارژ مجدد',
     sub: 'اول تعداد واقعیِ فروش‌رفته‌ی هر قلم رو بپرس و وارد کن، بعد تعدادی که می‌خوای براش بفرستی — می‌تونه برابر فروش، بیشتر یا کمتر باشه. عددی از پیش پر نشده تا اشتباهی ثبت نشه؛ فقط چیزی که خودت وارد می‌کنی ثبت می‌شه.',
-    rows, okLabel: 'ثبت', includeDate: true
+    rows, okLabel: 'ثبت', includeDate: true, includeNote: true
   });
   if(!res) return;
   const soldEntries = Object.entries(res.sold||{}).filter(([,q]) => q > 0);
@@ -9256,7 +9322,8 @@ async function restockConsign(id){
       id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
       date: res._date || new Date().toISOString().slice(0,10),
       items: soldLogItems,
-      total: soldLogItems.reduce((s,l)=> s + l.qty*l.settlementUnitPrice, 0)
+      total: soldLogItems.reduce((s,l)=> s + l.qty*l.settlementUnitPrice, 0),
+      note: res._note || ''
     });
   }
   if(deliveredItems.length){
@@ -9417,7 +9484,7 @@ async function addProductsToConsign(id){
   const res = await openConsignQtyModal({
     title: 'افزودن محصول به این فروشگاه',
     sub: 'تعداد تحویلی هر محصول (یا رنگ) رو وارد کن. قیمت تسویه اولش برابر قیمت پیشنهادی عمده گذاشته می‌شه و ظرفیت مطلوب هم برابر همین تعداد؛ بعداً می‌تونی تغییرشون بدی.',
-    rows, okLabel: 'افزودن'
+    rows, okLabel: 'افزودن', includeDate: true
   });
   if(!res) return;
   const entries = Object.entries(res).filter(([,q]) => q > 0);
@@ -9453,7 +9520,7 @@ async function addProductsToConsign(id){
   if(!Array.isArray(c.deliveries)) c.deliveries = [];
   c.deliveries.unshift({
     id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
-    date: new Date().toISOString().slice(0,10),
+    date: res._date || new Date().toISOString().slice(0,10),
     items: added,
     note: 'افزودن محصول جدید'
   });
@@ -9477,7 +9544,7 @@ async function addConsignPayment(id){
     title: 'ثبت تسویه فروشگاه',
     sub: 'مانده بدهی این فروشگاه: ' + fmt(debt) + ' تومان',
     rows: [{key:'amount', name:'مبلغ دریافتی', hint:'تومان', value: debt}],
-    okLabel: 'ثبت پرداخت', includeDate: true
+    okLabel: 'ثبت پرداخت', includeDate: true, includeNote: true
   });
   if(!res) return;
   const amount = Math.max(0, Math.round(res.amount || 0));
@@ -9485,7 +9552,7 @@ async function addConsignPayment(id){
   if(debt <= 0){ await customAlert('این فروشگاه فعلاً بدهی قابل تسویه‌ای نداره.'); return; }
   if(amount > debt){ await customAlert('مبلغ تسویه نمی‌تونه بیشتر از مانده بدهی (' + fmt(debt) + ' تومان) باشه.'); return; }
   if(!Array.isArray(c.payments)) c.payments = [];
-  const payment = { id: 'cp_' + Date.now() + Math.random().toString(36).slice(2,5), amount, date: res._date || new Date().toISOString().slice(0,10), note: '' };
+  const payment = { id: 'cp_' + Date.now() + Math.random().toString(36).slice(2,5), amount, date: res._date || new Date().toISOString().slice(0,10), note: res._note || '' };
   c.payments.unshift(payment);
   renderConsignTab();
   renderSummary();
@@ -10433,7 +10500,7 @@ function renderConsignCard(c){
   const paymentsHistory = (c.payments||[]).length
     ? `<div class="sale-item-note">تسویه‌ها: ${(c.payments||[]).map(p => `
         <span style="display:inline-flex; align-items:center; gap:6px; margin-left:10px;">
-          ${fmt(p.amount)} تومان (${formatDateFa(p.date)})
+          ${fmt(p.amount)} تومان (${formatDateFa(p.date)})${p.note ? ' — ' + escapeHtml(p.note) : ''}
           ${isAdmin ? `<button type="button" onclick="event.stopPropagation(); deleteConsignPayment('${c.id}','${p.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف این پرداخت">✕</button>` : ''}
         </span>`).join('')}</div>`
     : '';
