@@ -1871,14 +1871,6 @@ async function ensureSupabaseProductsLoadedForSave(){
 async function saveProductsToSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb || !Array.isArray(products)) return false;
   let stage = 'شروع';
-  // این نوشتن، تصاویر/رنگ‌های محصولات تغییریافته رو اول DELETE و بعد INSERT می‌کنه (چند
-  // درخواست پشت‌سرهم، نه یک تراکنش اتمیک). در همین فاصله، هم realtime postgres_changes و هم
-  // پول‌کردن دوره‌ای هر ۱۸۰۰ میلی‌ثانیه (realtimeFallbackTick) ممکنه از Supabase بخونن و دقیقاً
-  // وسط این فاصله (بعد از DELETE، قبل از INSERT) عکس‌ها رو خالی ببینن و همون حالت ناقص رو روی
-  // UI بازنویسی کنن — یعنی عکسی که همین الان آپلود/حذف شده، دوباره برعکس بشه. روی اینترنت کندتر
-  // موبایل این فاصله طولانی‌تره، برای همین این باگ اونجا خیلی بیشتر خودشو نشون می‌ده. با این پرچم
-  // جلوی رفرش از سرور رو تا پایان نوشتن می‌گیریم.
-  productsSyncInFlight++;
   try{
     const {data:{session}, error:sessionError} = await sb.auth.getSession();
     if(sessionError) throw new Error('احراز هویت Supabase: ' + sessionError.message);
@@ -1984,11 +1976,6 @@ async function saveProductsToSupabaseBridge(){
     console.error('Supabase product save failed:', {stage, error:err});
     try{ showToast('Supabase: ' + msg, 'error', 7000); }catch(e){}
     return false;
-  }finally{
-    productsSyncInFlight = Math.max(0, productsSyncInFlight - 1);
-    // نوشتن تموم شد؛ اگه در این فاصله رفرش از سرور به‌خاطر این پرچم نگه داشته شده بود،
-    // یه بار دیگه (با تأخیر کوتاه) امتحان می‌کنیم تا وضعیت واقعاً نهایی از سرور بیاد.
-    if(typeof realtimeRefreshProducts === 'function') setTimeout(()=>{ void realtimeRefreshProducts(); }, 250);
   }
 }
 </script>
@@ -4171,13 +4158,6 @@ async function refreshAuthState(){
   await updateSalesAuthUI();
   await updateOrdersAuthUI();
   await updateConsignAuthUI();
-  // مهم: renderProducts() اولیه (در loadState) قبل از تکمیل این تابع async اجرا می‌شه،
-  // پس با مقدار isAdmin قدیمی (معمولاً false) رندر شده و دکمه‌های «حذف عکس»/«حذف محصول»
-  // و آپلود عکس با style="display:none" مخفی یا از رندر خارج می‌مونن. بدون این خط، تا وقتی
-  // یه اتفاق دیگه (مثل بارگذاری محصولات از Supabase) دوباره renderProducts صدا نزنه، حتی بعد
-  // از لاگین موفق ادمین، این دکمه‌ها غیرفعال/مخفی می‌مونن. حالا همیشه بعد از مشخص شدن وضعیت
-  // واقعی ادمین، لیست محصولات دوباره رندر می‌شه تا وضعیت دکمه‌ها با isAdmin واقعی هماهنگ باشه.
-  if(typeof renderProducts === 'function') renderProducts();
 }
 
 // گیت سراسری: تا لاگین نشده، نه main دیده می‌شه نه nav — هیچ تبی (حتی محصولات/مشتریان/خلاصه).
@@ -5284,7 +5264,7 @@ function photoActionsInnerHTML(prod, lk){
   return `
     ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
     ${remaining > 0
-      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*,.heic,.heif" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
+      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/jpeg,image/png,image/webp" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
   `;
 }
@@ -6270,18 +6250,7 @@ async function validatePreparedImage(base64, extension){
 }
 
 async function handleImageFile(id, inputEl){
-  if(!isAdmin){
-    if(typeof showToast==='function') showToast('برای آپلود عکس باید با حساب مدیر روی همین دستگاه وارد شده باشی.','error',5000);
-    inputEl.value='';
-    return;
-  }
-  // این پرچم رو از همین‌جا (نه فقط داخل ذخیره‌ی Supabase) روشن می‌کنیم؛ چون روی موبایل، باز و
-  // بسته شدن گالری عکس خودش رویداد visibilitychange تولید می‌کنه و باعث می‌شه
-  // refreshProductsFromSupabaseIfSafe درست همین لحظه (قبل از تموم شدن آپلود) از سرور بخونه و
-  // آرایه‌ی products رو با نسخه‌ی قدیمی (بدون این عکس) عوض کنه — یعنی عکسی که الان مستقیم داریم
-  // آپلودش می‌کنیم، از زیر پامون کنده می‌شه و به prod جدید اضافه نمی‌شه.
-  productsSyncInFlight++;
-  try{
+  if(!isAdmin) return;
   const files=inputEl.files?Array.from(inputEl.files):[];
   if(!files.length){setPhotoStatus(id,'فایلی انتخاب نشد.','error');return;}
   setPhotoStatus(id,'فایل انتخاب شد؛ در حال بررسی و آپلود...','uploading');
@@ -6321,26 +6290,12 @@ async function handleImageFile(id, inputEl){
       // برای نمایش، لینک raw گیت‌هاب را استفاده می‌کنیم؛ تست GET مستقیم تصویر
       // ممکن است به‌خاطر CORS/WebView خطا بدهد و نباید جلوی ثبت فایل را بگیرد.
       const rawUrl=githubRawImageUrl(path,branch) + '?v=' + Date.now();
-      // نکته‌ی مهم: prod ممکنه دیگه همون آبجکتی نباشه که الان داخل products هست (اگه هر رفرشی
-      // وسط این فاصله products رو عوض کرده باشه). برای اطمینان، از روی id دوباره پیداش می‌کنیم.
-      const liveProd = products.find(p=>p.id===id) || prod;
-      if(!Array.isArray(liveProd.images)) liveProd.images=[];
       imageRecord={url:rawUrl,path,sha:verified.sha};
-      liveProd.images.push(imageRecord);
-      productCarouselIndex[id]=liveProd.images.length-1;
+      prod.images.push(imageRecord);
+      productCarouselIndex[id]=prod.images.length-1;
       updateProductPhotoUI(id);
-      // لینک raw.githubusercontent.com بلافاصله بعد از commit گاهی چند ثانیه (به‌خصوص با
-      // اینترنت موبایل) تأخیر انتشار داره و ۴۰۴ می‌ده؛ در آن حالت onerror باید fallback بزنه،
-      // ولی برای جلوگیری از هرگونه حس «آپلود شد ولی نشون نمیده»، همون عکسِ فشرده‌ای که خودمون
-      // تازه ساختیم (prepared.base64) رو مستقیم و فوری روی <img> همین محصول می‌ذاریم.
-      try{
-        const previewMime = prepared.extension==='png'?'image/png':prepared.extension==='webp'?'image/webp':prepared.extension==='gif'?'image/gif':'image/jpeg';
-        const previewUrl = `data:${previewMime};base64,${prepared.base64}`;
-        const previewImg = document.querySelector(`#photoPrev_${id} img`) || document.querySelector(`#headThumb_${id} img`);
-        if(previewImg) previewImg.src = previewUrl;
-      }catch(e){}
       const cloudOk=SUPABASE_PRODUCTS_ENABLED?await saveProductsToSupabaseBridge():true;
-      if(!cloudOk){liveProd.images=liveProd.images.filter(im=>im!==imageRecord);updateProductPhotoUI(id);throw new Error('فایل روی گیت‌هاب قرار گرفت، اما ثبت اطلاعات عکس در Supabase ناموفق بود.');}
+      if(!cloudOk){prod.images=prod.images.filter(im=>im!==imageRecord);updateProductPhotoUI(id);throw new Error('فایل روی گیت‌هاب قرار گرفت، اما ثبت اطلاعات عکس در Supabase ناموفق بود.');}
       uploadedCount++;
       setPhotoStatus(id,'فایل واقعاً روی گیت‌هاب ذخیره و در Supabase ثبت شد ✓','success');
     }catch(err){
@@ -6357,16 +6312,10 @@ async function handleImageFile(id, inputEl){
     setPhotoStatus(id,msg,'success'); if(typeof showToast==='function') showToast(msg,'success',3000); setTimeout(()=>setPhotoStatus(id,'',''),5000);
   }
   inputEl.value='';
-  }finally{
-    productsSyncInFlight = Math.max(0, productsSyncInFlight - 1);
-  }
 }
 
 async function removeProductImage(id, idxParam){
-  if(!isAdmin){
-    if(typeof showToast==='function') showToast('برای حذف عکس باید با حساب مدیر روی همین دستگاه وارد شده باشی.','error',5000);
-    return;
-  }
+  if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(!prod || !Array.isArray(prod.images) || !prod.images.length) return;
   const idx = (idxParam!=null) ? Number(idxParam) : Math.min(productCarouselIndex[id]||0, prod.images.length-1);
@@ -6376,7 +6325,6 @@ async function removeProductImage(id, idxParam){
   if(imageMutationInFlight.has(mutationKey)) return;
   if(!await customConfirm('این عکس حذف بشه؟')) return;
   imageMutationInFlight.add(mutationKey);
-  productsSyncInFlight++; // جلوی رفرش خودکار از سرور رو تا پایان حذف واقعی می‌گیریم
   try{
     if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path){
       throw new Error('اطلاعات GitHub برای حذف واقعی کامل نیست.');
@@ -6433,7 +6381,6 @@ async function removeProductImage(id, idxParam){
     if(typeof showToast==='function') showToast('حذف عکس انجام نشد: '+(err.message||'خطای ناشناخته'),'error',7000);
   }finally{
     imageMutationInFlight.delete(mutationKey);
-    productsSyncInFlight = Math.max(0, productsSyncInFlight - 1);
   }
 }
 
@@ -6615,21 +6562,13 @@ function addProduct(){
 }
 
 function deleteProduct(id){
-  if(!isAdmin){
-    if(typeof showToast==='function') showToast('برای حذف محصول باید با حساب مدیر روی همین دستگاه وارد شده باشی.','error',5000);
-    return;
-  }
+  if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(prod) deleteProductTelegramPost(prod); // best-effort، منتظرش نمی‌مونیم
   products = products.filter(p=>p.id!==id);
   if(openProductId===id) openProductId=null;
   renderProducts();
-  // persist() خودش debounce/async هست و بلافاصله تموم نمی‌شه؛ در همین فاصله یه رفرش خودکار
-  // از سرور (مخصوصاً بعد از visibilitychange در موبایل) می‌تونست محصولِ همین الان حذف‌شده رو
-  // دوباره از نسخه‌ی قدیمی سرور برگردونه. تا اتمام ذخیره‌سازی واقعی، جلوی این رفرش رو می‌گیریم.
-  productsSyncInFlight++;
   persist();
-  setTimeout(()=>{ productsSyncInFlight = Math.max(0, productsSyncInFlight - 1); }, 3000);
 }
 
 function renderSummary(){
@@ -10147,14 +10086,62 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
+// قفل ویرایش فرم: روی موبایل باز شدن کیبورد/گالری می‌تواند visibilitychange ایجاد کند.
+// در زمان تایپ، هیچ refresh/realtime نباید DOM کارت را بازسازی کند؛ وگرنه input
+// فوکوسش را از دست می‌دهد و کیبورد بسته می‌شود. این قفل مستقل از productsSyncInFlight
+// است و به مسیر آپلود عکس دست نمی‌زند.
+let userEditingFormField = false;
+let userEditingFieldToken = 0;
+
+function isUserEditingFormField(){
+  if(userEditingFormField) return true;
+  const el = document.activeElement;
+  return !!(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable));
+}
+
+function markUserEditingField(){
+  userEditingFormField = true;
+  userEditingFieldToken++;
+}
+
+function releaseUserEditingFieldSoon(){
+  const token = ++userEditingFieldToken;
+  setTimeout(()=>{
+    if(token !== userEditingFieldToken) return;
+    const el = document.activeElement;
+    if(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)) return;
+    userEditingFormField = false;
+    // اگر در زمان تایپ refresh/realtime منتظر مانده باشد، حالا اجازه اجرا دارد.
+    if(typeof window.__flushDeferredProductRefresh === 'function') window.__flushDeferredProductRefresh();
+  }, 180);
+}
+
+document.addEventListener('focusin', e=>{
+  const t=e.target;
+  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) markUserEditingField();
+}, true);
+
+document.addEventListener('focusout', e=>{
+  const t=e.target;
+  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) releaseUserEditingFieldSoon();
+}, true);
+
+let deferredProductRefresh = false;
+window.__flushDeferredProductRefresh = function(){
+  if(!deferredProductRefresh || isUserEditingFormField()) return;
+  deferredProductRefresh = false;
+  setTimeout(()=>{
+    if(!isUserEditingFormField()) refreshProductsFromSupabaseIfSafe(false);
+  }, 80);
+};
+
 async function refreshProductsFromSupabaseIfSafe(force=false){
   try{
     if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
-    // یه عملیات محلی (آپلود/حذف عکس، حذف محصول و ...) در حال انجامه؛ اگه الان از سرور
-    // بخونیم، همون دیتای قدیمی/ناقص رو جای نتیجه‌ی محلی می‌ذاریم. این دقیقاً همون چیزیه که
-    // روی موبایل باعث می‌شد بعد از انتخاب عکس از گالری (که خودش باعث visibilitychange
-    // می‌شه و همین تابع رو صدا می‌زنه) عکس تازه‌آپلودشده ناپدید بشه.
-    if(productsSyncInFlight > 0) return false;
+    if(isUserEditingFormField()){
+      deferredProductRefresh = true;
+      return false;
+    }
     const active = document.activeElement;
     if(!force && active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return false;
     const { data:{session} } = await sb.auth.getSession();
@@ -10187,7 +10174,14 @@ async function refreshProductsFromSupabaseIfSafe(force=false){
 // Always refresh on a fresh page load before the user starts editing.
 window.addEventListener('pageshow', () => setTimeout(() => refreshProductsFromSupabaseIfSafe(true), 150));
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible') setTimeout(() => refreshProductsFromSupabaseIfSafe(false), 200);
+  if(document.visibilityState !== 'visible') return;
+  // روی موبایل باز شدن کیبورد/گالری می‌تواند visibilitychange ایجاد کند.
+  // هنگام ویرایش فقط علامت می‌زنیم؛ بعد از خروج از input آخرین snapshot را می‌گیریم.
+  if(isUserEditingFormField()){
+    deferredProductRefresh = true;
+    return;
+  }
+  setTimeout(() => refreshProductsFromSupabaseIfSafe(false), 200);
 });
 
 window.addEventListener('load', async () => {
@@ -10221,11 +10215,6 @@ const realtimeSyncPending = Object.create(null);
 let realtimeSyncFallbackTimer = null;
 let realtimeSyncLastFallbackAt = 0;
 let realtimeSyncRunning = false;
-// وقتی true‌ه، یعنی همین دستگاه در حال نوشتن (آپلود/حذف عکس، ذخیره محصول و ...) روی Supabase‌ه.
-// در این حالت، رفرش از سرور (چه از طریق realtime، چه پول‌کردن دوره‌ای) عمداً نادیده گرفته می‌شه
-// تا حالت میانیِ نیمه‌نوشته‌شده (مثلاً بعد از DELETE عکس‌های قدیمی، قبل از INSERT جدیدها) روی UI
-// بازنویسی نشه. به‌محض تمومِ نوشتن، یه رفرش دستی دیگه انجام می‌شه (به saveProductsToSupabaseBridge نگاه کن).
-let productsSyncInFlight = 0;
 
 // Realtime is the primary path. A lightweight server check remains active as a
 // safety net because a Supabase project can have Realtime connected while a
@@ -10253,6 +10242,13 @@ function realtimeSchedule(key, fn, delay=450){
   realtimeSyncTimers[key] = setTimeout(async()=>{
     delete realtimeSyncTimers[key];
     if(!currentUser) return;
+    // قفل مستقل و پایدار از activeElement: روی موبایل هنگام تغییر visibility
+    // ممکن است activeElement موقتاً body شود، ولی کاربر هنوز در حال تایپ است.
+    if(isUserEditingFormField()){
+      deferredProductRefresh = true;
+      realtimeSchedule(key, fn, 1200);
+      return;
+    }
     // Never replace an actively edited form with a remote snapshot.
     if(realtimeFocusedFormField()){
       realtimeSchedule(key, fn, 1200);
@@ -10266,7 +10262,6 @@ function realtimeSchedule(key, fn, delay=450){
 }
 
 async function realtimeRefreshProducts(){
-  if(productsSyncInFlight > 0) return; // نوشتنِ محلی در حال انجامه؛ فعلاً از سرور نمی‌خونیم
   const before = JSON.stringify(products || []);
   const ok = await loadProductsFromSupabaseBridge();
   if(!ok) return;
