@@ -5189,18 +5189,6 @@ function setPhotoStatus(id, text, kind){
   el.className = 'photo-status' + (kind ? ' '+kind : '');
 }
 
-// رویداد انتخاب فایل را روی document می‌گیریم تا بعد از بازسازی کارت محصول هم
-// روی iPhone/iPad از بین نرود. این listener مستقل از inline onchange است.
-if(!window.__productImageFileListenerInstalled){
-  window.__productImageFileListenerInstalled = true;
-  document.addEventListener('change', function(e){
-    const input = e.target;
-    if(!input || input.tagName !== 'INPUT' || input.type !== 'file' || !input.id || !input.id.startsWith('imgfile_')) return;
-    const id = input.dataset.productId || input.id.slice('imgfile_'.length);
-    if(!id) return;
-    handleImageFile(id, input);
-  }, true);
-}
 
 const PRODUCT_MAX_IMAGES = 5;
 
@@ -5228,7 +5216,7 @@ function photoActionsInnerHTML(prod, lk){
   return `
     ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
     ${remaining > 0
-      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*,.heic,.heif" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input"></div>`
+      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
   `;
 }
@@ -6205,8 +6193,9 @@ async function handleImageFile(id, inputEl){
       if(!data.content||!data.content.sha) throw new Error('گیت‌هاب پاسخ موفق داد اما شناسه واقعی فایل (SHA) برنگشت.');
       setPhotoStatus(id,'آپلود انجام شد؛ در حال تأیید فایل روی گیت‌هاب...','uploading');
       const verified=await verifyGithubImageUpload(apiUrl,path,branch,data.content.sha);
-      const rawUrl=githubRawImageUrl(path,branch);
-      await verifyImageUrl(rawUrl);
+      // برای نمایش، لینک raw گیت‌هاب را استفاده می‌کنیم؛ تست GET مستقیم تصویر
+      // ممکن است به‌خاطر CORS/WebView خطا بدهد و نباید جلوی ثبت فایل را بگیرد.
+      const rawUrl=githubRawImageUrl(path,branch) + '?v=' + Date.now();
       imageRecord={url:rawUrl,path,sha:verified.sha};
       prod.images.push(imageRecord);
       productCarouselIndex[id]=prod.images.length-1;
