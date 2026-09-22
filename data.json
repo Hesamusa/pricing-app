@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T18:35:50.243Z",
+  "updatedAt": "2026-09-22T18:36:31.256Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -995,7 +995,7 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 5,
+      "stock": 6,
       "colors": [
         {
           "id": "color_brown",
@@ -1065,7 +1065,7 @@
       "marginW": 65,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "color_brown": 1,
+        "color_brown": 2,
         "color_red": 2,
         "color_pink": 1,
         "color_orange": 1
