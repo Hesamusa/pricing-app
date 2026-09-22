@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T17:49:55.572Z",
+  "updatedAt": "2026-09-22T18:33:18.887Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -311,8 +311,22 @@
     {
       "id": "p_1789754876369ry8py",
       "name": "پنجه گربه مفصلی",
-      "stock": 2,
-      "colors": [],
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        },
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754975129_0.jpg?v=1789754977424",
@@ -334,7 +348,10 @@
       "marginR": 170,
       "marginW": null,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_white": 1,
+        "color_pink": 0
+      },
       "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
@@ -345,16 +362,22 @@
         233,
         234,
         235
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
+      ]
     },
     {
       "id": "p_17896307539150tvyy",
       "name": "جا کلیدی توپ بسکتبال",
-      "stock": 4,
-      "colors": [],
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 2,
+      "colors": [
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17896307539150tvyy_1789632970554_0.jpg?v=1789632974680",
@@ -371,7 +394,9 @@
       "marginR": 210,
       "marginW": 120,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_orange": 2
+      },
       "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
@@ -381,52 +406,22 @@
       "telegramMessageIds": [
         126,
         127
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
-      "id": "p_1789547212385khl84",
-      "name": "اسپایدرمن ونوم",
-      "stock": 12,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547212385khl84_1789633790851_0.jpg?v=1789633792499",
-          "path": "product-images/p_1789547212385khl84_1789633790851_0.jpg",
-          "sha": "50525e9f365d0fc8f34c36b45da210ac5ca62a50"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547212385khl84_1789633792560_1.jpg?v=1789633794195",
-          "path": "product-images/p_1789547212385khl84_1789633792560_1.jpg",
-          "sha": "a830b37971d67099f6c877b9a52e1eade5f056b8"
-        }
-      ],
-      "weight": 15,
-      "marginR": 185,
-      "marginW": 85,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 1,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه عاشق فازهای دارک و خفنی، این یکی رسماً خوراک خودته که به دسته‌کلید یا کیفت یه استایل خاص بدی! 🕷️\nپرینتش انقدر دقیق و تمیز درآمده که از نزدیک ببینی عاشقش می‌شی و واسه کادو دادن به رفیقتم حرف نداره.\nکلاً ۱۶ تا دونه ازش موجود داریم و خیلی زود تموم می‌شه؛ اگه می‌خوای جا نمونی، همین الان بهم پیام بده تا مال خودت بشه!",
-      "telegramMessageIds": [
-        128,
-        129
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
+      ]
     },
     {
       "id": "p_1789547116518l5j1s",
       "name": "جنگ ستارگان",
-      "stock": 3,
-      "colors": [],
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 7,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650672521_0.jpg?v=1789650674311",
@@ -453,7 +448,9 @@
       "marginR": 185,
       "marginW": 85,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_black": 7
+      },
       "paintHours": 0,
       "printHours": 2,
       "manualHours": 0,
@@ -465,10 +462,7 @@
         131,
         132,
         133
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
+      ]
     },
     {
       "id": "p_17887965710100v1nz",
@@ -885,6 +879,67 @@
       ]
     },
     {
+      "id": "p_1789547032305o8cnz",
+      "name": "بتمن جا کلیدی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 8,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657588961_0.jpg?v=1789657591125",
+          "path": "product-images/p_1789547032305o8cnz_1789657588961_0.jpg",
+          "sha": "cbbff6fa54b172ab44db635a0dd33c5fa206e850"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657591150_1.jpg?v=1789657592730",
+          "path": "product-images/p_1789547032305o8cnz_1789657591150_1.jpg",
+          "sha": "2bc858ea0de4996b98159240943198723dece55d"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657624346_0.jpg?v=1789657625983",
+          "path": "product-images/p_1789547032305o8cnz_1789657624346_0.jpg",
+          "sha": "e0fc71dd2657bfce0ce0f65dccb1d4ff859af68b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657626007_1.jpg?v=1789657627531",
+          "path": "product-images/p_1789547032305o8cnz_1789657626007_1.jpg",
+          "sha": "b7b4f151d97fd267cb90c12084537752cadcf952"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789808887302_0.jpg?v=1789808897825",
+          "path": "product-images/p_1789547032305o8cnz_1789808887302_0.jpg",
+          "sha": "5a579433a009861eb266ee11cb403b4cd1f9fd65"
+        }
+      ],
+      "weight": 17,
+      "marginR": 190,
+      "marginW": 85,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_black": 8
+      },
+      "paintHours": 0,
+      "printHours": 2,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "کیه که دلش نخواد **شوالیه تاریکی** همیشه همراهش باشه و به کلیداش استایل خفن بده؟\nاین کار مشکی‌مات با جزئیات دقیقش، هم برای سوییچت عالیه هم یه **کادوی خاص** حساب می‌شه.\nکلاً ۸ عدد ازش موجود داریم؛ اگه دوستش داری همین الان پیام بده و برای مدل‌های جدیدتر هم عضو کانالمون باش 😉",
+      "telegramMessageIds": [
+        164,
+        165,
+        166,
+        167
+      ]
+    },
+    {
       "id": "p_1789475484761nq179",
       "name": "سگ ساموئید سفید دم بلند",
       "sizeH": 0,
@@ -932,59 +987,6 @@
         241,
         242,
         243
-      ]
-    },
-    {
-      "id": "p_1789547032305o8cnz",
-      "name": "بتمن جا کلیدی",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 4,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657588961_0.jpg?v=1789657591125",
-          "path": "product-images/p_1789547032305o8cnz_1789657588961_0.jpg",
-          "sha": "cbbff6fa54b172ab44db635a0dd33c5fa206e850"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657591150_1.jpg?v=1789657592730",
-          "path": "product-images/p_1789547032305o8cnz_1789657591150_1.jpg",
-          "sha": "2bc858ea0de4996b98159240943198723dece55d"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657624346_0.jpg?v=1789657625983",
-          "path": "product-images/p_1789547032305o8cnz_1789657624346_0.jpg",
-          "sha": "e0fc71dd2657bfce0ce0f65dccb1d4ff859af68b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657626007_1.jpg?v=1789657627531",
-          "path": "product-images/p_1789547032305o8cnz_1789657626007_1.jpg",
-          "sha": "b7b4f151d97fd267cb90c12084537752cadcf952"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789808887302_0.jpg?v=1789808897825",
-          "path": "product-images/p_1789547032305o8cnz_1789808887302_0.jpg",
-          "sha": "5a579433a009861eb266ee11cb403b4cd1f9fd65"
-        }
-      ],
-      "weight": 17,
-      "marginR": 190,
-      "marginW": 85,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0,
-      "printHours": 2,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "کیه که دلش نخواد **شوالیه تاریکی** همیشه همراهش باشه و به کلیداش استایل خفن بده؟\nاین کار مشکی‌مات با جزئیات دقیقش، هم برای سوییچت عالیه هم یه **کادوی خاص** حساب می‌شه.\nکلاً ۸ عدد ازش موجود داریم؛ اگه دوستش داری همین الان پیام بده و برای مدل‌های جدیدتر هم عضو کانالمون باش 😉",
-      "telegramMessageIds": [
-        164,
-        165,
-        166,
-        167
       ]
     },
     {
@@ -1067,8 +1069,14 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 11,
-      "colors": [],
+      "stock": 7,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754207959_0.jpg?v=1789754209937",
@@ -1090,7 +1098,9 @@
       "marginR": null,
       "marginW": 85,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
+      "colorStock": {
+        "color_white": 7
+      },
       "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
@@ -1145,6 +1155,50 @@
       "catalogDescription": "ظاهر کاموا‌یی و بامزه‌ش در نگاه اول همه رو گول می‌زنه، اما در واقع با جزئیات فوق‌العاده بالا پرینت سه‌بعدی شده! انقدر سبک و ظریفه که بهترین همراه برای کلیدها یا کوله‌پشتیتونه؛ یه اکسسوری خاص که هربار می‌بینیش حسابی دلتو می‌بره. 🐾",
       "telegramMessageIds": [
         139
+      ]
+    },
+    {
+      "id": "p_1789547212385khl84",
+      "name": "اسپایدرمن ونوم",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 16,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547212385khl84_1789633790851_0.jpg?v=1789633792499",
+          "path": "product-images/p_1789547212385khl84_1789633790851_0.jpg",
+          "sha": "50525e9f365d0fc8f34c36b45da210ac5ca62a50"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547212385khl84_1789633792560_1.jpg?v=1789633794195",
+          "path": "product-images/p_1789547212385khl84_1789633792560_1.jpg",
+          "sha": "a830b37971d67099f6c877b9a52e1eade5f056b8"
+        }
+      ],
+      "weight": 15,
+      "marginR": 185,
+      "marginW": 85,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_black": 16
+      },
+      "paintHours": 1,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه عاشق فازهای دارک و خفنی، این یکی رسماً خوراک خودته که به دسته‌کلید یا کیفت یه استایل خاص بدی! 🕷️\nپرینتش انقدر دقیق و تمیز درآمده که از نزدیک ببینی عاشقش می‌شی و واسه کادو دادن به رفیقتم حرف نداره.\nکلاً ۱۶ تا دونه ازش موجود داریم و خیلی زود تموم می‌شه؛ اگه می‌خوای جا نمونی، همین الان بهم پیام بده تا مال خودت بشه!",
+      "telegramMessageIds": [
+        128,
+        129
       ]
     },
     {
@@ -1312,8 +1366,17 @@
     {
       "id": "p_1788757924479oy27y",
       "name": "خشم شب سفید",
-      "stock": 0,
-      "colors": [],
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 7,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788757924479oy27y_1789658330155_0.jpg?v=1789658336788",
@@ -1340,7 +1403,9 @@
       "marginR": null,
       "marginW": null,
       "category": "g_mtqsahf4t778",
-      "colorStock": {},
+      "colorStock": {
+        "color_white": 7
+      },
       "paintHours": 0.5,
       "printHours": 1,
       "manualHours": 0,
@@ -1352,10 +1417,7 @@
         180,
         181,
         182
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
+      ]
     },
     {
       "id": "p_1789909666043x7sfu",
