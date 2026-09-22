@@ -1989,7 +1989,7 @@ async function saveProductsToSupabaseBridge(){
 </script>
 
 <style>#syncStatusV11{position:fixed;bottom:10px;left:10px;z-index:99999;display:none;max-width:min(92vw,520px);padding:10px 12px;border:1px solid rgba(255,90,90,.45);border-radius:12px;background:#1d1414;color:#ffd9d9;font:12px/1.6 sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.25)}</style>
-<script>window.APP_BUILD='V12';</script>
+<script>window.APP_BUILD='V63';</script>
 
 <style id="product-focus-mode-v29">
 /* Desktop product editor: full-workspace shell + deliberately constrained, reflowed form.
@@ -2156,6 +2156,66 @@ async function saveProductsToSupabaseBridge(){
 }
 </style>
 
+
+<style id="product-color-focus-v62">
+/* v62 — desktop fullscreen: give the color selector/add-color area its own clean workspace.
+   Mobile/tablet are intentionally untouched. */
+@media (min-width:1201px){
+  body.product-focus-mode #tab-products #products-list > .product.open .stock-field{
+    min-width:0 !important; overflow:visible !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
+    display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important; max-height:118px !important; overflow:auto !important; padding:2px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{
+    min-width:0 !important; min-height:38px !important; padding:6px 8px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-name{
+    max-width:none !important; flex:1 1 auto !important; min-width:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row{
+    display:grid !important;
+    grid-template-columns:42px minmax(180px,1.35fr) minmax(120px,.8fr) minmax(150px,auto) !important;
+    align-items:center !important; gap:8px !important; width:100% !important;
+    min-height:56px !important; margin:10px 0 8px !important; padding:7px !important;
+    border:1px solid var(--line) !important; border-radius:14px !important;
+    background:var(--card) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .common-color-swatch{
+    width:38px !important; height:38px !important; min-width:38px !important; border-radius:10px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .common-color-select{
+    width:100% !important; min-width:0 !important; height:44px !important; min-height:44px !important;
+    padding:7px 12px !important; border:1px solid var(--line) !important; border-radius:10px !important;
+    background:var(--bg) !important; color:var(--ink) !important;
+    font-family:'Vazirmatn',sans-serif !important; font-size:13px !important; font-weight:700 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .common-color-label{
+    min-width:0 !important; width:100% !important; height:44px !important;
+    padding:0 10px !important; border-radius:10px !important; background:var(--bg) !important;
+    justify-content:flex-start !important; overflow:hidden !important; text-overflow:ellipsis !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row > .add-btn{
+    width:100% !important; min-width:150px !important; height:44px !important; min-height:44px !important;
+    margin:0 !important; padding:0 14px !important; white-space:nowrap !important; font-size:13px !important;
+  }
+}
+@media (min-width:1600px){
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row{
+    grid-template-columns:48px minmax(230px,1.5fr) minmax(150px,.9fr) 190px !important;
+    min-height:62px !important; padding:8px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .common-color-swatch{
+    width:44px !important; height:44px !important; min-width:44px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .common-color-select,
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .common-color-label,
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row > .add-btn{
+    height:48px !important; min-height:48px !important;
+  }
+}
+</style>
 
 <style id="consignment-sticky-header-v34">
 /* v34 — Consignment assignment table: sticky header + larger readable Persian text */
@@ -5274,13 +5334,36 @@ function photoCarouselInnerHTML(prod){
   if(idx > images.length - 1) idx = Math.max(images.length - 1, 0);
   productCarouselIndex[prod.id] = idx;
   const current = images[idx];
-  const clickAttr = images.length ? `onclick="event.stopPropagation(); openPhotoLightbox('${prod.id}')" style="cursor:pointer;"` : '';
+  const thumbStrip = images.length ? `
+    <div class="photo-thumb-strip" aria-label="تصاویر محصول">
+      ${images.map((img,i)=>`
+        <div class="photo-thumb-item ${i===0?'is-thumb':''} ${i===idx?'active':''}">
+          <button type="button" class="photo-thumb-image" title="نمایش عکس" onclick="event.stopPropagation(); selectProductPhoto('${prod.id}',${i})">
+            ${imageMarkup(img, 'تصویر محصول')}
+          </button>
+          <div class="photo-thumb-actions">
+            ${i===0
+              ? `<span class="photo-thumb-badge">تامبنیل</span>`
+              : `<button type="button" class="photo-thumb-mini-btn" onclick="event.stopPropagation(); setProductThumbnail('${prod.id}',${i})">تامبنیل</button>`}
+            <button type="button" class="photo-thumb-mini-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}',${i})">حذف</button>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+  const clickAttr = current ? `onclick="event.stopPropagation(); openPhotoLightbox('${prod.id}')" style="cursor:pointer;"` : '';
   return `
     <div class="photo-preview" id="photoPrev_${prod.id}" ${clickAttr}>
-      ${current ? imageMarkup(current) : cameraIconSVG(36)}
+      ${current ? imageMarkup(current, 'تصویر اصلی محصول') : cameraIconSVG(36)}
     </div>
-    ${images.length > 1 ? `<div class="carousel-dots">${images.map((_,i)=>`<span class="dot${i===idx?' active':''}"></span>`).join('')}</div>` : ''}
+    ${thumbStrip}
   `;
+}
+
+function selectProductPhoto(id,index){
+  if(!isAdmin) return;
+  const prod=products.find(p=>p.id===id);
+  if(!prod || !Array.isArray(prod.images) || !prod.images[index]) return;
+  productCarouselIndex[id]=Number(index);
+  updateProductPhotoUI(id);
 }
 
 // دکمه‌های افزودن/حذف عکس
@@ -10916,6 +10999,101 @@ setTimeout(()=>{
   setTimeout(schedule,1000);
 })();
 </script>
+
+<style id="product-focus-desktop-v63">
+/* v63 — desktop fullscreen product editor: readable vertical flow, no clipped lower pricing. */
+@media (min-width:1201px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    overflow-y:auto !important; overflow-x:hidden !important; height:calc(100% - 66px) !important;
+    max-height:none !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    width:min(1720px,calc(100% - 48px)) !important; max-width:1720px !important;
+    height:auto !important; min-height:0 !important; overflow:visible !important;
+    padding:18px 0 28px !important; gap:14px 16px !important;
+    grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+    grid-template-rows:auto !important; align-items:start !important;
+  }
+  /* Header fields + photo area */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1){grid-column:1 / span 4 !important;grid-row:1 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){grid-column:5 / span 3 !important;grid-row:1 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field{grid-column:9 / span 4 !important;grid-row:1 / span 3 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){grid-column:1 / span 8 !important;grid-row:2 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field{grid-column:1 / span 8 !important;grid-row:3 !important;}
+  /* Technical data is deliberately one vertical column. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{
+    grid-column:1 / span 5 !important; grid-row:4 !important;
+    display:grid !important; grid-template-columns:1fr !important; gap:10px !important;
+    margin:0 !important; padding:14px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 > .field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 > .field:nth-child(n){
+    grid-column:1 / -1 !important; min-width:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 .dim-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+  /* Cost + wholesale/retail are kept together beside the technical column and never clipped. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle{grid-column:6 / span 7 !important;grid-row:4 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{grid-column:6 / span 7 !important;grid-row:5 !important;overflow:visible !important;max-height:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards{grid-column:6 / span 7 !important;grid-row:6 !important;align-self:start !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn{grid-column:6 / span 5 !important;grid-row:7 !important;width:100% !important;margin:0 !important;min-height:46px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{grid-column:11 / span 2 !important;grid-row:7 !important;width:100% !important;margin:0 !important;min-height:46px !important;}
+
+  /* Product photos: large main image, then smaller selectable thumbnails underneath. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
+    padding:16px !important; min-width:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{
+    display:block !important; height:auto !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{
+    width:100% !important; min-width:0 !important; height:auto !important; max-height:none !important;
+    display:block !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{
+    width:100% !important; height:270px !important; min-height:270px !important;
+    border-radius:16px !important; background:var(--bg) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview img{
+    width:100% !important; height:100% !important; object-fit:contain !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-strip{
+    display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:8px !important; margin-top:10px !important; width:100% !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-item{
+    min-width:0 !important; padding:5px !important; border:1px solid var(--line) !important;
+    border-radius:12px !important; background:var(--card) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-item.active{border-color:var(--blue) !important;box-shadow:0 0 0 1px var(--blue) inset !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image{
+    display:block !important; width:100% !important; height:68px !important; padding:0 !important;
+    border:0 !important; border-radius:8px !important; overflow:hidden !important;
+    background:var(--bg) !important; cursor:pointer !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image img{width:100% !important;height:100% !important;object-fit:cover !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-actions{
+    display:flex !important; align-items:center !important; gap:4px !important; margin-top:5px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-mini-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-badge{
+    flex:1 1 0 !important; min-width:0 !important; height:24px !important;
+    border:1px solid var(--line) !important; border-radius:7px !important;
+    background:var(--bg) !important; color:var(--ink) !important;
+    font:600 9px/22px 'Vazirmatn',sans-serif !important; text-align:center !important;
+    white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-mini-btn{cursor:pointer !important;padding:0 3px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-mini-btn.danger{color:var(--red) !important;border-color:var(--red) !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{
+    display:grid !important; grid-template-columns:1fr !important; gap:8px !important; margin-top:10px !important;
+  }
+}
+@media (min-width:1600px){
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{height:320px !important;min-height:320px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image{height:78px !important;}
+}
+</style>
+<script>window.APP_BUILD='V63';</script>
 </body>
 
 
