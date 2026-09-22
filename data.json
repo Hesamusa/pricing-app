@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T10:32:21.424Z",
+  "updatedAt": "2026-09-22T10:33:24.447Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -544,59 +544,6 @@
       "sizeH": 0
     },
     {
-      "id": "p_1789547032305o8cnz",
-      "name": "بتمن جا کلیدی",
-      "stock": 4,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657588961_0.jpg?v=1789657591125",
-          "path": "product-images/p_1789547032305o8cnz_1789657588961_0.jpg",
-          "sha": "cbbff6fa54b172ab44db635a0dd33c5fa206e850"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657591150_1.jpg?v=1789657592730",
-          "path": "product-images/p_1789547032305o8cnz_1789657591150_1.jpg",
-          "sha": "2bc858ea0de4996b98159240943198723dece55d"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657624346_0.jpg?v=1789657625983",
-          "path": "product-images/p_1789547032305o8cnz_1789657624346_0.jpg",
-          "sha": "e0fc71dd2657bfce0ce0f65dccb1d4ff859af68b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657626007_1.jpg?v=1789657627531",
-          "path": "product-images/p_1789547032305o8cnz_1789657626007_1.jpg",
-          "sha": "b7b4f151d97fd267cb90c12084537752cadcf952"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789808887302_0.jpg?v=1789808897825",
-          "path": "product-images/p_1789547032305o8cnz_1789808887302_0.jpg",
-          "sha": "5a579433a009861eb266ee11cb403b4cd1f9fd65"
-        }
-      ],
-      "weight": 17,
-      "marginR": 200,
-      "marginW": 85,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0,
-      "printHours": 2,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "کیه که دلش نخواد **شوالیه تاریکی** همیشه همراهش باشه و به کلیداش استایل خفن بده؟\nاین کار مشکی‌مات با جزئیات دقیقش، هم برای سوییچت عالیه هم یه **کادوی خاص** حساب می‌شه.\nکلاً ۸ عدد ازش موجود داریم؛ اگه دوستش داری همین الان پیام بده و برای مدل‌های جدیدتر هم عضو کانالمون باش 😉",
-      "telegramMessageIds": [
-        164,
-        165,
-        166,
-        167
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
       "id": "p_17887965710100v1nz",
       "name": "تیرکس مکانیکی مفصل ثابت",
       "sizeH": 0,
@@ -1058,6 +1005,59 @@
         241,
         242,
         243
+      ]
+    },
+    {
+      "id": "p_1789547032305o8cnz",
+      "name": "بتمن جا کلیدی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 4,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657588961_0.jpg?v=1789657591125",
+          "path": "product-images/p_1789547032305o8cnz_1789657588961_0.jpg",
+          "sha": "cbbff6fa54b172ab44db635a0dd33c5fa206e850"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657591150_1.jpg?v=1789657592730",
+          "path": "product-images/p_1789547032305o8cnz_1789657591150_1.jpg",
+          "sha": "2bc858ea0de4996b98159240943198723dece55d"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657624346_0.jpg?v=1789657625983",
+          "path": "product-images/p_1789547032305o8cnz_1789657624346_0.jpg",
+          "sha": "e0fc71dd2657bfce0ce0f65dccb1d4ff859af68b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789657626007_1.jpg?v=1789657627531",
+          "path": "product-images/p_1789547032305o8cnz_1789657626007_1.jpg",
+          "sha": "b7b4f151d97fd267cb90c12084537752cadcf952"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547032305o8cnz_1789808887302_0.jpg?v=1789808897825",
+          "path": "product-images/p_1789547032305o8cnz_1789808887302_0.jpg",
+          "sha": "5a579433a009861eb266ee11cb403b4cd1f9fd65"
+        }
+      ],
+      "weight": 17,
+      "marginR": 190,
+      "marginW": 85,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {},
+      "paintHours": 0,
+      "printHours": 2,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "کیه که دلش نخواد **شوالیه تاریکی** همیشه همراهش باشه و به کلیداش استایل خفن بده؟\nاین کار مشکی‌مات با جزئیات دقیقش، هم برای سوییچت عالیه هم یه **کادوی خاص** حساب می‌شه.\nکلاً ۸ عدد ازش موجود داریم؛ اگه دوستش داری همین الان پیام بده و برای مدل‌های جدیدتر هم عضو کانالمون باش 😉",
+      "telegramMessageIds": [
+        164,
+        165,
+        166,
+        167
       ]
     },
     {
