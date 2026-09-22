@@ -11700,6 +11700,8 @@ setTimeout(()=>{
     overflow:auto !important;
     max-height:220px !important;
   }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{position:relative !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap::before{content:"جدول قیمت تمام‌شده";display:block;font-size:17px;font-weight:800;margin:0 0 5px;padding:0 4px;}
   body.product-focus-mode #tab-products #products-list > .product.open .breakdown{
     display:grid !important;
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
@@ -12115,5 +12117,217 @@ setTimeout(()=>{
   body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-badge{
     font-size:11px !important;
   }
+}
+</style>
+
+<style id="desktop-product-workspace-v65">
+/* v65 — one-screen 4K product workspace: compact, explicit grid, no overlaps */
+@media (min-width:1201px){
+  body.product-focus-mode #tab-products #products-list > .product.open{
+    height:calc(100vh - 18px) !important;
+    max-height:calc(100vh - 18px) !important;
+    overflow:hidden !important;
+    display:flex !important;
+    flex-direction:column !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    flex:0 0 76px !important;
+    height:76px !important;
+    min-height:76px !important;
+    max-height:76px !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .head-info{padding:8px 18px !important;gap:4px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .head-thumb{width:64px !important;height:64px !important;min-width:64px !important;margin:6px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    height:100% !important;
+    min-height:0 !important;
+    box-sizing:border-box !important;
+    padding:12px 16px !important;
+    display:grid !important;
+    grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+    grid-template-rows:44px 126px 178px minmax(190px,1fr) 42px !important;
+    grid-template-areas:
+      "name name name category category category photo photo photo photo photo photo"
+      "desc desc desc desc desc desc desc desc photo photo photo photo"
+      "stock stock stock stock stock stock stock stock photo photo photo photo"
+      "tech tech tech tech cost cost cost cost rates rates rates rates"
+      "save save save save save save save save delete delete delete delete" !important;
+    gap:10px 12px !important;
+    overflow:hidden !important;
+  }
+
+  /* Explicit placement prevents the old auto-placement from creating a second page. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1){grid-area:name !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){grid-area:category !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field{grid-area:photo !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){grid-area:desc !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field{grid-area:stock !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{grid-area:tech !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle{grid-area:cost !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{grid-area:cost !important; margin-top:42px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards{grid-area:rates !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn{grid-area:save !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{grid-area:delete !important;}
+
+  /* Compact top cards */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{
+    min-width:0 !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){
+    padding:8px 12px !important;
+    border-radius:11px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4) .desc-textarea{height:62px !important;min-height:62px !important;resize:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4) .hint{display:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open #aiDescBtn_*{display:none !important;}
+
+  /* Colors: dense two-column chip layout so the entire inventory block stays in view. */
+  body.product-focus-mode #tab-products #products-list > .product.open .stock-field{
+    padding:10px 12px !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:6px !important;
+    max-height:92px !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{min-width:0 !important;padding:6px 8px !important;min-height:38px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-name{font-size:13px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .color-stock-input{width:58px !important;min-width:58px !important;font-size:15px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row{margin-top:6px !important;min-height:38px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .common-color-add-row .add-btn{min-height:38px !important;padding:0 12px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .stock-field > .hint{font-size:11px !important;line-height:1.35 !important;margin-top:4px !important;}
+
+  /* Technical block = one third of the lower row, one field per row. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    grid-template-rows:repeat(6,minmax(0,1fr)) !important;
+    gap:5px !important;
+    padding:8px !important;
+    background:var(--card) !important;
+    border:1px solid var(--line) !important;
+    border-radius:12px !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 > .field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 > .field:nth-child(n){
+    grid-column:1 !important;
+    min-height:0 !important;
+    padding:5px 8px !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 > .field label{font-size:11px !important;margin-bottom:3px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 .num-input{height:32px !important;font-size:15px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 .dim-grid{gap:5px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2 .input-row{height:32px !important;}
+
+  /* Cost table: always visible in desktop focus mode, clean rows, larger readable typography. */
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-toggle{display:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{
+    display:block !important;
+    padding:8px !important;
+    background:var(--card) !important;
+    border:1px solid var(--line) !important;
+    border-radius:12px !important;
+    overflow:hidden !important;
+    max-height:none !important;
+    height:100% !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{position:relative !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap::before{content:"جدول قیمت تمام‌شده";display:block;font-size:17px;font-weight:800;margin:0 0 5px;padding:0 4px;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown{
+    display:flex !important;
+    flex-direction:column !important;
+    height:calc(100% - 28px) !important;
+    gap:4px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row{
+    flex:1 1 0 !important;
+    min-height:0 !important;
+    display:grid !important;
+    grid-template-columns:1fr auto !important;
+    align-items:center !important;
+    padding:5px 10px !important;
+    border-radius:8px !important;
+    font-size:16px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row b{font-size:17px !important;font-weight:800 !important;white-space:nowrap !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row.total{font-size:18px !important;margin-top:2px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row.total b{font-size:21px !important;}
+
+  /* Rates = two distinct columns in the right third. */
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:8px !important;
+    height:100% !important;
+    margin:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card{
+    min-height:0 !important;
+    height:100% !important;
+    padding:12px !important;
+    border-radius:12px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    justify-content:center !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card .label{font-size:14px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card .value{font-size:clamp(25px,1.5vw,38px) !important;line-height:1.15 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .margin-input .num-input{height:34px !important;font-size:15px !important;}
+
+  /* Photos: main image and square thumbnails are kept inside the photo card. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
+    min-height:0 !important;height:100% !important;padding:10px !important;overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{display:block !important;min-height:0 !important;height:auto !important;overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{width:100% !important;min-width:0 !important;height:auto !important;max-height:none !important;padding:0 !important;border:0 !important;background:transparent !important;overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{width:100% !important;height:150px !important;min-height:150px !important;max-height:150px !important;margin:0 !important;border-radius:11px !important;overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview img{height:100% !important;width:100% !important;object-fit:contain !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-strip{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:6px !important;margin:7px 0 0 !important;max-height:70px !important;overflow:hidden !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-item{aspect-ratio:1 / 1 !important;height:62px !important;padding:3px !important;border-radius:8px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image{height:100% !important;padding:0 !important;border-radius:6px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image img{object-fit:cover !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-actions{position:absolute !important;opacity:0 !important;pointer-events:none !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{display:grid !important;grid-template-columns:1fr !important;gap:5px !important;margin-top:7px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-file-label{min-height:34px !important;height:34px !important;font-size:12px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-status{display:none !important;}
+
+  /* Bottom actions stay visible without consuming the workspace. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{height:36px !important;min-height:36px !important;font-size:13px !important;}
+}
+
+@media (min-width:2200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{grid-template-rows:48px 142px 190px minmax(205px,1fr) 44px !important;gap:12px 16px !important;padding:14px 20px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{height:170px !important;min-height:170px !important;max-height:170px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-item{height:68px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row{font-size:17px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row b{font-size:18px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row.total b{font-size:22px !important;}
 }
 </style>
