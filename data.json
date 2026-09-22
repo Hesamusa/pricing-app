@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T04:44:07.281Z",
+  "updatedAt": "2026-09-22T04:44:49.512Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -68,7 +68,13 @@
           "hex": "#ec407a"
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790052188676i8rrr/1790052275644_0_Screenshot-2026-09-17-at-19-06-58-knitted-balloon-dog-Free-3D-Print-Model-MakerWorld.jpg?v=1790052278975",
+          "path": "product-images/p_1790052188676i8rrr/1790052275644_0_Screenshot-2026-09-17-at-19-06-58-knitted-balloon-dog-Free-3D-Print-Model-MakerWorld.jpg",
+          "sha": "168820787804119fcf784d71f5bd8570f37f799e"
+        }
+      ],
       "weight": 10,
       "marginR": null,
       "marginW": null,
