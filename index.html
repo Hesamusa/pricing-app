@@ -803,6 +803,7 @@
   .consign-tr.consign-total{border-top:2px solid var(--line); font-weight:800;}
   .consign-tr.consign-total .cname{color:var(--ink-soft);}
   .consign-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .consign-mobile-edit-toolbar{display:none;}
   .consign-actions .order-status-btn{flex:1 1 44%; min-width:130px;}
   .consign-tr .product-link{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:right;display:inline-flex;align-items:center;gap:5px;cursor:pointer;max-width:100%;font-weight:750;}
 .consign-tr .product-link:hover{color:var(--blue);}
@@ -1542,6 +1543,11 @@ button:not(.icon-btn):not(.theme-toggle-btn):not(.company-logo):not(.bottom-nav 
   #tab-consign .consign-table > .consign-tr{min-width:560px;}
   #tab-consign .consign-th,
   #tab-consign .consign-tr{grid-template-columns:minmax(260px,1fr) 80px 80px 80px 90px 34px;gap:8px;}
+  #tab-consign .consign-mobile-edit-toolbar{display:block;margin:0 0 12px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2, var(--card));box-shadow:0 4px 14px rgba(0,0,0,.08);}
+  #tab-consign .consign-mobile-edit-toolbar-title{font-size:13px;font-weight:800;color:var(--ink-soft);margin-bottom:8px;}
+  #tab-consign .consign-mobile-edit-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  #tab-consign .consign-mobile-edit-actions .order-status-btn{min-width:0;width:100%;margin:0;min-height:42px;font-size:13px;}
+  #tab-consign .consign-side-panel .consign-edit-action{display:none;}
   #tab-consign .consign-product-group{min-width:0;}
   #tab-consign .consign-product-group-head{padding:10px 12px;}
   #tab-consign .consign-variant-row{grid-template-columns:minmax(260px,1fr) 70px 70px 70px 80px 34px;gap:7px;padding:8px 10px;}
@@ -10281,6 +10287,16 @@ function renderConsignCard(c){
     </div>
     <div class="consign-card-body">
       <div class="consign-card-body-inner">
+        <div class="consign-mobile-edit-toolbar">
+          <div class="consign-mobile-edit-toolbar-title">ویرایش و تنظیمات</div>
+          <div class="consign-mobile-edit-actions">
+            ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignmentStoreInfo('${c.id}')">اطلاعات فروشگاه</button>` : ''}
+            <button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
+            ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
+            ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
+            ${isAdmin ? (c.status === 'closed' ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>` : `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
+          </div>
+        </div>
         ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
 
         <div class="consign-workspace">
@@ -10320,13 +10336,13 @@ function renderConsignCard(c){
             <button type="button" class="order-status-btn" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
             ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>` : ''}
           ` : ''}
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignmentStoreInfo('${c.id}')">اطلاعات فروشگاه</button>` : ''}
-          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
+          ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignmentStoreInfo('${c.id}')">اطلاعات فروشگاه</button>` : ''}
+          <button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
+          ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
+          ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
           ${isAdmin ? (c.status === 'closed'
-            ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
-            : `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
+            ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
+            : `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
               </div>
             </div>
           </aside>
