@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T18:45:51.707Z",
+  "updatedAt": "2026-09-22T18:45:54.692Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -265,50 +265,6 @@
       "sizeH": 0
     },
     {
-      "id": "p_1789810661693swjgy",
-      "name": "چارم بگ ابر بامزه با پاهای مفصلی",
-      "sizeH": 7,
-      "sizeL": 5.5,
-      "sizeW": 6,
-      "stock": 8,
-      "colors": [
-        {
-          "id": "color_white",
-          "name": "سفید",
-          "hex": "#ffffff"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810673753_0.jpg?v=1789810675380",
-          "path": "product-images/p_1789810661693swjgy_1789810673753_0.jpg",
-          "sha": "b5384740fe87bbcf8cbd02b3ff3fc2946e483431"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810675443_1.jpg?v=1789810677159",
-          "path": "product-images/p_1789810661693swjgy_1789810675443_1.jpg",
-          "sha": "bb3f802e77e9b7db9275e3cf9ce041bb639ba14b"
-        }
-      ],
-      "weight": 10,
-      "marginR": 200,
-      "marginW": 85,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "color_white": 8
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "نگاه به پاهای آویزونش کن! فک کن این **چارم بگ ابر** خندون آویزون کیفت باشه و با هر حرکتت تکون بخوره. اون‌قدر سبک و بانمکه که کلی انرژی خوب به کیفت می‌ده و برای یه هدیه دوست‌داشتنی هم حرف نداره.\nتعدادش محدوده، اگه می‌خوایش همین الان پیام بده 😉 برای دیدن بقیه مدل‌ها هم عضو کانالمون شو!",
-      "telegramMessageIds": [
-        261,
-        262
-      ]
-    },
-    {
       "id": "p_1789754876369ry8py",
       "name": "پنجه گربه مفصلی",
       "sizeH": 0,
@@ -362,6 +318,50 @@
         233,
         234,
         235
+      ]
+    },
+    {
+      "id": "p_1789810661693swjgy",
+      "name": "چارم بگ ابر بامزه با پاهای مفصلی",
+      "sizeH": 7,
+      "sizeL": 5.5,
+      "sizeW": 6,
+      "stock": 9,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810673753_0.jpg?v=1789810675380",
+          "path": "product-images/p_1789810661693swjgy_1789810673753_0.jpg",
+          "sha": "b5384740fe87bbcf8cbd02b3ff3fc2946e483431"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810675443_1.jpg?v=1789810677159",
+          "path": "product-images/p_1789810661693swjgy_1789810675443_1.jpg",
+          "sha": "bb3f802e77e9b7db9275e3cf9ce041bb639ba14b"
+        }
+      ],
+      "weight": 10,
+      "marginR": 200,
+      "marginW": 85,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_white": 9
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "نگاه به پاهای آویزونش کن! فک کن این **چارم بگ ابر** خندون آویزون کیفت باشه و با هر حرکتت تکون بخوره. اون‌قدر سبک و بانمکه که کلی انرژی خوب به کیفت می‌ده و برای یه هدیه دوست‌داشتنی هم حرف نداره.\nتعدادش محدوده، اگه می‌خوایش همین الان پیام بده 😉 برای دیدن بقیه مدل‌ها هم عضو کانالمون شو!",
+      "telegramMessageIds": [
+        261,
+        262
       ]
     },
     {
