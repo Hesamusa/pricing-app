@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T05:29:05.886Z",
+  "updatedAt": "2026-09-22T05:43:07.129Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,13 +56,24 @@
   "products": [
     {
       "id": "p_1790054916805wzw66",
-      "name": " جدید",
+      "name": " پنج",
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
       "stock": 0,
       "colors": [],
-      "images": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790054916805wzw66/1790055746413_0_IMG_2493.jpg?v=1790055751742",
+          "path": "product-images/p_1790054916805wzw66/1790055746413_0_IMG_2493.jpg",
+          "sha": "779b48fb5fda3cb9799480a48ba530a145b9f37f"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790054916805wzw66/1790055763558_0_IMG_2492.jpg?v=1790055766072",
+          "path": "product-images/p_1790054916805wzw66/1790055763558_0_IMG_2492.jpg",
+          "sha": "7fefda1b82a29a752a8b156470031c50bb7468f0"
+        }
+      ],
       "weight": 50,
       "marginR": null,
       "marginW": null,
