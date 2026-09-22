@@ -11229,6 +11229,15 @@ setTimeout(()=>{
   .stock-row,.stock-item{min-width:0;}
   .color-row label,.color-item label,.variant-row label{font-size:15px !important;line-height:1.55;}
   .color-row input,.color-item input,.variant-row input{font-size:16px !important;}
+  /* Color stock quantity: leave enough room for 3-digit values on mobile. */
+  .color-chip-stock .color-stock-input{
+    width:56px !important;
+    min-width:56px !important;
+    max-width:56px !important;
+    padding-left:5px !important;
+    padding-right:5px !important;
+    font-size:16px !important;
+  }
 
   /* Buttons need a real touch target and Persian text must be allowed to wrap. */
   button,.add-btn,.delete-btn,.order-status-btn,.consign-actions button{
@@ -11317,4 +11326,258 @@ setTimeout(()=>{
 .consign-global-settlement{padding:0 14px 14px;}.consign-global-settlement>div:first-child{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-bottom:5px;}.consign-global-settlement b{color:var(--ink);}
 .consign-accounting-store-title{padding:11px 14px;border-top:1px solid var(--line);font-size:13px;font-weight:800;}.consign-accounting-store-table{overflow:auto;}.consign-accounting-store-head,.consign-accounting-store-row{display:grid;grid-template-columns:minmax(150px,1.6fr) repeat(4,minmax(90px,1fr)) minmax(80px,.8fr);gap:8px;align-items:center;min-width:650px;padding:10px 14px;}.consign-accounting-store-head{background:var(--bg);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:10px;color:var(--ink-soft);font-weight:800;}.consign-accounting-store-row{border-bottom:1px solid var(--line);font-size:11px;}.consign-accounting-store-row:last-child{border-bottom:0;}.consign-accounting-store-row>div:not(.consign-accounting-store-name):not(.consign-mini-progress){display:flex;flex-direction:column;gap:1px;}.consign-accounting-store-row small{color:var(--ink-soft);font-size:9px;}.consign-accounting-store-row b{font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:11px;direction:rtl;}.consign-accounting-store-row .due b{color:var(--red);}.consign-accounting-store-name{display:flex;flex-direction:column;gap:2px;min-width:0;}.consign-accounting-store-name b{font-family:'Vazirmatn',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.consign-accounting-store-name span{font-size:9px;color:var(--ink-soft);}.consign-mini-progress{height:6px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden;}.consign-mini-progress span{display:block;height:100%;background:var(--green);border-radius:99px;}
 @media(max-width:700px){.consign-accounting-dashboard-head{align-items:stretch;flex-direction:column;}.consign-accounting-kpi-main{min-width:0;text-align:right;}.consign-accounting-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.consign-accounting-kpis>div:first-child{grid-column:1/-1;}.consign-accounting-grid{grid-template-columns:1fr 1fr;}.consign-accounting-metric.primary{grid-column:1/-1;}}
+</style>
+
+
+<style id="desktop-product-workspace-v59">
+/* v59 — 4K / wide-desktop product editor rebuild.
+   The previous focus layout was capped around 1580px and used fixed rows,
+   which made the editor occupy a small strip on 2K/4K monitors. This version
+   uses the real desktop canvas with a logical 3-column composition. Mobile is untouched. */
+@media (min-width:1201px){
+  body.product-focus-mode{overflow:hidden !important;}
+
+  body.product-focus-mode #tab-products #products-list > .product.open{
+    position:fixed !important;
+    inset:14px 18px !important;
+    width:auto !important;
+    max-width:none !important;
+    height:calc(100vh - 28px) !important;
+    max-height:none !important;
+    margin:0 !important;
+    z-index:5000 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    overflow:hidden !important;
+    border-radius:18px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    flex:0 0 72px !important;
+    min-height:72px !important;
+    height:72px !important;
+    position:relative !important;
+    z-index:5 !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    display:block !important;
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    padding:0 !important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    box-sizing:border-box !important;
+    width:calc(100% - 56px) !important;
+    max-width:3400px !important;
+    margin:0 auto !important;
+    padding:22px 0 30px !important;
+    display:grid !important;
+    grid-template-columns:minmax(300px,.90fr) minmax(480px,1.35fr) minmax(360px,.95fr) !important;
+    grid-template-rows:auto auto minmax(170px,auto) auto auto auto auto !important;
+    grid-template-areas:
+      "name category photo"
+      "desc desc photo"
+      "stock stock photo"
+      "tech tech tech"
+      "cost cost prices"
+      "costdetail costdetail prices"
+      "save delete prices" !important;
+    gap:14px 16px !important;
+    align-items:stretch !important;
+  }
+
+  /* Logical placement */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1){grid-area:name !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2){grid-area:category !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field{grid-area:photo !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4){grid-area:desc !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field{grid-area:stock !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{grid-area:tech !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle{grid-area:cost !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap{grid-area:costdetail !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards{grid-area:prices !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn{grid-area:save !important; width:100% !important; margin:0 !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{grid-area:delete !important; width:100% !important; margin:0 !important;}
+
+  /* Every major section is a real card, so the 4K canvas remains readable. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(1),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(2),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field:nth-child(4),
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2{
+    box-sizing:border-box !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:15px 17px !important;
+    background:var(--card) !important;
+    border:1px solid var(--line) !important;
+    border-radius:14px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .field label,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .stock-field > label,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field > label{
+    font-size:13px !important;
+    margin-bottom:7px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open input,
+  body.product-focus-mode #tab-products #products-list > .product.open select,
+  body.product-focus-mode #tab-products #products-list > .product.open textarea{
+    box-sizing:border-box !important;
+    font-size:15px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .field input,
+  body.product-focus-mode #tab-products #products-list > .product.open .field select,
+  body.product-focus-mode #tab-products #products-list > .product.open .group-select{
+    min-height:46px !important;
+    height:46px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .desc-textarea{
+    min-height:132px !important;
+    height:132px !important;
+    resize:vertical !important;
+  }
+
+  /* Photo: larger on wide screens, but still bounded. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{
+    display:flex !important;
+    align-items:flex-start !important;
+    gap:16px !important;
+    min-height:250px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{
+    width:250px !important;
+    min-width:250px !important;
+    height:250px !important;
+    max-height:250px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{
+    width:100% !important;
+    height:250px !important;
+    object-fit:contain !important;
+    border-radius:14px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{
+    flex:1 1 auto !important;
+    min-width:150px !important;
+  }
+
+  /* Colors get enough horizontal room on 4K; rows wrap instead of becoming tiny. */
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip-list{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(240px,1fr)) !important;
+    gap:9px !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .color-chip{
+    min-width:0 !important;
+    min-height:48px !important;
+    padding:7px 9px !important;
+  }
+
+  /* Technical section: compact but genuinely readable. */
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2{
+    display:grid !important;
+    grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+    gap:10px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field{
+    min-width:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2 > .field[style*="grid-column:1 / -1"]{
+    grid-column:1 / -1 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .dim-grid{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:8px !important;
+  }
+
+  /* Cost + price decision area */
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-toggle,
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-wrap,
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
+    box-sizing:border-box !important;
+    min-width:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-toggle{
+    min-height:48px !important;
+    margin:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-wrap{
+    margin:0 !important;
+    overflow:auto !important;
+    max-height:220px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:6px 12px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+    height:100% !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card{
+    min-height:125px !important;
+    height:auto !important;
+    padding:14px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .result-card .value{
+    font-size:27px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .add-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .delete-btn{
+    min-height:48px !important;
+  }
+}
+
+/* 4K+: give the editor more breathing room without making individual controls huge. */
+@media (min-width:2200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    width:calc(100% - 96px) !important;
+    max-width:3500px !important;
+    padding-top:28px !important;
+    padding-bottom:38px !important;
+    gap:16px 20px !important;
+    grid-template-columns:minmax(360px,.95fr) minmax(600px,1.45fr) minmax(440px,1fr) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{
+    width:290px !important;
+    min-width:290px !important;
+    height:290px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{min-height:290px !important;}
+  body.product-focus-mode #tab-products #products-list > .product.open .field input,
+  body.product-focus-mode #tab-products #products-list > .product.open .field select,
+  body.product-focus-mode #tab-products #products-list > .product.open .group-select{
+    min-height:50px !important;
+    height:50px !important;
+    font-size:16px !important;
+  }
+}
+
+@media (min-width:3200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    max-width:3600px !important;
+    width:calc(100% - 120px) !important;
+  }
+}
 </style>
