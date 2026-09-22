@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-09-22T11:57:13.600Z",
+  "updatedAt": "2026-09-22T16:57:36.798Z",
   "settings": {
-    "filPrice": 1200000,
-    "resinPrice": 0,
+    "filPrice": 3000000,
+    "resinPrice": 3000000,
     "power": 250,
-    "elec": 3000,
+    "elec": 2000,
     "depr": 15000,
-    "labor": 200000,
-    "paint": 300000,
-    "marginW": 100,
-    "marginR": 300,
+    "labor": 0,
+    "paint": 25000,
+    "marginW": 85,
+    "marginR": 200,
     "roundStep": 5000,
     "productGroups": [
       {
@@ -56,11 +56,11 @@
   "products": [
     {
       "id": "p_1790077513651coqau",
-      "name": "فیجت اسپینر",
+      "name": "فیدجت اسپینر",
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 26,
+      "stock": 21,
       "colors": [
         {
           "id": "color_green",
@@ -95,7 +95,7 @@
       "marginW": 200,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "color_green": 21,
+        "color_green": 16,
         "color_black": 5
       },
       "paintHours": 0,
@@ -1247,7 +1247,7 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 3,
+      "stock": 14,
       "colors": [
         {
           "id": "col_mua2gs728zwd",
@@ -1292,9 +1292,9 @@
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
-        "col_mua2gs728zwd": 1,
-        "color_pink": 1,
-        "color_black": 1
+        "col_mua2gs728zwd": 5,
+        "color_pink": 4,
+        "color_black": 5
       },
       "paintHours": 0,
       "printHours": 1,
