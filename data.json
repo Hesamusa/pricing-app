@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T10:28:52.521Z",
+  "updatedAt": "2026-09-22T10:31:50.565Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -597,6 +597,36 @@
       "sizeH": 0
     },
     {
+      "id": "p_17887965710100v1nz",
+      "name": "تیرکس مکانیکی مفصل ثابت",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1789664987751_0.jpg?v=1789664993678",
+          "path": "product-images/p_17887965710100v1nz_1789664987751_0.jpg",
+          "sha": "8760cfe9ed64acc695aa6e09f6816d94538501f5"
+        }
+      ],
+      "weight": 45,
+      "marginR": 85,
+      "marginW": null,
+      "category": "g_mtreb2q5k4dk",
+      "colorStock": {},
+      "paintHours": 1,
+      "printHours": 4.5,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "وقتی خستگی کار کلافت می‌کنه، بازی کردن با مفاصل نرم و متحرک این غول ماقبل تاریخ حسابی سرگرمت می‌کنه! یه دکوری خاص و مدرن برای روی میزت که هم جلای قشنگی به فضات میده و هم بهترین فیجت برای کاهش استرسه. با توجه به اینکه فقط همین یه دونه آماده ارسال داریم، وقت رو تلف نکن. 🦖",
+      "telegramMessageIds": [
+        222
+      ]
+    },
+    {
       "id": "p_1789318632241mto8f",
       "name": "سیلوستر تیپ شهری",
       "sizeH": 50,
@@ -639,38 +669,11 @@
       "sizeW": 0
     },
     {
-      "id": "p_17887965710100v1nz",
-      "name": "تیرکس مکانیکی مفصل ثابت",
-      "stock": 1,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1789664987751_0.jpg?v=1789664993678",
-          "path": "product-images/p_17887965710100v1nz_1789664987751_0.jpg",
-          "sha": "8760cfe9ed64acc695aa6e09f6816d94538501f5"
-        }
-      ],
-      "weight": 45,
-      "marginR": 85,
-      "marginW": null,
-      "category": "g_mtreb2q5k4dk",
-      "colorStock": {},
-      "paintHours": 1,
-      "printHours": 4.5,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "وقتی خستگی کار کلافت می‌کنه، بازی کردن با مفاصل نرم و متحرک این غول ماقبل تاریخ حسابی سرگرمت می‌کنه! یه دکوری خاص و مدرن برای روی میزت که هم جلای قشنگی به فضات میده و هم بهترین فیجت برای کاهش استرسه. با توجه به اینکه فقط همین یه دونه آماده ارسال داریم، وقت رو تلف نکن. 🦖",
-      "telegramMessageIds": [
-        222
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
       "id": "p_1788796315293vahtq",
       "name": "جغد کوچک",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
       "stock": 1,
       "colors": [],
       "images": [
@@ -693,10 +696,7 @@
       "catalogDescription": "یه همراه کوچولو و بامزه که می‌تونه همیشه روی کیفت یا دسته‌کلیدت باشه! جزئیات ظریف پرینت سه‌بعدیش واقعاً چشم‌نوازه و اون‌قدر سبکه که اصلاً حسش نمی‌کنی. فقط همین یک دونه ازش باقی مونده، پس تا نپریده مال خودت کن! 🦉",
       "telegramMessageIds": [
         145
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
+      ]
     },
     {
       "id": "p_17887958075931fier",
@@ -1319,7 +1319,7 @@
         }
       ],
       "weight": 13,
-      "marginR": 150,
+      "marginR": 250,
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
