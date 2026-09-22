@@ -7929,6 +7929,7 @@ function makeConsignment(storeName, contactName, contactPhone, address, hasStand
     payments: [], // {id, amount, date, note}
     status: 'active', // 'active' | 'closed'
     notes: (notes||'').trim(),
+    productNotes: {}, // توضیحات اختصاصی هر محصول در کارت امانی؛ کلید = productId
     createdAt: new Date().toISOString()
   };
 }
@@ -9768,6 +9769,27 @@ function renderConsignTab(){
   listEl.innerHTML = list.map(c => renderConsignCard(c)).join('');
 }
 
+const consignProductNoteTimers = Object.create(null);
+
+function onConsignProductNoteInput(consignId, productId, value){
+  const c = consignments.find(x => x.id === consignId);
+  if(!c) return;
+  if(!c.productNotes || typeof c.productNotes !== 'object' || Array.isArray(c.productNotes)) c.productNotes = {};
+  c.productNotes[productId] = String(value || '');
+
+  // هنگام تایپ کارت را دوباره render نکن؛ فقط ذخیره را با کمی تاخیر روی Supabase انجام بده.
+  const key = consignId + '::' + productId;
+  clearTimeout(consignProductNoteTimers[key]);
+  consignProductNoteTimers[key] = setTimeout(async () => {
+    delete consignProductNoteTimers[key];
+    await syncConsignmentToSupabase(c);
+  }, 700);
+}
+
+function flushConsignProductNotes(){
+  Object.keys(consignProductNoteTimers).forEach(key => clearTimeout(consignProductNoteTimers[key]));
+}
+
 function renderConsignCard(c){
   const items = c.items || [];
   const soldValue = consignSoldValue(c);
@@ -9850,6 +9872,17 @@ function renderConsignCard(c){
         </div>
         <div class="consign-product-group-body" style="display:${groupOpen?'block':'none'};">
           ${variantRows}
+          <div class="consign-product-note" style="padding:10px 12px 12px; border-top:1px solid var(--line);">
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;">توضیحات محصول</label>
+            <textarea
+              rows="2"
+              placeholder="توضیحات مربوط به این محصول در این فروشگاه..."
+              style="width:100%;min-height:64px;resize:vertical;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);padding:9px 11px;font:inherit;font-size:14px;line-height:1.8;outline:none;"
+              onclick="event.stopPropagation()"
+              onkeydown="event.stopPropagation()"
+              oninput="event.stopPropagation(); onConsignProductNoteInput('${c.id}','${g.id}',this.value)"
+            >${escapeHtml((c.productNotes && c.productNotes[g.id]) || '')}</textarea>
+          </div>
         </div>
       </div>`;
   }).join('');
