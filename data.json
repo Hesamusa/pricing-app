@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T04:36:20.171Z",
+  "updatedAt": "2026-09-22T04:42:54.491Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -60,7 +60,7 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 2,
+      "stock": 0,
       "colors": [
         {
           "id": "color_pink",
@@ -70,9 +70,19 @@
       ],
       "images": [
         {
+          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c",
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790014671598fm20e/1790051734455_0_Screenshot-2026-09-20-at-13-07-36-Protein-Shaker-Fidget-Keychain-Free-3D-Print-Model-MakerWorld.jpg?v=1790051738586",
-          "path": "product-images/p_1790014671598fm20e/1790051734455_0_Screenshot-2026-09-20-at-13-07-36-Protein-Shaker-Fidget-Keychain-Free-3D-Print-Model-MakerWorld.jpg",
-          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c"
+          "path": "product-images/p_1790014671598fm20e/1790051734455_0_Screenshot-2026-09-20-at-13-07-36-Protein-Shaker-Fidget-Keychain-Free-3D-Print-Model-MakerWorld.jpg"
+        },
+        {
+          "sha": "e6a414d093977493a55840d0cba5e57b8a605a21",
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790014671598fm20e/1790051819684_0_photo_2026-09-20_07-46-13.jpg?v=1790051822473",
+          "path": "product-images/p_1790014671598fm20e/1790051819684_0_photo_2026-09-20_07-46-13.jpg"
+        },
+        {
+          "sha": "224a4a8c2dbab53c3f663d57e19bbb6e0a6c7c3c",
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790014671598fm20e/1790052110677_0_Screenshot-2026-09-20-at-07-28-54-dumbbell-keychain-Free-3D-Print-Model-MakerWorld.jpg?v=1790052113096",
+          "path": "product-images/p_1790014671598fm20e/1790052110677_0_Screenshot-2026-09-20-at-07-28-54-dumbbell-keychain-Free-3D-Print-Model-MakerWorld.jpg"
         }
       ],
       "weight": 8,
@@ -80,7 +90,7 @@
       "marginW": null,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "color_pink": 2
+        "color_pink": 0
       },
       "paintHours": 0,
       "printHours": 0.75,
