@@ -459,8 +459,16 @@
   .consign-modal-variant .consign-qty-row-head{padding-right:4px;}
   @media(max-width:380px){.consign-variant-editor-grid{grid-template-columns:1fr;}}
 
-  .consign-product-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:var(--bg);border-bottom:1px solid var(--line);}
+  .consign-product-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;background:var(--bg);border-bottom:1px solid var(--line);cursor:pointer;user-select:none;}
+  .consign-product-group-head:hover{background:var(--card);}
+  .consign-product-group-head-main{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+  .consign-product-thumb{width:52px;height:52px;flex:0 0 52px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink-soft);}
+  .consign-product-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .consign-product-group-title{display:flex;flex-direction:column;gap:3px;min-width:0;}
   .consign-product-group-name{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .consign-product-group-sub{font-size:10px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .consign-product-group-chevron{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:9px;color:var(--ink-soft);transition:transform .2s ease,background .2s ease;flex:0 0 30px;}
+  .consign-product-group-chevron.open{transform:rotate(180deg);background:var(--card);}
   .consign-product-group-count{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
   .consign-variant-row{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px 44px 50px 30px;gap:3px;align-items:center;padding:6px 7px;border-bottom:1px solid var(--line-soft,var(--line));}
   .consign-variant-row:last-child{border-bottom:0;}
@@ -3410,6 +3418,15 @@ function toggleConsignHistory(id){
   renderConsignTab();
 }
 let consignCardOpen = new Set();
+// هر محصول داخل واگذاری یک کارت کشویی مستقل دارد؛ رنگ‌ها فقط داخل کارت نمایش داده می‌شوند.
+let consignProductGroupOpen = new Set();
+function consignProductGroupKey(consignId, productId){ return String(consignId) + '::' + String(productId); }
+function toggleConsignProductGroup(consignId, productId){
+  const key = consignProductGroupKey(consignId, productId);
+  if(consignProductGroupOpen.has(key)) consignProductGroupOpen.delete(key);
+  else consignProductGroupOpen.add(key);
+  renderConsignTab();
+}
 function toggleConsignCard(id){
   const wasOpen = consignCardOpen.has(id);
   if(wasOpen) consignCardOpen.delete(id);
@@ -5848,6 +5865,8 @@ async function syncProductToTelegram(id){
 // و اگه کاتالوگ تلگرام فعال باشه، بدون صبر کردن برای تایمر ۲.۵ ثانیه‌ای، همون لحظه به کانال می‌فرسته.
 async function saveAndSendProduct(id){
   if(!isAdmin) return;
+  // تا پایان ذخیره Supabase و ارسال تلگرام، snapshot دیگری حق بازسازی فرم را ندارد.
+  productCommitInProgress = true;
   clearTimeout(saveTimer);
   clearTimeout(telegramSyncTimers[id]);
   delete telegramSyncTimers[id];
@@ -5877,6 +5896,8 @@ async function saveAndSendProduct(id){
     showToast('ذخیره/ارسال ناموفق: ' + (err.message || 'خطای ناشناخته'), 'error', 5000);
   }finally{
     if(btn) btn.disabled = false;
+    productCommitInProgress = false;
+    finishProductEditSession(id);
   }
 }
 
@@ -9807,15 +9828,29 @@ function renderConsignCard(c){
           </span>
         </div>`;
     }).join('');
+    const groupKey = consignProductGroupKey(c.id, g.id);
+    const groupOpen = consignProductGroupOpen.has(groupKey);
+    const groupProd = products.find(p => p.id === g.id);
+    const groupImage = groupProd && groupProd.images && groupProd.images[0];
+    const groupThumb = groupImage ? imageMarkup(groupImage) : cameraIconSVG(24);
     return `
       <div class="consign-product-group">
-        <div class="consign-product-group-head">
-          <button type="button" class="cname product-link consign-product-group-name" title="مشاهده در محصولات" onclick="event.stopPropagation(); openProductFromConsign('${g.items[0].it.productId}')">${escapeHtml(g.name)}</button>
-          <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-            <span class="consign-product-group-count">${fa.format(g.displayVariants.length)} رنگ · نزد ${fa.format(gRemain)} · فروش ${fa.format(gSold)}</span>
-          </span>
+        <div class="consign-product-group-head" role="button" tabindex="0" aria-expanded="${groupOpen?'true':'false'}" onclick="event.stopPropagation(); toggleConsignProductGroup('${c.id}','${g.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();toggleConsignProductGroup('${c.id}','${g.id}')}" title="نمایش تنوع رنگی">
+          <div class="consign-product-group-head-main">
+            <div class="consign-product-thumb">${groupThumb}</div>
+            <div class="consign-product-group-title">
+              <div class="consign-product-group-name" title="${escapeHtml(g.name)}">${escapeHtml(g.name)}</div>
+              <div class="consign-product-group-sub">${fa.format(g.displayVariants.length)} رنگ · نزد ${fa.format(gRemain)} · فروش ${fa.format(gSold)}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+            <span class="consign-product-group-count">${fa.format(g.displayVariants.length)} رنگ</span>
+            <span class="consign-product-group-chevron${groupOpen?' open':''}">⌄</span>
+          </div>
         </div>
-        ${variantRows}
+        <div class="consign-product-group-body" style="display:${groupOpen?'block':'none'};">
+          ${variantRows}
+        </div>
       </div>`;
   }).join('');
   const totalsRow = items.length > 1 ? `
@@ -10092,6 +10127,32 @@ document.addEventListener('DOMContentLoaded', function(){
 // است و به مسیر آپلود عکس دست نمی‌زند.
 let userEditingFormField = false;
 let userEditingFieldToken = 0;
+// تا وقتی کاربر دکمه «ذخیره و ارسال» همان محصول را نزده، هیچ refresh
+// محصولی اجازه بازسازی کارت را ندارد. این قفل مستقل از آپلود عکس است.
+let productEditLockId = null;
+let productCommitInProgress = false;
+
+function productEditLockActive(){
+  return !!productEditLockId || productCommitInProgress;
+}
+
+function beginProductEditSession(el){
+  const card = el && el.closest ? el.closest('[id^="card_"]') : null;
+  if(!card || !card.id) return;
+  productEditLockId = card.id.replace(/^card_/, '');
+  userEditingFormField = true;
+}
+
+function finishProductEditSession(id){
+  if(id && productEditLockId && String(id) !== String(productEditLockId)) return;
+  productEditLockId = null;
+  userEditingFormField = false;
+  userEditingFieldToken++;
+  deferredProductRefresh = true;
+  setTimeout(()=>{
+    if(!productEditLockActive()) window.__flushDeferredProductRefresh();
+  }, 100);
+}
 
 function isUserEditingFormField(){
   if(userEditingFormField) return true;
@@ -10118,7 +10179,10 @@ function releaseUserEditingFieldSoon(){
 
 document.addEventListener('focusin', e=>{
   const t=e.target;
-  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) markUserEditingField();
+  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)){
+    markUserEditingField();
+    if(t.closest && t.closest('[id^="card_"]')) beginProductEditSession(t);
+  }
 }, true);
 
 document.addEventListener('focusout', e=>{
@@ -10128,7 +10192,7 @@ document.addEventListener('focusout', e=>{
 
 let deferredProductRefresh = false;
 window.__flushDeferredProductRefresh = function(){
-  if(!deferredProductRefresh || isUserEditingFormField()) return;
+  if(!deferredProductRefresh || productEditLockActive() || isUserEditingFormField()) return;
   deferredProductRefresh = false;
   setTimeout(()=>{
     if(!isUserEditingFormField()) refreshProductsFromSupabaseIfSafe(false);
@@ -10138,7 +10202,11 @@ window.__flushDeferredProductRefresh = function(){
 async function refreshProductsFromSupabaseIfSafe(force=false){
   try{
     if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
-    if(isUserEditingFormField()){
+    if(productEditLockActive()){
+      deferredProductRefresh = true;
+      return false;
+    }
+    if(productEditLockActive() || isUserEditingFormField()){
       deferredProductRefresh = true;
       return false;
     }
@@ -10177,7 +10245,7 @@ document.addEventListener('visibilitychange', () => {
   if(document.visibilityState !== 'visible') return;
   // روی موبایل باز شدن کیبورد/گالری می‌تواند visibilitychange ایجاد کند.
   // هنگام ویرایش فقط علامت می‌زنیم؛ بعد از خروج از input آخرین snapshot را می‌گیریم.
-  if(isUserEditingFormField()){
+  if(productEditLockActive() || isUserEditingFormField()){
     deferredProductRefresh = true;
     return;
   }
@@ -10196,7 +10264,7 @@ window.addEventListener('load', async () => {
 // When this tab returns to foreground after another device has changed products,
 // pull the latest shared data again. Do not overwrite an active form field.
 setInterval(() => {
-  if(document.visibilityState === 'visible') refreshProductsFromSupabaseIfSafe(false);
+  if(document.visibilityState === 'visible' && !productEditLockActive()) refreshProductsFromSupabaseIfSafe(false);
 }, 5000);
 
 
@@ -10265,7 +10333,7 @@ async function realtimeRefreshProducts(){
   // مهم: fallback polling مستقیماً این تابع را صدا می‌زند و نباید قفل ویرایش
   // را دور بزند. روی موبایل ممکن است activeElement موقتاً body شود، در حالی که
   // کاربر هنوز در حال تایپ است.
-  if(isUserEditingFormField()){
+  if(productEditLockActive() || isUserEditingFormField()){
     deferredProductRefresh = true;
     return false;
   }
