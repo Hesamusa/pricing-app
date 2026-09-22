@@ -3866,6 +3866,8 @@ async function removeProductColor(id, colorId){
 function updateColorStockDirect(id,colorId,value){
   if(!isAdmin) return;
   const prod=products.find(p=>p.id===id); if(!prod) return;
+  const card = document.getElementById('card_' + id);
+  if(card && typeof beginProductEditSession === 'function') beginProductEditSession(card);
   prod.colorStock=prod.colorStock||{};
   const n=Math.max(0, Math.floor(Number(value)||0));
   prod.colorStock[colorId]=n;
@@ -3961,6 +3963,8 @@ function persist(opts){
   if(!ready) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
+    // هنگام ویرایش یک محصول، ذخیره/همگام‌سازی ابری تا دکمه نهایی متوقف می‌شود.
+    const deferCloud = typeof productEditLockActive === 'function' && productEditLockActive() && !(opts && opts.forceSupabase);
     let localOk = true;
     try{
       localStorage.setItem('pricing_app_settings', JSON.stringify(settings));
@@ -3968,7 +3972,7 @@ function persist(opts){
     }catch(e){ localOk = false; console.error('ذخیره‌سازی محلی ناموفق بود', e); }
 
     let cloudOk = true;
-    if(!(opts && opts.skipSupabase) && SUPABASE_PRODUCTS_ENABLED){
+    if(!deferCloud && !(opts && opts.skipSupabase) && SUPABASE_PRODUCTS_ENABLED){
       cloudOk = await saveProductsToSupabaseBridge();
       if(!cloudOk) console.error('ذخیره محصولات در Supabase ناموفق بود');
     }
@@ -3977,8 +3981,8 @@ function persist(opts){
     else if(localOk) showToast('محلی ذخیره شد، ولی ذخیره در Supabase ناموفق بود', 'warn', 3500);
     else showToast('ذخیره‌سازی ناموفق بود', 'error', 3500);
 
-    if(!(opts && opts.skipSync)) scheduleSync();
-    if(opts && opts.telegramProductId && !(opts && opts.skipTelegram)) queueTelegramSync(opts.telegramProductId);
+    if(!deferCloud && !(opts && opts.skipSync)) scheduleSync();
+    if(!deferCloud && opts && opts.telegramProductId && !(opts && opts.skipTelegram)) queueTelegramSync(opts.telegramProductId);
   }, 250);
 }
 function flashSaved(){
@@ -5929,6 +5933,9 @@ async function imageUrlToBase64(url){
 async function generateAIDescription(id){
   const prod = products.find(p => p.id === id);
   if(!prod) return;
+  // تولید متن هم بخشی از ویرایش محصول است؛ از همین لحظه refresh/realtime متوقف می‌شود.
+  const card = document.getElementById('card_' + id);
+  if(card && typeof beginProductEditSession === 'function') beginProductEditSession(card);
   const btn = document.getElementById('aiDescBtn_' + id);
   const statusEl = document.getElementById('aiDescStatus_' + id);
   const setStatus = (text, kind) => {
@@ -6060,7 +6067,8 @@ ${productInfo}`;
 
     prod.catalogDescription = generated;
     updateProductDisplay(id);
-    persist();
+    // تا قبل از «ذخیره و ارسال» هیچ save/refresh ابری انجام نمی‌شود.
+    try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
     const el = document.getElementById('descTextarea_' + id);
     if(el) el.value = generated;
     setStatus('توضیح نوشته شد ✓', '');
@@ -6517,6 +6525,8 @@ function updateProduct(id, field, value){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(!prod) return;
+  const card = document.getElementById('card_' + id);
+  if(card && typeof beginProductEditSession === 'function') beginProductEditSession(card);
   prod[field] = value;
   // Update only the computed numbers in place (no innerHTML rebuild),
   // so the input the user is typing in never loses focus/keyboard.
