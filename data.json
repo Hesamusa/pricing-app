@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T06:36:26.624Z",
+  "updatedAt": "2026-09-22T10:26:48.064Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -41,7 +41,7 @@
     "telegramCatalogEnabled": true,
     "telegramChannelId": "@threedprintplusy",
     "telegramApiBase": "https://gemini-proxy.hesamoddin-usa.workers.dev",
-    "telegramShowPrice": true,
+    "telegramShowPrice": false,
     "telegramShowSize": true,
     "aiProvider": "gemini",
     "aiGeminiProxyUrl": "https://gemini-proxy.hesamoddin-usa.workers.dev/",
@@ -1208,7 +1208,7 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 11,
+      "stock": 3,
       "colors": [
         {
           "id": "col_mua2gs728zwd",
@@ -1253,9 +1253,9 @@
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
-        "col_mua2gs728zwd": 4,
-        "color_pink": 4,
-        "color_black": 3
+        "col_mua2gs728zwd": 1,
+        "color_pink": 1,
+        "color_black": 1
       },
       "paintHours": 0,
       "printHours": 1,
@@ -1339,9 +1339,24 @@
           "sha": "c0595468f185a6083f674e20f13778515081c18e"
         },
         {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
+          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
+          "sha": "c0595468f185a6083f674e20f13778515081c18e"
+        },
+        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
           "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
           "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
+          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
+          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
+          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
+          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
         },
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
@@ -1354,13 +1369,23 @@
           "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
         },
         {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
+          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
+          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
+          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
+          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
+        },
+        {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
           "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
           "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
         }
       ],
       "weight": 20,
-      "marginR": 550,
+      "marginR": 500,
       "marginW": null,
       "category": "g_mtqsahf4t778",
       "colorStock": {
@@ -1369,7 +1394,7 @@
       "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
-      "accessoryCost": 5000,
+      "accessoryCost": 50000,
       "telegramMessageId": null,
       "catalogDescription": "ببین چقدر کیفت با این **چارم ابرِ خندون** ناز و متفاوت می‌شه! ☁️ این ابر کوچولو با پاهای آویزون و بند پاراکورد بنفشش اون‌قدر سبکه که اصلاً حسش نمی‌کنی، اما حسابی به کیفت نما میده. از این مدل **همین ۱ عدد** موجود داریم؛ اگه دوستش داری پیام بده تا مال تو بشه. برای دیدن طرح‌های جدیدتر حتماً عضو کانالمون شو 😉",
       "telegramMessageIds": [
