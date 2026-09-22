@@ -2614,6 +2614,70 @@ async function saveProductsToSupabaseBridge(){
   }
 }
 </style>
+
+<style id="consign-modal-field-label-fix-v74">
+/* v74 — جلوگیری از افتادن/پنهان شدن عنوان فیلدهای عملیات امانی زیر ورودی */
+#consign-modal .consign-qty-fields{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr)) !important;
+  gap:8px !important;
+  align-items:stretch !important;
+}
+#consign-modal .consign-qty-field{
+  min-width:0 !important;
+  min-height:78px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  justify-content:center !important;
+  gap:5px !important;
+  padding:7px 8px !important;
+  box-sizing:border-box !important;
+}
+#consign-modal .consign-qty-field .qhint{
+  display:block !important;
+  width:100% !important;
+  flex:none !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  white-space:nowrap !important;
+  text-align:center !important;
+  line-height:1.5 !important;
+  font-size:11px !important;
+}
+#consign-modal .consign-qty-field input{
+  width:100% !important;
+  min-width:0 !important;
+  flex:1 1 auto !important;
+  height:42px !important;
+  box-sizing:border-box !important;
+  padding:7px 6px !important;
+}
+@media(max-width:520px){
+  #consign-modal .consign-qty-fields{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:6px !important;
+  }
+  #consign-modal .consign-qty-field{
+    min-height:76px !important;
+    padding:6px 5px !important;
+  }
+  #consign-modal .consign-qty-field .qhint{
+    font-size:10px !important;
+  }
+  #consign-modal .consign-qty-field input{
+    height:40px !important;
+    font-size:15px !important;
+  }
+}
+@media(max-width:370px){
+  #consign-modal .consign-qty-fields{
+    grid-template-columns:1fr !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
