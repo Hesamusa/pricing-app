@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T11:56:28.992Z",
+  "updatedAt": "2026-09-22T11:57:11.212Z",
   "settings": {
     "filPrice": 1200000,
     "resinPrice": 0,
@@ -9,8 +9,8 @@
     "labor": 200000,
     "paint": 300000,
     "marginW": 50,
-    "marginR": 120,
-    "roundStep": 1000,
+    "marginR": 300,
+    "roundStep": 5000,
     "productGroups": [
       {
         "id": "g_mtqsahf4t778",
@@ -102,8 +102,13 @@
       "printHours": 1,
       "manualHours": 0,
       "accessoryCost": 10000,
+      "telegramMessageId": null,
       "catalogDescription": "اگه موقع کار یا راه رفتن دستت عادت داره با یه چیزی ور بره، این **جاکلیدی فیجت‌دار** خوراک خودته! حلقه‌های وسطش به روانی می‌چرخن و هم استرس رو کم می‌کنن، هم ظاهر کلید و کیفت رو خیلی جذاب‌تر می‌کنن. سبک و جمع‌وجوره و الانم موجود داریم؛ اگه خوشت اومده بهم پیام بده تا برات بفرستم 😉",
-      "telegramMessageIds": []
+      "telegramMessageIds": [
+        302,
+        303,
+        304
+      ]
     },
     {
       "id": "p_1790057973753w88de",
