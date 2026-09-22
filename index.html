@@ -5193,6 +5193,54 @@ function setPhotoStatus(id, text, kind){
 const PRODUCT_MAX_IMAGES = 5;
 
 // بخش تصویری کاروسل (عکس فعلی + نقطه‌ها) — با لمس/کلیک روی عکس، ویوئر تمام‌صفحه باز می‌شه
+async function loadGithubImageFallback(imgEl, path){
+  if(!imgEl || !path) return;
+  if(imgEl.dataset.fallbackLoading === '1') return;
+  imgEl.dataset.fallbackLoading = '1';
+  try{
+    const apiUrl = githubContentsUrl(path);
+    const res = await fetch(apiUrl + '?ref=' + encodeURIComponent((settings.githubBranch||'main').trim()) + '&t=' + Date.now(), {
+      method:'GET', cache:'no-store', headers: githubHeaders()
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.message || ('GitHub '+res.status));
+    // برای فایل‌های کوچک، Contents API خودِ محتوای base64 را برمی‌گرداند.
+    if(data.content){
+      const raw = String(data.content).replace(/\s+/g,'');
+      const binary = atob(raw);
+      const bytes = new Uint8Array(binary.length);
+      for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+      const blob = new Blob([bytes], {type:data.encoding === 'base64' ? 'image/jpeg' : 'application/octet-stream'});
+      const blobUrl = URL.createObjectURL(blob);
+      imgEl.dataset.blobUrl = blobUrl;
+      imgEl.src = blobUrl;
+      return;
+    }
+    // برای فایل‌های بزرگ، download_url را با احراز هویت می‌خوانیم و به Blob URL تبدیل می‌کنیم.
+    if(data.download_url){
+      const r2 = await fetch(data.download_url + (data.download_url.includes('?')?'&':'?') + 'v=' + Date.now(), {
+        method:'GET', cache:'no-store', headers: githubHeaders()
+      });
+      if(!r2.ok) throw new Error('خواندن فایل تصویر از GitHub ناموفق بود ('+r2.status+').');
+      const blob = await r2.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      imgEl.dataset.blobUrl = blobUrl;
+      imgEl.src = blobUrl;
+      return;
+    }
+    throw new Error('GitHub محتوای قابل نمایش برای تصویر برنگرداند.');
+  }catch(err){
+    console.error('loadGithubImageFallback:', err);
+    imgEl.dataset.fallbackFailed = '1';
+  }
+}
+function imageMarkup(img, alt=''){
+  if(!img || !img.url) return '';
+  const path = String(img.path||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const url = String(img.url||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  return `<img src="${url}" alt="${alt}" data-image-path="${path}" onerror="loadGithubImageFallback(this, this.dataset.imagePath)">`;
+}
+
 function photoCarouselInnerHTML(prod){
   const images = prod.images || [];
   let idx = productCarouselIndex[prod.id] || 0;
@@ -5202,7 +5250,7 @@ function photoCarouselInnerHTML(prod){
   const clickAttr = images.length ? `onclick="event.stopPropagation(); openPhotoLightbox('${prod.id}')" style="cursor:pointer;"` : '';
   return `
     <div class="photo-preview" id="photoPrev_${prod.id}" ${clickAttr}>
-      ${current ? `<img src="${current.url}" alt="">` : cameraIconSVG(36)}
+      ${current ? imageMarkup(current) : cameraIconSVG(36)}
     </div>
     ${images.length > 1 ? `<div class="carousel-dots">${images.map((_,i)=>`<span class="dot${i===idx?' active':''}"></span>`).join('')}</div>` : ''}
   `;
@@ -5225,7 +5273,7 @@ function updateProductPhotoUI(id){
   const prod = products.find(p=>p.id===id);
   if(!prod) return;
   const headThumb = document.getElementById('headThumb_'+id);
-  if(headThumb) headThumb.innerHTML = (prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32);
+  if(headThumb) headThumb.innerHTML = (prod.images&&prod.images[0]) ? imageMarkup(prod.images[0]) : cameraIconSVG(32);
   const carousel = document.getElementById('photoCarousel_'+id);
   if(carousel) carousel.innerHTML = photoCarouselInnerHTML(prod);
   const actions = document.getElementById('photoActions_'+id);
@@ -5332,7 +5380,7 @@ function renderLightbox(){
   const img = document.getElementById('photo-lightbox-img');
   const dotsWrap = document.getElementById('photo-lightbox-dots');
   const current = prod.images[lightboxIndex];
-  if(img) img.src = current ? current.url : '';
+  if(img){ img.src = current ? current.url : ''; if(current && current.path){ img.dataset.imagePath = current.path; img.onerror = function(){ loadGithubImageFallback(this, this.dataset.imagePath); }; } else { img.onerror = null; }}
   if(dotsWrap){
     dotsWrap.innerHTML = prod.images.length > 1
       ? prod.images.map((_,i)=>`<span class="dot${i===lightboxIndex?' active':''}"></span>`).join('')
