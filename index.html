@@ -2615,6 +2615,12 @@ async function saveProductsToSupabaseBridge(){
 }
 </style>
 
+<style id="consign-operation-date-v75">
+#consign-modal .consign-operation-date{margin:0 2px 10px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;}
+#consign-modal .consign-operation-date label{display:block;margin:0 0 6px;font-size:11px;font-weight:800;color:var(--ink-soft);}
+#consign-modal .consign-operation-date input{width:100%;height:40px;box-sizing:border-box;}
+.consign-date-input{direction:ltr!important;text-align:left!important;}
+</style>
 <style id="consign-modal-field-label-fix-v74">
 /* v74 — جلوگیری از افتادن/پنهان شدن عنوان فیلدهای عملیات امانی زیر ورودی */
 #consign-modal .consign-qty-fields{
@@ -3702,6 +3708,11 @@ async function saveProductsToSupabaseBridge(){
       </button>
       <div id="consign-items-list" style="margin:10px 0 6px;"></div>
 
+      <div class="field">
+        <label>تاریخ واگذاری</label>
+        <input type="date" class="gh-field consign-date-input" id="consign_date" dir="ltr">
+        <div class="hint">تاریخی که این واگذاری/تحویل واقعاً انجام شده.</div>
+      </div>
       <div class="field">
         <label>یادداشت (اختیاری)</label>
         <input type="text" class="gh-field" id="consign_notes" style="direction:rtl; text-align:right; font-family:'Vazirmatn',sans-serif;" placeholder="مثلاً شرایط تسویه یا توضیح استند">
@@ -7244,7 +7255,8 @@ function makeCustomerData(name, phone){
   return {
     name: (name||'').trim(),
     phone: normalizeDigits(phone),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    assignmentDate: effectiveDate
   };
 }
 
@@ -8323,8 +8335,9 @@ function makeConsignItem(prod, qty, unitPrice, targetQty, colorId, colorName, co
   };
 }
 
-function makeConsignment(storeName, contactName, contactPhone, address, hasStand, standCode, items, notes){
+function makeConsignment(storeName, contactName, contactPhone, address, hasStand, standCode, items, notes, operationDate){
   const today = new Date().toISOString().slice(0,10);
+  const effectiveDate = operationDate || today;
   return {
     id: 'cg_' + Date.now() + Math.random().toString(36).slice(2,7),
     storeName: (storeName||'').trim(),
@@ -8334,7 +8347,7 @@ function makeConsignment(storeName, contactName, contactPhone, address, hasStand
     hasStand: !!hasStand,
     standCode: (standCode||'').trim(),
     items: items || [],
-    deliveries: [{ id: 'dl_'+Date.now(), date: today, items: (items||[]).map(it => ({productId: it.productId, qty: it.deliveredQty, colorId: it.colorId||null, colorName: it.colorName||null})), note: 'واگذاری اولیه' }],
+    deliveries: [{ id: 'dl_'+Date.now(), date: effectiveDate, items: (items||[]).map(it => ({productId: it.productId, qty: it.deliveredQty, colorId: it.colorId||null, colorName: it.colorName||null})), note: 'واگذاری اولیه' }],
     saleLogs: [], // {id, date, items:[{productId, qty, unitPrice}], total}
     payments: [], // {id, amount, date, note}
     status: 'active', // 'active' | 'closed'
@@ -8555,6 +8568,8 @@ function openNewStoreModal(){
   if(!modal) return;
   modal.classList.add('show');
   updateConsignItemPickerLabel();
+  const dateEl = document.getElementById('consign_date');
+  if(dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0,10);
   closeConsignItemPicker();
   renderConsignItemsList();
   renderConsignItemColorOptions();
@@ -8785,6 +8800,8 @@ function resetConsignForm(){
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
+  const dateEl = document.getElementById('consign_date');
+  if(dateEl) dateEl.value = new Date().toISOString().slice(0,10);
   const qtyEl = document.getElementById('consign_item_qty');
   if(qtyEl) qtyEl.value = '۱';
   const phoneHint = document.getElementById('consign_contact_phone_hint');
@@ -8830,7 +8847,8 @@ async function submitConsignment(){
     consignFormHasStand,
     document.getElementById('consign_stand_code').value,
     currentConsignItems.slice(),
-    document.getElementById('consign_notes').value
+    document.getElementById('consign_notes').value,
+    document.getElementById('consign_date')?.value || new Date().toISOString().slice(0,10)
   );
   data.creatorEmail = currentUser.email;
   data.creatorName = currentUser.name || currentUser.email;
@@ -8900,7 +8918,8 @@ function openConsignQtyModal(opts){
         <input type="text" inputmode="numeric" data-key="${escapeHtml(r.key)}" value="${r.value ? toFaNum(r.value,0) : ''}" placeholder="۰" oninput="handleGroupedIntInput(this, ()=>{})">
       </div>`);
     });
-    listEl.innerHTML = toolsHtml + groupedRows.join('');
+    const dateHtml = opts.includeDate ? `<div class="consign-operation-date"><label>تاریخ عملیات</label><input id="consign_operation_date" type="date" class="gh-field consign-date-input" value="${escapeHtml(opts.dateValue || new Date().toISOString().slice(0,10))}"><div class="hint" style="margin-top:5px;">تاریخ واقعی انجام این عملیات را انتخاب کن.</div></div>` : '';
+    listEl.innerHTML = dateHtml + toolsHtml + groupedRows.join('');
     overlay.classList.add('show');
     const searchEl = document.getElementById('consign_modal_search');
     const sortEl = document.getElementById('consign_modal_sort');
@@ -8952,6 +8971,7 @@ function openConsignQtyModal(opts){
       listEl.querySelectorAll('input[data-key]').forEach(inp => {
         out[inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0);
       });
+      if(opts.includeDate) out._date = document.getElementById('consign_operation_date')?.value || new Date().toISOString().slice(0,10);
       cleanup(out);
     };
     const onCancel = () => cleanup(null);
@@ -9016,7 +9036,8 @@ function openConsignMultiFieldModal(opts){
         </div>
       </div>`);
     });
-    listEl.innerHTML = toolsHtml + groupedRows.join('');
+    const dateHtml = opts.includeDate ? `<div class="consign-operation-date"><label>تاریخ عملیات</label><input id="consign_operation_date" type="date" class="gh-field consign-date-input" value="${escapeHtml(opts.dateValue || new Date().toISOString().slice(0,10))}"><div class="hint" style="margin-top:5px;">تاریخ واقعی انجام این عملیات را انتخاب کن.</div></div>` : '';
+    listEl.innerHTML = dateHtml + toolsHtml + groupedRows.join('');
     overlay.classList.add('show');
     const searchEl = document.getElementById('consign_modal_search');
     const sortEl = document.getElementById('consign_modal_sort');
@@ -9070,6 +9091,7 @@ function openConsignMultiFieldModal(opts){
         if(!out[role]) out[role] = {};
         out[role][inp.dataset.key] = Math.max(0, Math.round(parseNum(inp.value)) || 0);
       });
+      if(opts.includeDate) out._date = document.getElementById('consign_operation_date')?.value || new Date().toISOString().slice(0,10);
       cleanup(out);
     };
     const onCancel = () => cleanup(null);
@@ -9093,15 +9115,15 @@ async function recordConsignSale(id){
     hint: 'نزد فروشگاه: ' + fa.format(consignRemaining(it)) + ' | قیمت تعیین‌شده: ' + fmt(it.unitPrice||0),
     fields: [
       { role:'qty', label:'تعداد فروش', value: 0 },
-      { role:'storePrice', label:'قیمت فروش فروشگاه', value: it.unitPrice||0 },
-      { role:'settlementPrice', label:'مبلغ تسویه هر عدد با من', value: it.unitPrice||0 }
+      { role:'storePrice', label:'قیمت فروش واقعی فروشگاه', value: it.unitPrice||0 },
+      { role:'settlementPrice', label:'تسویه واقعی هر عدد با من', value: it.unitPrice||0 }
     ]
   }));
   if(!rows.length){ await customAlert('الان هیچ قلمی نزد این فروشگاه نمونده که فروش بره.'); return; }
   const res = await openConsignMultiFieldModal({
     title: 'ثبت فروش فروشگاه',
     sub: 'تعداد فروش را وارد کن. اگر فروشگاه گران‌تر فروخته و مبلغ بیشتری با شما تسویه کرده، «قیمت فروش فروشگاه» و «مبلغ تسویه هر عدد با من» را جدا ثبت کن. سود شما بر اساس مبلغ تسویه واقعی محاسبه می‌شود.',
-    rows, okLabel: 'ثبت فروش'
+    rows, okLabel: 'ثبت فروش', includeDate: true
   });
   if(!res || !res.qty) return;
   const entries = Object.entries(res.qty).filter(([,q]) => q > 0);
@@ -9126,7 +9148,7 @@ async function recordConsignSale(id){
   if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
   c.saleLogs.unshift({
     id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
-    date: new Date().toISOString().slice(0,10),
+    date: res._date || new Date().toISOString().slice(0,10),
     items: logItems,
     total: logItems.reduce((s,l)=> s + l.qty*l.settlementUnitPrice, 0),
     note: 'فروش ثبت‌شده با مبلغ تسویه واقعی'
@@ -9166,7 +9188,7 @@ async function restockConsign(id){
   const res = await openConsignMultiFieldModal({
     title: 'ثبت فروش و شارژ مجدد',
     sub: 'اول تعداد واقعیِ فروش‌رفته‌ی هر قلم رو بپرس و وارد کن، بعد تعدادی که می‌خوای براش بفرستی — می‌تونه برابر فروش، بیشتر یا کمتر باشه. عددی از پیش پر نشده تا اشتباهی ثبت نشه؛ فقط چیزی که خودت وارد می‌کنی ثبت می‌شه.',
-    rows, okLabel: 'ثبت'
+    rows, okLabel: 'ثبت', includeDate: true
   });
   if(!res) return;
   const soldEntries = Object.entries(res.sold||{}).filter(([,q]) => q > 0);
@@ -9232,7 +9254,7 @@ async function restockConsign(id){
     if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
     c.saleLogs.unshift({
       id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
-      date: new Date().toISOString().slice(0,10),
+      date: res._date || new Date().toISOString().slice(0,10),
       items: soldLogItems,
       total: soldLogItems.reduce((s,l)=> s + l.qty*l.settlementUnitPrice, 0)
     });
@@ -9241,7 +9263,7 @@ async function restockConsign(id){
     if(!Array.isArray(c.deliveries)) c.deliveries = [];
     c.deliveries.unshift({
       id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
-      date: new Date().toISOString().slice(0,10),
+      date: res._date || new Date().toISOString().slice(0,10),
       items: deliveredItems,
       note: 'شارژ مجدد',
       isRecharge: true
@@ -9277,12 +9299,12 @@ async function returnConsign(id){
   const res = await openConsignQtyModal({
     title: 'ثبت مرجوعی',
     sub: 'تعدادی که از فروشگاه پس گرفتی رو وارد کن؛ همین تعداد به موجودی انبار برمی‌گرده.',
-    rows, okLabel: 'ثبت مرجوعی'
+    rows, okLabel: 'ثبت مرجوعی', includeDate: true
   });
   if(!res) return;
   const entries = Object.entries(res).filter(([,q]) => q > 0);
   if(!entries.length) return;
-  const snapshot = JSON.parse(JSON.stringify(c.items));
+  const snapshot = JSON.parse(JSON.stringify({items:c.items, deliveries:c.deliveries}));
   const returned = [];
   for(const [key, qty] of entries){
     const it = (c.items||[]).find(x => consignItemKey(c,x) === key);
@@ -9295,9 +9317,17 @@ async function returnConsign(id){
     returned.push({productId: pid, colorId: cid, qty: q});
   }
   if(!returned.length) return;
+  if(!Array.isArray(c.deliveries)) c.deliveries = [];
+  c.deliveries.unshift({
+    id:'ret_' + Date.now() + Math.random().toString(36).slice(2,5),
+    date: res._date || new Date().toISOString().slice(0,10),
+    items: returned.map(r => ({...r})),
+    note:'مرجوعی از فروشگاه',
+    isReturn:true
+  });
   renderConsignTab();
   const ok = await syncConsignmentToSupabase(c);
-  if(!ok){ c.items = snapshot; renderConsignTab(); return; }
+  if(!ok){ c.items = snapshot.items; c.deliveries = snapshot.deliveries; renderConsignTab(); return; }
   returned.forEach(r => {
     applyItemStockDelta(r.productId, r.colorId, r.qty);
   });
@@ -9447,7 +9477,7 @@ async function addConsignPayment(id){
     title: 'ثبت تسویه فروشگاه',
     sub: 'مانده بدهی این فروشگاه: ' + fmt(debt) + ' تومان',
     rows: [{key:'amount', name:'مبلغ دریافتی', hint:'تومان', value: debt}],
-    okLabel: 'ثبت پرداخت'
+    okLabel: 'ثبت پرداخت', includeDate: true
   });
   if(!res) return;
   const amount = Math.max(0, Math.round(res.amount || 0));
@@ -9455,7 +9485,7 @@ async function addConsignPayment(id){
   if(debt <= 0){ await customAlert('این فروشگاه فعلاً بدهی قابل تسویه‌ای نداره.'); return; }
   if(amount > debt){ await customAlert('مبلغ تسویه نمی‌تونه بیشتر از مانده بدهی (' + fmt(debt) + ' تومان) باشه.'); return; }
   if(!Array.isArray(c.payments)) c.payments = [];
-  const payment = { id: 'cp_' + Date.now() + Math.random().toString(36).slice(2,5), amount, date: new Date().toISOString().slice(0,10), note: '' };
+  const payment = { id: 'cp_' + Date.now() + Math.random().toString(36).slice(2,5), amount, date: res._date || new Date().toISOString().slice(0,10), note: '' };
   c.payments.unshift(payment);
   renderConsignTab();
   renderSummary();
@@ -9551,7 +9581,7 @@ async function editConsignSaleLog(consignId, logId){
   const res = await openConsignMultiFieldModal({
     title: 'ویرایش گزارش فروش',
     sub: 'عدد درست رو جایگزین کن؛ اثرش روی «فروش‌رفته»ی این قلم و بدهی فروشگاه به‌روز می‌شه.',
-    rows, okLabel: 'ذخیره'
+    rows, okLabel: 'ذخیره', includeDate: true, dateValue: log.date || new Date().toISOString().slice(0,10)
   });
   if(!res || !res.qty) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs}));
@@ -9567,6 +9597,7 @@ async function editConsignSaleLog(consignId, logId){
     if(res.settlementPrice?.[key] !== undefined) it.settlementUnitPrice = Math.max(0, Math.round(parseNum(res.settlementPrice[key]) || 0));
     it.unitPrice = Number(it.settlementUnitPrice ?? it.unitPrice ?? 0);
   });
+  log.date = res._date || log.date || new Date().toISOString().slice(0,10);
   log.items = log.items.filter(it => it.qty > 0);
   log.total = log.items.reduce((s,l)=> s + l.qty*Number(l.settlementUnitPrice ?? l.unitPrice ?? 0), 0);
   if(!log.items.length) c.saleLogs = (c.saleLogs||[]).filter(l => l.id !== logId);
@@ -9594,7 +9625,7 @@ async function editConsignDelivery(consignId, deliveryId){
   const res = await openConsignMultiFieldModal({
     title: 'ویرایش گزارش شارژ',
     sub: 'عدد درست رو جایگزین کن؛ تفاوتش با انبار هم تسویه می‌شه.',
-    rows, okLabel: 'ذخیره'
+    rows, okLabel: 'ذخیره', includeDate: true, dateValue: delivery.date || new Date().toISOString().slice(0,10)
   });
   if(!res || !res.qty) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, deliveries: c.deliveries}));
@@ -9613,6 +9644,7 @@ async function editConsignDelivery(consignId, deliveryId){
     stockDeltas.push({ productId: it.productId, colorId: it.colorId||null, delta });
     it.qty = newQty;
   });
+  delivery.date = res._date || delivery.date || new Date().toISOString().slice(0,10);
   delivery.items = delivery.items.filter(it => it.qty > 0);
   if(!delivery.items.length) c.deliveries = (c.deliveries||[]).filter(d => d.id !== deliveryId);
   renderConsignTab();
@@ -9647,7 +9679,7 @@ async function editConsignItemTotals(id){
   const res = await openConsignMultiFieldModal({
     title: 'ویرایش جدول اقلام',
     sub: 'این سه عدد، جمع کل از ابتدای واگذاری‌ان (واگذاری اولیه جزو «شارژ شده» حساب نمی‌شه). با تغییرشون، یک ردیف «اصلاح دستی» به گزارش‌ها اضافه می‌شه و اگه شارژ یا مرجوعی عوض بشه، موجودی انبار هم به همون اندازه تنظیم می‌شه.',
-    rows, okLabel: 'ذخیره'
+    rows, okLabel: 'ذخیره', includeDate: true
   });
   if(!res) return;
   const snapshot = JSON.parse(JSON.stringify({items: c.items, saleLogs: c.saleLogs, deliveries: c.deliveries}));
@@ -9694,7 +9726,7 @@ async function editConsignItemTotals(id){
     if(!Array.isArray(c.saleLogs)) c.saleLogs = [];
     c.saleLogs.unshift({
       id: 'cs_' + Date.now() + Math.random().toString(36).slice(2,5),
-      date: new Date().toISOString().slice(0,10),
+      date: res._date || new Date().toISOString().slice(0,10),
       items: saleFixItems,
       total: saleFixItems.reduce((s,l)=> s + l.qty*l.unitPrice, 0),
       note: 'اصلاح دستی'
@@ -9704,7 +9736,7 @@ async function editConsignItemTotals(id){
     if(!Array.isArray(c.deliveries)) c.deliveries = [];
     c.deliveries.unshift({
       id: 'dl_' + Date.now() + Math.random().toString(36).slice(2,5),
-      date: new Date().toISOString().slice(0,10),
+      date: res._date || new Date().toISOString().slice(0,10),
       items: deliveryFixItems,
       note: 'اصلاح دستی',
       isRecharge: true
