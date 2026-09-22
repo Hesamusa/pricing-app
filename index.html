@@ -10295,14 +10295,6 @@ function renderConsignCard(c){
             ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
             ${isAdmin ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
             ${isAdmin ? (c.status === 'closed' ? `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>` : `<button type="button" class="order-status-btn consign-edit-action" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
-            <div class="consign-mobile-operation-divider"></div>
-            ${c.status !== 'closed' ? `
-              <button type="button" class="order-status-btn done consign-operation-action" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
-              <button type="button" class="order-status-btn consign-operation-action" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
-              <button type="button" class="order-status-btn consign-operation-action" onclick="event.stopPropagation(); addConsignPayment('${c.id}')">ثبت تسویه</button>
-              <button type="button" class="order-status-btn consign-operation-action" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
-              ${isAdmin ? `<button type="button" class="order-status-btn consign-operation-action" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>` : ''}
-            ` : ''}
           </div>
         </div>
         ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
@@ -10334,7 +10326,7 @@ function renderConsignCard(c){
             </div>
             ${c.notes ? `<div class="consign-side-section"><div class="consign-side-title">یادداشت</div><div class="sale-item-note">${escapeHtml(c.notes)}</div></div>` : ''}
             ${paymentsHistory ? `<div class="consign-side-section"><div class="consign-side-title">تسویه‌ها</div>${paymentsHistory}</div>` : ''}
-            <div class="consign-side-section consign-operations-section">
+            <div class="consign-side-section">
               <div class="consign-side-title">عملیات</div>
               <div class="consign-actions">
           ${c.status !== 'closed' ? `
@@ -11275,6 +11267,79 @@ setTimeout(()=>{
 }
 </style>
 <script>window.APP_BUILD='V63';</script>
+
+<style id="desktop-product-focus-fix-v70">
+/* v70 — فقط اصلاح کارت محصول در صفحه محصولات؛ بخش امانی‌ها عمداً بدون تغییر است. */
+@media (min-width:1201px){
+  body.product-focus-mode #tab-products #products-list{
+    display:block !important;
+    position:relative !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product:not(.open){
+    display:none !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open{
+    position:fixed !important;
+    top:14px !important;
+    right:18px !important;
+    bottom:14px !important;
+    left:18px !important;
+    width:auto !important;
+    height:auto !important;
+    max-width:none !important;
+    max-height:none !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+    display:flex !important;
+    flex-direction:column !important;
+    overflow:hidden !important;
+    z-index:5000 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    flex:0 0 76px !important;
+    height:76px !important;
+    min-height:76px !important;
+    max-height:76px !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    box-sizing:border-box !important;
+    padding:0 !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    box-sizing:border-box !important;
+    width:100% !important;
+    max-width:3600px !important;
+    min-width:0 !important;
+    margin:0 auto !important;
+    padding:12px 16px !important;
+  }
+  /* جلوگیری قطعی از سرریز هر بخش داخل کارت */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > *{
+    min-width:0 !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field,
+  body.product-focus-mode #tab-products #products-list > .product.open .stock-field,
+  body.product-focus-mode #tab-products #products-list > .product.open .grid-2,
+  body.product-focus-mode #tab-products #products-list > .product.open .breakdown-wrap,
+  body.product-focus-mode #tab-products #products-list > .product.open .result-cards{
+    min-width:0 !important;
+    box-sizing:border-box !important;
+  }
+}
+</style>
+<script>window.APP_BUILD='V70';</script>
 </body>
 
 
@@ -12697,74 +12762,5 @@ setTimeout(()=>{
     display:none !important;
   }
 }
-
-/* v69 — Consignment workspace: one clean column on desktop, no card overlap. */
-@media (min-width:900px){
-  #tab-consign #consign-list{
-    display:grid !important;
-    grid-template-columns:minmax(0,1fr) !important;
-    gap:16px !important;
-    align-items:start !important;
-  }
-  #tab-consign #consign-list > .consign-card{
-    width:100% !important;
-    min-width:0 !important;
-    max-width:none !important;
-    box-sizing:border-box !important;
-    margin:0 !important;
-    position:relative !important;
-    overflow:hidden !important;
-  }
-  #tab-consign .consign-card-body-inner,
-  #tab-consign .consign-workspace,
-  #tab-consign .consign-main-panel,
-  #tab-consign .consign-side-panel{
-    min-width:0 !important;
-    box-sizing:border-box !important;
-  }
-  #tab-consign .consign-workspace{
-    width:100% !important;
-    grid-template-columns:minmax(0,1fr) 340px !important;
-    gap:18px !important;
-    align-items:start !important;
-  }
-  #tab-consign .consign-side-panel{
-    position:sticky !important;
-    top:82px !important;
-    max-height:calc(100vh - 100px) !important;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    padding-right:2px !important;
-  }
-  #tab-consign .consign-main-panel{
-    overflow:hidden !important;
-  }
-  #tab-consign .consign-table{
-    width:100% !important;
-    overflow-x:auto !important;
-  }
-}
-
-@media (max-width:899px){
-  /* All mobile actions live at the top of the open store card. */
-  #tab-consign .consign-card.open .consign-mobile-edit-actions{
-    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  }
-  #tab-consign .consign-card.open .consign-mobile-edit-actions .consign-operation-action{
-    display:flex !important;
-  }
-  #tab-consign .consign-card.open .consign-mobile-operation-divider{
-    grid-column:1 / -1 !important;
-    height:1px !important;
-    margin:2px 0 !important;
-    background:var(--line) !important;
-  }
-  #tab-consign .consign-card.open .consign-operations-section{
-    display:none !important;
-  }
-  #tab-consign .consign-card.open .consign-side-panel{
-    margin-top:12px !important;
-  }
-}
 </style>
-<script>window.APP_BUILD='V69';</script>
+<script>window.APP_BUILD='V68';</script>
