@@ -10262,6 +10262,13 @@ function realtimeSchedule(key, fn, delay=450){
 }
 
 async function realtimeRefreshProducts(){
+  // مهم: fallback polling مستقیماً این تابع را صدا می‌زند و نباید قفل ویرایش
+  // را دور بزند. روی موبایل ممکن است activeElement موقتاً body شود، در حالی که
+  // کاربر هنوز در حال تایپ است.
+  if(isUserEditingFormField()){
+    deferredProductRefresh = true;
+    return false;
+  }
   const before = JSON.stringify(products || []);
   const ok = await loadProductsFromSupabaseBridge();
   if(!ok) return;
@@ -10311,12 +10318,15 @@ async function realtimeFallbackTick(){
     // Product changes are the most important cross-device state. Check the
     // server frequently enough to feel live even if Postgres Realtime is not
     // delivering table events in this project.
-    const active = document.activeElement;
-    if(!(active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName))){
+    // هر مسیر refresh باید از قفل ویرایش عبور کند؛ صرفاً بررسی activeElement
+    // کافی نیست چون iOS هنگام کیبورد/تغییر فوکوس ممکن است آن را موقتاً body کند.
+    if(!isUserEditingFormField()){
       await realtimeRefreshProducts();
       // Consignments also need a polling safety-net when the table is not
       // enabled in the Supabase Realtime publication.
       await realtimeRefreshConsignments();
+    }else{
+      deferredProductRefresh = true;
     }
   }catch(e){
     console.warn('Realtime fallback check failed:', e);
@@ -10410,16 +10420,20 @@ function startRealtimeSync(){
 }
 
 // If the user finishes editing a field while a remote change was queued,
-// apply the latest server snapshot immediately instead of waiting for polling.
+// apply it only after the mobile browser has really left the editing session.
+// A short delay avoids rebuilding the product card during iOS focus transitions.
 document.addEventListener('focusout', ()=>{
   if(!currentUser) return;
-  Object.keys(realtimeSyncPending).forEach(key=>{
-    if(key === 'products') realtimeSchedule(key, realtimeRefreshProducts, 80);
-    else if(key === 'sales') realtimeSchedule(key, realtimeRefreshSales, 80);
-    else if(key === 'orders') realtimeSchedule(key, realtimeRefreshOrders, 80);
-    else if(key === 'customers') realtimeSchedule(key, realtimeRefreshCustomers, 80);
-    else if(key === 'consignments') realtimeSchedule(key, realtimeRefreshConsignments, 80);
-  });
+  setTimeout(()=>{
+    if(isUserEditingFormField()) return;
+    Object.keys(realtimeSyncPending).forEach(key=>{
+      if(key === 'products') realtimeSchedule(key, realtimeRefreshProducts, 250);
+      else if(key === 'sales') realtimeSchedule(key, realtimeRefreshSales, 250);
+      else if(key === 'orders') realtimeSchedule(key, realtimeRefreshOrders, 250);
+      else if(key === 'customers') realtimeSchedule(key, realtimeRefreshCustomers, 250);
+      else if(key === 'consignments') realtimeSchedule(key, realtimeRefreshConsignments, 250);
+    });
+  }, 500);
 });
 
 // Start/stop with the shared Supabase session.
