@@ -1871,6 +1871,14 @@ async function ensureSupabaseProductsLoadedForSave(){
 async function saveProductsToSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb || !Array.isArray(products)) return false;
   let stage = 'شروع';
+  // این نوشتن، تصاویر/رنگ‌های محصولات تغییریافته رو اول DELETE و بعد INSERT می‌کنه (چند
+  // درخواست پشت‌سرهم، نه یک تراکنش اتمیک). در همین فاصله، هم realtime postgres_changes و هم
+  // پول‌کردن دوره‌ای هر ۱۸۰۰ میلی‌ثانیه (realtimeFallbackTick) ممکنه از Supabase بخونن و دقیقاً
+  // وسط این فاصله (بعد از DELETE، قبل از INSERT) عکس‌ها رو خالی ببینن و همون حالت ناقص رو روی
+  // UI بازنویسی کنن — یعنی عکسی که همین الان آپلود/حذف شده، دوباره برعکس بشه. روی اینترنت کندتر
+  // موبایل این فاصله طولانی‌تره، برای همین این باگ اونجا خیلی بیشتر خودشو نشون می‌ده. با این پرچم
+  // جلوی رفرش از سرور رو تا پایان نوشتن می‌گیریم.
+  productsSyncInFlight++;
   try{
     const {data:{session}, error:sessionError} = await sb.auth.getSession();
     if(sessionError) throw new Error('احراز هویت Supabase: ' + sessionError.message);
@@ -1976,6 +1984,11 @@ async function saveProductsToSupabaseBridge(){
     console.error('Supabase product save failed:', {stage, error:err});
     try{ showToast('Supabase: ' + msg, 'error', 7000); }catch(e){}
     return false;
+  }finally{
+    productsSyncInFlight = Math.max(0, productsSyncInFlight - 1);
+    // نوشتن تموم شد؛ اگه در این فاصله رفرش از سرور به‌خاطر این پرچم نگه داشته شده بود،
+    // یه بار دیگه (با تأخیر کوتاه) امتحان می‌کنیم تا وضعیت واقعاً نهایی از سرور بیاد.
+    if(typeof realtimeRefreshProducts === 'function') setTimeout(()=>{ void realtimeRefreshProducts(); }, 250);
   }
 }
 </script>
@@ -6305,6 +6318,16 @@ async function handleImageFile(id, inputEl){
       prod.images.push(imageRecord);
       productCarouselIndex[id]=prod.images.length-1;
       updateProductPhotoUI(id);
+      // لینک raw.githubusercontent.com بلافاصله بعد از commit گاهی چند ثانیه (به‌خصوص با
+      // اینترنت موبایل) تأخیر انتشار داره و ۴۰۴ می‌ده؛ در آن حالت onerror باید fallback بزنه،
+      // ولی برای جلوگیری از هرگونه حس «آپلود شد ولی نشون نمیده»، همون عکسِ فشرده‌ای که خودمون
+      // تازه ساختیم (prepared.base64) رو مستقیم و فوری روی <img> همین محصول می‌ذاریم.
+      try{
+        const previewMime = prepared.extension==='png'?'image/png':prepared.extension==='webp'?'image/webp':prepared.extension==='gif'?'image/gif':'image/jpeg';
+        const previewUrl = `data:${previewMime};base64,${prepared.base64}`;
+        const previewImg = document.querySelector(`#photoPrev_${id} img`) || document.querySelector(`#headThumb_${id} img`);
+        if(previewImg) previewImg.src = previewUrl;
+      }catch(e){}
       const cloudOk=SUPABASE_PRODUCTS_ENABLED?await saveProductsToSupabaseBridge():true;
       if(!cloudOk){prod.images=prod.images.filter(im=>im!==imageRecord);updateProductPhotoUI(id);throw new Error('فایل روی گیت‌هاب قرار گرفت، اما ثبت اطلاعات عکس در Supabase ناموفق بود.');}
       uploadedCount++;
@@ -10172,6 +10195,11 @@ const realtimeSyncPending = Object.create(null);
 let realtimeSyncFallbackTimer = null;
 let realtimeSyncLastFallbackAt = 0;
 let realtimeSyncRunning = false;
+// وقتی true‌ه، یعنی همین دستگاه در حال نوشتن (آپلود/حذف عکس، ذخیره محصول و ...) روی Supabase‌ه.
+// در این حالت، رفرش از سرور (چه از طریق realtime، چه پول‌کردن دوره‌ای) عمداً نادیده گرفته می‌شه
+// تا حالت میانیِ نیمه‌نوشته‌شده (مثلاً بعد از DELETE عکس‌های قدیمی، قبل از INSERT جدیدها) روی UI
+// بازنویسی نشه. به‌محض تمومِ نوشتن، یه رفرش دستی دیگه انجام می‌شه (به saveProductsToSupabaseBridge نگاه کن).
+let productsSyncInFlight = 0;
 
 // Realtime is the primary path. A lightweight server check remains active as a
 // safety net because a Supabase project can have Realtime connected while a
@@ -10212,6 +10240,7 @@ function realtimeSchedule(key, fn, delay=450){
 }
 
 async function realtimeRefreshProducts(){
+  if(productsSyncInFlight > 0) return; // نوشتنِ محلی در حال انجامه؛ فعلاً از سرور نمی‌خونیم
   const before = JSON.stringify(products || []);
   const ok = await loadProductsFromSupabaseBridge();
   if(!ok) return;
