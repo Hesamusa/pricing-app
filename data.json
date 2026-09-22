@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T16:57:42.347Z",
+  "updatedAt": "2026-09-22T17:35:15.644Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -890,7 +890,7 @@
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 0,
+      "stock": 3,
       "colors": [
         {
           "id": "color_white",
@@ -920,7 +920,7 @@
       "marginW": 65,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
-        "color_white": 0
+        "color_white": 3
       },
       "paintHours": 1,
       "printHours": 1,
