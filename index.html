@@ -4158,6 +4158,13 @@ async function refreshAuthState(){
   await updateSalesAuthUI();
   await updateOrdersAuthUI();
   await updateConsignAuthUI();
+  // مهم: renderProducts() اولیه (در loadState) قبل از تکمیل این تابع async اجرا می‌شه،
+  // پس با مقدار isAdmin قدیمی (معمولاً false) رندر شده و دکمه‌های «حذف عکس»/«حذف محصول»
+  // و آپلود عکس با style="display:none" مخفی یا از رندر خارج می‌مونن. بدون این خط، تا وقتی
+  // یه اتفاق دیگه (مثل بارگذاری محصولات از Supabase) دوباره renderProducts صدا نزنه، حتی بعد
+  // از لاگین موفق ادمین، این دکمه‌ها غیرفعال/مخفی می‌مونن. حالا همیشه بعد از مشخص شدن وضعیت
+  // واقعی ادمین، لیست محصولات دوباره رندر می‌شه تا وضعیت دکمه‌ها با isAdmin واقعی هماهنگ باشه.
+  if(typeof renderProducts === 'function') renderProducts();
 }
 
 // گیت سراسری: تا لاگین نشده، نه main دیده می‌شه نه nav — هیچ تبی (حتی محصولات/مشتریان/خلاصه).
@@ -5264,7 +5271,7 @@ function photoActionsInnerHTML(prod, lk){
   return `
     ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
     ${remaining > 0
-      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/jpeg,image/png,image/webp" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
+      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*,.heic,.heif" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
   `;
 }
@@ -6250,7 +6257,11 @@ async function validatePreparedImage(base64, extension){
 }
 
 async function handleImageFile(id, inputEl){
-  if(!isAdmin) return;
+  if(!isAdmin){
+    if(typeof showToast==='function') showToast('برای آپلود عکس باید با حساب مدیر روی همین دستگاه وارد شده باشی.','error',5000);
+    inputEl.value='';
+    return;
+  }
   const files=inputEl.files?Array.from(inputEl.files):[];
   if(!files.length){setPhotoStatus(id,'فایلی انتخاب نشد.','error');return;}
   setPhotoStatus(id,'فایل انتخاب شد؛ در حال بررسی و آپلود...','uploading');
@@ -6315,7 +6326,10 @@ async function handleImageFile(id, inputEl){
 }
 
 async function removeProductImage(id, idxParam){
-  if(!isAdmin) return;
+  if(!isAdmin){
+    if(typeof showToast==='function') showToast('برای حذف عکس باید با حساب مدیر روی همین دستگاه وارد شده باشی.','error',5000);
+    return;
+  }
   const prod = products.find(p=>p.id===id);
   if(!prod || !Array.isArray(prod.images) || !prod.images.length) return;
   const idx = (idxParam!=null) ? Number(idxParam) : Math.min(productCarouselIndex[id]||0, prod.images.length-1);
@@ -6562,7 +6576,10 @@ function addProduct(){
 }
 
 function deleteProduct(id){
-  if(!isAdmin) return;
+  if(!isAdmin){
+    if(typeof showToast==='function') showToast('برای حذف محصول باید با حساب مدیر روی همین دستگاه وارد شده باشی.','error',5000);
+    return;
+  }
   const prod = products.find(p=>p.id===id);
   if(prod) deleteProductTelegramPost(prod); // best-effort، منتظرش نمی‌مونیم
   products = products.filter(p=>p.id!==id);
