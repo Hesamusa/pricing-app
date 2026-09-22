@@ -10563,36 +10563,40 @@ function renderConsignCard(c){
   const allSales = (c.saleLogs||[]);
   const allDeliveries = (c.deliveries||[]);
   const allStockAdjustments = (c.stockAdjustments||[]);
-  const historyCount = allSales.length + allDeliveries.length + allStockAdjustments.length;
+  const allPayments = (c.payments||[]);
+  const historyCount = allSales.length + allDeliveries.length + allStockAdjustments.length + allPayments.length;
   const historyOpen = consignHistoryOpen.has(c.id);
+  const reportRows = [];
+  allSales.forEach(l => reportRows.push({type:'sale', date:l.date, id:l.id, label:'فروش', note:l.note||'', detail:(l.items||[]).map(it=>it.productName+(it.colorName?' — '+it.colorName:'')+' × '+fa.format(it.qty)+' | فروش '+fmt(it.storeSaleUnitPrice ?? it.settlementUnitPrice ?? it.unitPrice ?? 0)+' | تسویه '+fmt(it.settlementUnitPrice ?? it.unitPrice ?? 0)).join('، '), amount:Number(l.total||0)}));
+  allDeliveries.forEach(d => reportRows.push({type:d.isReturn?'return':'delivery', date:d.date, id:d.id, label:d.isReturn?'مرجوعی':(d.note==='واگذاری اولیه'?'واگذاری اولیه':'شارژ'), note:d.note||'', detail:(d.items||[]).map(it=>it.productName+(it.colorName?' — '+it.colorName:'')+' × '+fa.format(it.qty)).join('، '), amount:0}));
+  allStockAdjustments.forEach(a => reportRows.push({type:'adjust', date:a.date, id:a.id, label:'اصلاح موجودی نزد فروشگاه', note:a.note||'', detail:(a.items||[]).map(it=>it.productName+(it.colorName?' — '+it.colorName:'')+' × '+(it.delta>0?'+':'')+fa.format(it.delta)+' | موجودی نهایی '+fa.format(it.afterQty)).join('، '), amount:0}));
+  allPayments.forEach(p => reportRows.push({type:'payment', date:p.date, id:p.id, label:'تسویه', note:p.note||'', detail:'مبلغ دریافتی از فروشگاه', amount:Number(p.amount||0)}));
+  reportRows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  const reportSections = {
+    sale: reportRows.filter(x=>x.type==='sale'),
+    payment: reportRows.filter(x=>x.type==='payment'),
+    delivery: reportRows.filter(x=>x.type==='delivery'),
+    return: reportRows.filter(x=>x.type==='return'),
+    adjust: reportRows.filter(x=>x.type==='adjust')
+  };
+  const renderReportRow = r => `
+    <div class="consign-report-row ${r.type}">
+      <div class="consign-report-row-icon">${r.type==='sale'?'ف':r.type==='payment'?'ت':r.type==='delivery'?'ش':r.type==='return'?'م':'ا'}</div>
+      <div class="consign-report-row-main"><b>${r.label}</b><span>${formatDateFa(r.date)}${r.note ? ' · '+escapeHtml(r.note) : ''}</span><small>${escapeHtml(r.detail)}</small></div>
+      ${r.type==='sale' ? `<strong>${fmt(r.amount)}</strong>` : r.type==='payment' ? `<strong>${fmt(r.amount)}</strong>` : ''}
+      ${r.type==='sale' && isAdmin ? `<span class="consign-report-row-actions"><button type="button" onclick="event.stopPropagation(); editConsignSaleLog('${c.id}','${r.id}')">✏️</button><button type="button" onclick="event.stopPropagation(); deleteConsignSaleLog('${c.id}','${r.id}')">✕</button></span>` : ''}
+      ${r.type==='delivery' && isAdmin && r.label!=='واگذاری اولیه' ? `<span class="consign-report-row-actions"><button type="button" onclick="event.stopPropagation(); editConsignDelivery('${c.id}','${r.id}')">✏️</button><button type="button" onclick="event.stopPropagation(); deleteConsignDelivery('${c.id}','${r.id}')">✕</button></span>` : ''}
+    </div>`;
+  const reportSection = (title, key, cls='') => reportSections[key].length ? `<div class="consign-report-section ${cls}"><div class="consign-report-section-title"><span>${title}</span><b>${fa.format(reportSections[key].length)}</b></div>${reportSections[key].map(renderReportRow).join('')}</div>` : '';
   const historyPanel = historyOpen ? `
-    <div class="sale-item-note" style="display:flex; flex-direction:column; gap:10px;">
-      ${allSales.length ? `<div>
-        <div style="font-weight:700; margin-bottom:4px;">فروش‌ها</div>
-        ${allSales.map(l => `
-          <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
-            <span style="flex:1;">${formatDateFa(l.date)}${l.note ? ' — ' + escapeHtml(l.note) : ''} — ${escapeHtml(l.items.map(it=>it.productName+(it.colorName?' ('+it.colorName+')':'')+' × '+fa.format(it.qty)+' | فروش '+fmt(it.storeSaleUnitPrice ?? it.settlementUnitPrice ?? it.unitPrice ?? 0)+' | تسویه '+fmt(it.settlementUnitPrice ?? it.unitPrice ?? 0)).join('، '))}</span>
-            ${isAdmin ? `<button type="button" onclick="event.stopPropagation(); editConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
-            <button type="button" onclick="event.stopPropagation(); deleteConsignSaleLog('${c.id}','${l.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
-          </div>`).join('')}
-      </div>` : ''}
-      ${allDeliveries.length ? `<div>
-        <div style="font-weight:700; margin-bottom:4px;">شارژ/تحویل‌ها</div>
-        ${allDeliveries.map(d => `
-          <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
-            <span style="flex:1;">${formatDateFa(d.date)}${d.note ? ' — ' + escapeHtml(d.note) : ''} — ${escapeHtml((d.items||[]).map(it=>it.productName+(it.colorName?' ('+it.colorName+')':'')+' × '+fa.format(it.qty)).join('، '))}</span>
-            ${isAdmin && d.note !== 'واگذاری اولیه' ? `<button type="button" onclick="event.stopPropagation(); editConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--ink-soft); padding:0; cursor:pointer;" title="ویرایش">✏️</button>
-            <button type="button" onclick="event.stopPropagation(); deleteConsignDelivery('${c.id}','${d.id}')" style="background:none; border:none; color:var(--red); padding:0; cursor:pointer;" title="حذف">✕</button>` : ''}
-          </div>`).join('')}
-      </div>` : ''}
-      ${allStockAdjustments.length ? `<div>
-        <div style="font-weight:700; margin-bottom:4px;">اصلاحات موجودی نزد فروشگاه</div>
-        ${allStockAdjustments.map(a => `
-          <div style="display:flex; align-items:center; gap:6px; padding:2px 0;">
-            <span style="flex:1;">${formatDateFa(a.date)}${a.note ? ' — ' + escapeHtml(a.note) : ''} — ${escapeHtml((a.items||[]).map(it=>it.productName+(it.colorName?' ('+it.colorName+')':'')+' × '+(it.delta>0?'+':'')+fa.format(it.delta)+' | بعد از اصلاح '+fa.format(it.afterQty)).join('، '))}</span>
-          </div>`).join('')}
-      </div>` : ''}
-      ${!historyCount ? `<span class="hint">هنوز گزارشی ثبت نشده.</span>` : ''}
+    <div class="consign-reports-panel">
+      <div class="consign-reports-summary"><span>کل رویدادها</span><b>${fa.format(historyCount)}</b><span class="consign-reports-hint">از جدید به قدیم</span></div>
+      ${reportSection('فروش‌ها','sale','sale')}
+      ${reportSection('تسویه‌ها','payment','payment')}
+      ${reportSection('شارژها','delivery','delivery')}
+      ${reportSection('مرجوعی‌ها','return','return')}
+      ${reportSection('اصلاحات موجودی','adjust','adjust')}
+      ${!historyCount ? `<div class="consign-ledger-empty">هنوز گزارشی ثبت نشده.</div>` : ''}
     </div>` : '';
 
   const isOpen = consignCardOpen.has(c.id);
@@ -11870,6 +11874,29 @@ setTimeout(()=>{
 }
 
 /* Professional consignment accounting dashboard */
+
+/* v77 — Consignment reports: organized by event type instead of one dense block. */
+.consign-reports-panel{margin-top:8px;border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden;}
+.consign-reports-summary{display:flex;align-items:center;gap:9px;padding:9px 11px;border-bottom:1px solid var(--line);font-size:11px;font-weight:800;background:var(--card);}
+.consign-reports-summary b{font-family:'IBM Plex Mono','Vazirmatn',monospace;}
+.consign-reports-hint{margin-right:auto;color:var(--ink-soft);font-weight:600;font-size:10px;}
+.consign-report-section{padding:8px 10px;border-bottom:1px solid var(--line);}
+.consign-report-section:last-child{border-bottom:0;}
+.consign-report-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:11px;font-weight:800;color:var(--ink);}
+.consign-report-section-title b{font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:10px;color:var(--ink-soft);}
+.consign-report-row{display:grid;grid-template-columns:27px minmax(0,1fr) auto auto;align-items:center;gap:7px;padding:8px 2px;border-top:1px dashed var(--line);min-width:0;}
+.consign-report-row-icon{width:27px;height:27px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;background:var(--card);border:1px solid var(--line);}
+.consign-report-row.sale .consign-report-row-icon{color:var(--orange);}.consign-report-row.payment .consign-report-row-icon{color:var(--green);}.consign-report-row.delivery .consign-report-row-icon{color:var(--blue);}.consign-report-row.return .consign-report-row-icon{color:var(--red);}.consign-report-row.adjust .consign-report-row-icon{color:var(--ink-soft);}
+.consign-report-row-main{min-width:0;display:flex;flex-direction:column;gap:1px;}
+.consign-report-row-main b{font-size:11px;line-height:1.45;}
+.consign-report-row-main span{font-size:9px;color:var(--ink-soft);}
+.consign-report-row-main small{font-size:10px;color:var(--ink-soft);line-height:1.5;white-space:normal;word-break:break-word;}
+.consign-report-row>strong{font-family:'IBM Plex Mono','Vazirmatn',monospace;font-size:10px;white-space:nowrap;direction:rtl;}
+.consign-report-row.sale>strong{color:var(--orange);}.consign-report-row.payment>strong{color:var(--green);}
+.consign-report-row-actions{display:flex;gap:2px;align-items:center;}
+.consign-report-row-actions button{background:none;border:0;color:var(--ink-soft);padding:3px;cursor:pointer;font-size:11px;line-height:1;}
+.consign-report-row-actions button:last-child{color:var(--red);}
+@media(max-width:700px){.consign-report-row{grid-template-columns:27px minmax(0,1fr) auto;}.consign-report-row-actions{grid-column:2/-1;justify-content:flex-start;margin-top:-2px;}.consign-report-row>strong{grid-column:3;grid-row:1;}.consign-reports-summary{flex-wrap:wrap;}.consign-reports-hint{margin-right:0;width:100%;}}
 .consign-accounting-card{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;box-shadow:0 2px 10px rgba(16,24,40,.05);}
 .consign-accounting-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:13px 14px 10px;border-bottom:1px solid var(--line);}
 .consign-accounting-sub{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.6;}
