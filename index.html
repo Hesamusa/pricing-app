@@ -11581,3 +11581,148 @@ setTimeout(()=>{
   }
 }
 </style>
+
+
+<style id="desktop-product-workspace-v61">
+/* v61 — separate the full-screen product header from the editor body and give
+   the product-photo area a genuinely larger visual frame on wide/4K screens. */
+@media (min-width:1201px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    box-sizing:border-box !important;
+    flex:0 0 96px !important;
+    min-height:96px !important;
+    height:96px !important;
+    max-height:96px !important;
+    padding:0 !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    position:relative !important;
+    z-index:20 !important;
+    border-bottom:1px solid var(--line) !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .head-info{
+    box-sizing:border-box !important;
+    min-width:0 !important;
+    padding:12px 20px !important;
+    gap:7px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .head-thumb{
+    width:82px !important;
+    height:82px !important;
+    min-width:82px !important;
+    margin:7px !important;
+    border-radius:14px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    position:relative !important;
+    z-index:1 !important;
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    border-top:0 !important;
+    background:var(--bg) !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    position:relative !important;
+    z-index:1 !important;
+    padding-top:20px !important;
+  }
+
+  /* Photo section: the frame itself becomes the visual anchor, not just a
+     small thumbnail next to the upload buttons. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
+    min-height:360px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{
+    min-height:300px !important;
+    height:auto !important;
+    align-items:stretch !important;
+    gap:20px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{
+    width:340px !important;
+    min-width:340px !important;
+    height:300px !important;
+    max-height:300px !important;
+    padding:8px !important;
+    box-sizing:border-box !important;
+    border:1px solid var(--line) !important;
+    border-radius:16px !important;
+    background:var(--bg) !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{
+    width:100% !important;
+    height:258px !important;
+    border-radius:12px !important;
+    background:var(--card) !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{
+    width:100% !important;
+    height:258px !important;
+    object-fit:contain !important;
+    border-radius:12px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{
+    min-width:220px !important;
+    justify-content:center !important;
+    gap:10px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-file-wrap{
+    min-height:52px !important;
+  }
+
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-file-label,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-btn{
+    min-height:52px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:14px !important;
+  }
+}
+
+@media (min-width:2200px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-head{
+    flex-basis:104px !important;
+    min-height:104px !important;
+    height:104px !important;
+    max-height:104px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .head-thumb{
+    width:88px !important;
+    height:88px !important;
+    min-width:88px !important;
+    margin:8px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
+    min-height:430px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{
+    min-height:360px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{
+    width:420px !important;
+    min-width:420px !important;
+    height:360px !important;
+    max-height:360px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{
+    height:316px !important;
+  }
+}
+</style>
