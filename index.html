@@ -6275,6 +6275,13 @@ async function handleImageFile(id, inputEl){
     inputEl.value='';
     return;
   }
+  // این پرچم رو از همین‌جا (نه فقط داخل ذخیره‌ی Supabase) روشن می‌کنیم؛ چون روی موبایل، باز و
+  // بسته شدن گالری عکس خودش رویداد visibilitychange تولید می‌کنه و باعث می‌شه
+  // refreshProductsFromSupabaseIfSafe درست همین لحظه (قبل از تموم شدن آپلود) از سرور بخونه و
+  // آرایه‌ی products رو با نسخه‌ی قدیمی (بدون این عکس) عوض کنه — یعنی عکسی که الان مستقیم داریم
+  // آپلودش می‌کنیم، از زیر پامون کنده می‌شه و به prod جدید اضافه نمی‌شه.
+  productsSyncInFlight++;
+  try{
   const files=inputEl.files?Array.from(inputEl.files):[];
   if(!files.length){setPhotoStatus(id,'فایلی انتخاب نشد.','error');return;}
   setPhotoStatus(id,'فایل انتخاب شد؛ در حال بررسی و آپلود...','uploading');
@@ -6314,9 +6321,13 @@ async function handleImageFile(id, inputEl){
       // برای نمایش، لینک raw گیت‌هاب را استفاده می‌کنیم؛ تست GET مستقیم تصویر
       // ممکن است به‌خاطر CORS/WebView خطا بدهد و نباید جلوی ثبت فایل را بگیرد.
       const rawUrl=githubRawImageUrl(path,branch) + '?v=' + Date.now();
+      // نکته‌ی مهم: prod ممکنه دیگه همون آبجکتی نباشه که الان داخل products هست (اگه هر رفرشی
+      // وسط این فاصله products رو عوض کرده باشه). برای اطمینان، از روی id دوباره پیداش می‌کنیم.
+      const liveProd = products.find(p=>p.id===id) || prod;
+      if(!Array.isArray(liveProd.images)) liveProd.images=[];
       imageRecord={url:rawUrl,path,sha:verified.sha};
-      prod.images.push(imageRecord);
-      productCarouselIndex[id]=prod.images.length-1;
+      liveProd.images.push(imageRecord);
+      productCarouselIndex[id]=liveProd.images.length-1;
       updateProductPhotoUI(id);
       // لینک raw.githubusercontent.com بلافاصله بعد از commit گاهی چند ثانیه (به‌خصوص با
       // اینترنت موبایل) تأخیر انتشار داره و ۴۰۴ می‌ده؛ در آن حالت onerror باید fallback بزنه،
@@ -6329,7 +6340,7 @@ async function handleImageFile(id, inputEl){
         if(previewImg) previewImg.src = previewUrl;
       }catch(e){}
       const cloudOk=SUPABASE_PRODUCTS_ENABLED?await saveProductsToSupabaseBridge():true;
-      if(!cloudOk){prod.images=prod.images.filter(im=>im!==imageRecord);updateProductPhotoUI(id);throw new Error('فایل روی گیت‌هاب قرار گرفت، اما ثبت اطلاعات عکس در Supabase ناموفق بود.');}
+      if(!cloudOk){liveProd.images=liveProd.images.filter(im=>im!==imageRecord);updateProductPhotoUI(id);throw new Error('فایل روی گیت‌هاب قرار گرفت، اما ثبت اطلاعات عکس در Supabase ناموفق بود.');}
       uploadedCount++;
       setPhotoStatus(id,'فایل واقعاً روی گیت‌هاب ذخیره و در Supabase ثبت شد ✓','success');
     }catch(err){
@@ -6346,6 +6357,9 @@ async function handleImageFile(id, inputEl){
     setPhotoStatus(id,msg,'success'); if(typeof showToast==='function') showToast(msg,'success',3000); setTimeout(()=>setPhotoStatus(id,'',''),5000);
   }
   inputEl.value='';
+  }finally{
+    productsSyncInFlight = Math.max(0, productsSyncInFlight - 1);
+  }
 }
 
 async function removeProductImage(id, idxParam){
@@ -6362,6 +6376,7 @@ async function removeProductImage(id, idxParam){
   if(imageMutationInFlight.has(mutationKey)) return;
   if(!await customConfirm('این عکس حذف بشه؟')) return;
   imageMutationInFlight.add(mutationKey);
+  productsSyncInFlight++; // جلوی رفرش خودکار از سرور رو تا پایان حذف واقعی می‌گیریم
   try{
     if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path){
       throw new Error('اطلاعات GitHub برای حذف واقعی کامل نیست.');
@@ -6418,6 +6433,7 @@ async function removeProductImage(id, idxParam){
     if(typeof showToast==='function') showToast('حذف عکس انجام نشد: '+(err.message||'خطای ناشناخته'),'error',7000);
   }finally{
     imageMutationInFlight.delete(mutationKey);
+    productsSyncInFlight = Math.max(0, productsSyncInFlight - 1);
   }
 }
 
@@ -6608,7 +6624,12 @@ function deleteProduct(id){
   products = products.filter(p=>p.id!==id);
   if(openProductId===id) openProductId=null;
   renderProducts();
+  // persist() خودش debounce/async هست و بلافاصله تموم نمی‌شه؛ در همین فاصله یه رفرش خودکار
+  // از سرور (مخصوصاً بعد از visibilitychange در موبایل) می‌تونست محصولِ همین الان حذف‌شده رو
+  // دوباره از نسخه‌ی قدیمی سرور برگردونه. تا اتمام ذخیره‌سازی واقعی، جلوی این رفرش رو می‌گیریم.
+  productsSyncInFlight++;
   persist();
+  setTimeout(()=>{ productsSyncInFlight = Math.max(0, productsSyncInFlight - 1); }, 3000);
 }
 
 function renderSummary(){
@@ -10129,6 +10150,11 @@ document.addEventListener('DOMContentLoaded', function(){
 async function refreshProductsFromSupabaseIfSafe(force=false){
   try{
     if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
+    // یه عملیات محلی (آپلود/حذف عکس، حذف محصول و ...) در حال انجامه؛ اگه الان از سرور
+    // بخونیم، همون دیتای قدیمی/ناقص رو جای نتیجه‌ی محلی می‌ذاریم. این دقیقاً همون چیزیه که
+    // روی موبایل باعث می‌شد بعد از انتخاب عکس از گالری (که خودش باعث visibilitychange
+    // می‌شه و همین تابع رو صدا می‌زنه) عکس تازه‌آپلودشده ناپدید بشه.
+    if(productsSyncInFlight > 0) return false;
     const active = document.activeElement;
     if(!force && active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return false;
     const { data:{session} } = await sb.auth.getSession();
