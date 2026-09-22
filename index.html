@@ -4856,7 +4856,7 @@ function renderProducts(){
             ${(prod.colors && prod.colors.length) ? `<span class="head-color-dots">${prod.colors.map(col=>`<span class="color-swatch-mini" style="background:${escapeHtml(col.hex)}" title="${escapeHtml(col.name)}"></span>`).join('')}</span>` : ''}
           </div>
         </div>
-        <div class="head-thumb" id="headThumb_${prod.id}" onclick="event.stopPropagation(); headThumbClick('${prod.id}')" style="cursor:pointer;">${(prod.images&&prod.images[0]) ? `<img src="${prod.images[0].url}" alt="">` : cameraIconSVG(32)}</div>
+        <div class="head-thumb" id="headThumb_${prod.id}" onclick="event.stopPropagation(); headThumbClick('${prod.id}')" style="cursor:pointer;">${(prod.images&&prod.images[0]) ? imageMarkup(prod.images[0]) : cameraIconSVG(32)}</div>
       </div>
       <div class="product-body">
         <div class="product-body-inner">
@@ -5264,7 +5264,7 @@ function photoActionsInnerHTML(prod, lk){
   return `
     ${hasImages ? `<button type="button" class="photo-btn danger" onclick="event.stopPropagation(); removeProductImage('${prod.id}')">حذف این عکس</button>` : ''}
     ${remaining > 0
-      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/*" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
+      ? `<div class="photo-file-wrap" onclick="event.stopPropagation()"><div class="photo-btn photo-file-label">${hasImages ? `افزودن عکس (${toFaNum(remaining,0)} باقی‌مانده)` : 'انتخاب عکس'}</div><input type="file" accept="image/jpeg,image/png,image/webp" multiple id="imgfile_${prod.id}" data-product-id="${prod.id}" class="product-image-file-input" onchange="handleImageFile('${prod.id}', this)"></div>`
       : `<div class="photo-limit-note">حداکثر ۵ عکس</div>`}
   `;
 }
@@ -5290,6 +5290,7 @@ function headThumbClick(id){
 }
 
 // --- ویوئر تمام‌صفحه‌ی عکس‌های محصول (قابل سوایپ) ---
+const imageMutationInFlight = new Set();
 let lightboxProductId = null;
 let lightboxIndex = 0;
 let lbTouchStartX = null;
@@ -6178,6 +6179,25 @@ async function fileToBase64(file){
 }
 
 async function prepareProductImageBase64(file){
+  const lowerName = String(file && file.name || '').toLowerCase();
+  const lowerType = String(file && file.type || '').toLowerCase();
+  if(lowerName.endsWith('.heic') || lowerName.endsWith('.heif') || lowerType === 'image/heic' || lowerType === 'image/heif'){
+    // آپلود فایل HEIC با پسوند JPG باعث می‌شد GitHub موفقیت بدهد ولی مرورگر نتواند عکس را نمایش دهد.
+    // بنابراین این فرمت را هرگز به‌صورت جعلی JPG ذخیره نمی‌کنیم.
+    try{
+      if(typeof createImageBitmap === 'function'){
+        const bmp = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        const max=1280, scale=Math.min(1,max/Math.max(bmp.width,bmp.height));
+        canvas.width=Math.max(1,Math.round(bmp.width*scale)); canvas.height=Math.max(1,Math.round(bmp.height*scale));
+        const ctx=canvas.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(bmp,0,0,canvas.width,canvas.height);
+        try{ bmp.close(); }catch(e){}
+        const dataUrl=canvas.toDataURL('image/jpeg',0.9);
+        return {base64:dataUrl.split(',')[1], extension:'jpg'};
+      }
+    }catch(e){}
+    throw new Error('این عکس با فرمت HEIC/HEIF است و مرورگر فعلی نتوانست آن را به JPG تبدیل کند. در آیفون: Settings → Camera → Formats → Most Compatible را فعال کن و دوباره عکس بگیر/انتخاب کن.');
+  }
   // اول نسخه فشرده/واترمارک‌شده را امتحان می‌کنیم.
   try{
     return {base64: await resizeImageToBase64(file, 1280, 0.9, true), extension:'jpg'};
@@ -6217,6 +6237,18 @@ async function verifyImageUrl(url){
   if(!res.ok) throw new Error('فایل در آدرس عمومی تصویر قابل خواندن نیست ('+res.status+').');
   return true;
 }
+async function validatePreparedImage(base64, extension){
+  // اطمینان از اینکه داده‌ای که قرار است در GitHub ذخیره شود واقعاً یک تصویر قابل نمایش است.
+  const mime = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : extension === 'gif' ? 'image/gif' : 'image/jpeg';
+  const dataUrl = `data:${mime};base64,${base64}`;
+  await new Promise((resolve,reject)=>{
+    const im = new Image();
+    im.onload = () => (im.naturalWidth > 0 && im.naturalHeight > 0) ? resolve() : reject(new Error('تصویر تولیدشده ابعاد معتبری ندارد.'));
+    im.onerror = () => reject(new Error('فایل انتخاب‌شده یک تصویر قابل نمایش نیست. اگر عکس با فرمت HEIC/HEIF است، در آیفون از فرمت سازگار JPG استفاده کن.'));
+    im.src = dataUrl;
+  });
+}
+
 async function handleImageFile(id, inputEl){
   if(!isAdmin) return;
   const files=inputEl.files?Array.from(inputEl.files):[];
@@ -6244,6 +6276,7 @@ async function handleImageFile(id, inputEl){
     try{
       setPhotoStatus(id,toUpload.length>1?`عکس ${toFaNum(i+1,0)} از ${toFaNum(toUpload.length,0)}: در حال آماده‌سازی...`:'در حال آماده‌سازی عکس...','uploading');
       const prepared=await prepareProductImageBase64(file);
+      await validatePreparedImage(prepared.base64, prepared.extension);
       const safeBase=String(file.name||'image').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').replace(/^[-.]+|[-.]+$/g,'')||'image';
       const path=`${folder}/${id}/${Date.now()}_${i}_${safeBase.replace(/\.[^.]+$/,'')}.${prepared.extension}`;
       const apiUrl=githubContentsUrl(path);
@@ -6288,77 +6321,66 @@ async function removeProductImage(id, idxParam){
   const idx = (idxParam!=null) ? Number(idxParam) : Math.min(productCarouselIndex[id]||0, prod.images.length-1);
   const img = prod.images[idx];
   if(!img) return;
+  const mutationKey = `${id}::${idx}::${img.path||img.url||''}`;
+  if(imageMutationInFlight.has(mutationKey)) return;
   if(!await customConfirm('این عکس حذف بشه؟')) return;
+  imageMutationInFlight.add(mutationKey);
+  try{
+    if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path){
+      throw new Error('اطلاعات GitHub برای حذف واقعی کامل نیست.');
+    }
+    setPhotoStatus(id,'در حال حذف واقعی عکس از GitHub...','uploading');
+    const branch=(settings.githubBranch||'main').trim();
+    const apiUrl=githubContentsUrl(img.path);
 
-  const removeFromLocal = async () => {
-    // حذف محلی را فقط بعد از تعیین تکلیف GitHub انجام می‌دهیم.
-    prod.images.splice(idx, 1);
-    productCarouselIndex[id] = Math.min(productCarouselIndex[id]||0, Math.max(prod.images.length-1,0));
+    // همیشه SHA فعلی را از GitHub می‌گیریم.
+    const getRes=await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`,{method:'GET',cache:'no-store',headers:githubHeaders()});
+    const getData=await getRes.json().catch(()=>({}));
+    if(getRes.status!==404 && !getRes.ok) throw new Error(getData.message||('خطای GitHub: '+getRes.status));
+
+    if(getRes.status===404){
+      // قبلاً حذف شده؛ فقط رکورد محلی/Supabase را پاک می‌کنیم.
+      prod.images.splice(idx,1);
+    }else{
+      const sha=getData.sha;
+      if(!sha) throw new Error('SHA فعلی فایل از GitHub دریافت نشد.');
+      const delRes=await fetch(apiUrl,{method:'DELETE',cache:'no-store',headers:{...githubHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:'remove product image '+id,sha,branch})});
+      const delData=await delRes.json().catch(()=>({}));
+      if(!delRes.ok) throw new Error(delData.message||('خطای GitHub در حذف فایل: '+delRes.status));
+
+      // API گیت‌هاب برای حذف موفق باید 404 برگرداند.
+      let gone=false;
+      for(let attempt=0; attempt<4; attempt++){
+        await new Promise(r=>setTimeout(r,300*(attempt+1)));
+        const vr=await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}_${attempt}`,{method:'GET',cache:'no-store',headers:githubHeaders()});
+        if(vr.status===404){ gone=true; break; }
+      }
+      if(!gone) throw new Error('حذف در GitHub ثبت شد ولی فایل هنوز از API قابل مشاهده است.');
+      prod.images.splice(idx,1);
+    }
+
+    // UI را فقط بعد از حذف واقعی تغییر می‌دهیم.
+    productCarouselIndex[id]=Math.min(productCarouselIndex[id]||0,Math.max(prod.images.length-1,0));
     updateProductPhotoUI(id);
-    // ذخیره فوری و بدون debounce تا realtime نتواند تصویر حذف‌شده را برگرداند.
-    const ok = SUPABASE_PRODUCTS_ENABLED ? await saveProductsToSupabaseBridge() : true;
-    if(!ok) throw new Error('عکس از GitHub حذف شد، اما ذخیره حذف عکس در Supabase ناموفق بود.');
-    try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
-    try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
-    // یک render نهایی بعد از ذخیره ابری برای جلوگیری از نمایش تصویر قدیمی.
-    updateProductPhotoUI(id);
-    if(lightboxProductId === id){
+    if(lightboxProductId===id){
       if(!prod.images.length){ closePhotoLightbox(); }
       else { lightboxIndex=Math.min(lightboxIndex,prod.images.length-1); lbResetZoom(false); renderLightbox(); }
     }
-  };
 
-  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path){
-    setPhotoStatus(id,'اطلاعات GitHub برای حذف واقعی کامل نیست.','error');
-    if(typeof showToast==='function') showToast('برای حذف واقعی عکس، GitHub Token و مسیر فایل لازم است.','error',6000);
-    return;
-  }
-
-  setPhotoStatus(id,'در حال بررسی فایل و حذف واقعی از GitHub...','uploading');
-  const branch=(settings.githubBranch||'main').trim();
-  try{
-    const apiUrl=githubContentsUrl(img.path);
-    let sha=img.sha||'';
-    // SHA ممکن است به‌علت همگام‌سازی/ویرایش قبلی قدیمی شده باشد؛ همیشه برای حذف SHA فعلی را از GitHub می‌گیریم.
-    const getRes=await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`,{method:'GET',cache:'no-store',headers:githubHeaders()});
-    const getData=await getRes.json().catch(()=>({}));
-    if(getRes.status===404){
-      // فایل قبلاً از GitHub حذف شده؛ دیگر نباید دوباره خطا بدهیم.
-      await removeFromLocal();
-      setPhotoStatus(id,'فایل از قبل از GitHub حذف شده بود؛ عکس از محصول هم حذف شد ✓','success');
-      setTimeout(()=>setPhotoStatus(id,'',''),3000);
-      return;
-    }
-    if(!getRes.ok) throw new Error(getData.message||('خطای GitHub در بررسی فایل: '+getRes.status));
-    if(getData.sha) sha=getData.sha;
-    if(!sha) throw new Error('SHA فعلی فایل از GitHub دریافت نشد.');
-
-    const delRes=await fetch(apiUrl,{method:'DELETE',cache:'no-store',headers:{...githubHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:'remove product image '+id,sha,branch})});
-    const delData=await delRes.json().catch(()=>({}));
-    if(delRes.status===404){
-      await removeFromLocal();
-      setPhotoStatus(id,'فایل از قبل حذف شده بود؛ عکس از محصول حذف شد ✓','success');
-      setTimeout(()=>setPhotoStatus(id,'',''),3000);
-      return;
-    }
-    if(!delRes.ok) throw new Error(delData.message||('خطای GitHub در حذف فایل: '+delRes.status));
-    if(!delData.commit || !delData.commit.sha) throw new Error('GitHub حذف فایل را تأیید نکرد.');
-
-    // تأیید اینکه فایل واقعاً دیگر وجود ندارد.
-    const verifyRes=await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`,{method:'GET',cache:'no-store',headers:githubHeaders()});
-    if(verifyRes.status!==404){
-      const vd=await verifyRes.json().catch(()=>({}));
-      throw new Error('حذف در GitHub ثبت شد اما فایل هنوز قابل مشاهده است: '+(vd.message||verifyRes.status));
-    }
-
-    await removeFromLocal();
-    setPhotoStatus(id,'عکس واقعاً از GitHub حذف شد ✓','success');
+    // تصاویر را مستقیم در Supabase نیز reconcile می‌کنیم؛ منتظر debounce/realtime نمی‌مانیم.
+    const saved=SUPABASE_PRODUCTS_ENABLED ? await saveProductsToSupabaseBridge() : true;
+    if(!saved) throw new Error('فایل از GitHub حذف شد، اما ثبت حذف تصویر در Supabase ناموفق بود.');
+    try{ localStorage.setItem('pricing_app_products',JSON.stringify(products)); }catch(e){}
+    try{ localStorage.setItem('pricing_app_products_supabase_cache',JSON.stringify(products)); }catch(e){}
+    setPhotoStatus(id,'عکس با موفقیت از GitHub و اطلاعات برنامه حذف شد ✓','success');
     if(typeof showToast==='function') showToast('عکس با موفقیت حذف شد ✓','success',2500);
     setTimeout(()=>setPhotoStatus(id,'',''),2500);
   }catch(err){
     console.error('removeProductImage:',err);
     setPhotoStatus(id,'حذف انجام نشد: '+(err.message||'خطای ناشناخته'),'error');
     if(typeof showToast==='function') showToast('حذف عکس انجام نشد: '+(err.message||'خطای ناشناخته'),'error',7000);
+  }finally{
+    imageMutationInFlight.delete(mutationKey);
   }
 }
 
