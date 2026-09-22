@@ -12504,3 +12504,190 @@ setTimeout(()=>{
   body.product-focus-mode #tab-products #products-list > .product.open .breakdown-row.total b{font-size:22px !important;}
 }
 </style>
+
+
+<style id="mobile-baseline-v58-v68">
+/* v68 — Mobile is intentionally based on v58.
+   Desktop workspace changes never enlarge/reflow the mobile photo area. */
+@media (max-width:899px){
+  /* Product photos: keep v58-sized main image. Thumbnails, if present, stay BELOW it. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-field{
+    min-width:0 !important;
+    width:100% !important;
+    box-sizing:border-box !important;
+    overflow:visible !important;
+    padding:0 !important;
+    margin-bottom:20px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-row{
+    display:flex !important;
+    align-items:flex-start !important;
+    gap:14px !important;
+    min-height:0 !important;
+    height:auto !important;
+    overflow:visible !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel{
+    width:88px !important;
+    min-width:88px !important;
+    height:auto !important;
+    max-height:none !important;
+    flex:0 0 88px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    gap:6px !important;
+    overflow:visible !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview{
+    width:88px !important;
+    height:88px !important;
+    min-width:88px !important;
+    min-height:88px !important;
+    max-width:88px !important;
+    max-height:88px !important;
+    border-radius:18px !important;
+    flex:0 0 88px !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-preview img,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-carousel img{
+    width:100% !important;
+    height:100% !important;
+    max-width:100% !important;
+    object-fit:cover !important;
+  }
+  /* Other photos: small square thumbnails directly underneath the main photo. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-strip{
+    width:100% !important;
+    max-width:88px !important;
+    display:grid !important;
+    grid-template-columns:repeat(2,40px) !important;
+    justify-content:center !important;
+    gap:5px !important;
+    margin:2px 0 0 !important;
+    padding:0 !important;
+    overflow:visible !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-item{
+    width:40px !important;
+    height:auto !important;
+    min-width:40px !important;
+    max-width:40px !important;
+    aspect-ratio:auto !important;
+    padding:2px !important;
+    border:1px solid var(--line) !important;
+    border-radius:7px !important;
+    box-sizing:border-box !important;
+    background:var(--card) !important;
+    overflow:hidden !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-item.active{
+    border-color:var(--blue) !important;
+    box-shadow:0 0 0 1px var(--blue) inset !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image{
+    display:block !important;
+    width:34px !important;
+    height:34px !important;
+    min-width:34px !important;
+    min-height:34px !important;
+    padding:0 !important;
+    margin:0 auto !important;
+    border:0 !important;
+    border-radius:5px !important;
+    overflow:hidden !important;
+    background:var(--bg) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-image img{
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-actions{
+    position:static !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:2px !important;
+    margin-top:2px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-mini-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-badge{
+    flex:1 1 0 !important;
+    min-width:0 !important;
+    width:auto !important;
+    height:18px !important;
+    min-height:18px !important;
+    padding:0 2px !important;
+    border:1px solid var(--line) !important;
+    border-radius:5px !important;
+    background:var(--bg) !important;
+    color:var(--ink) !important;
+    font:700 7px/16px 'Vazirmatn',sans-serif !important;
+    text-align:center !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-thumb-mini-btn.danger{
+    color:var(--red) !important;
+    border-color:rgba(239,68,68,.55) !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .carousel-dots{display:flex !important;}
+
+  /* Keep upload/delete controls beside the compact photo area, as in v58. */
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:8px !important;
+  }
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .photo-actions .photo-file-label{
+    min-height:44px !important;
+    height:auto !important;
+    font-size:14px !important;
+  }
+
+  /* Consignment: all STORE-LEVEL edit/settings buttons are genuinely at the top on mobile. */
+  #tab-consign .consign-card.open .consign-mobile-edit-toolbar{
+    display:block !important;
+    position:relative !important;
+    order:0 !important;
+    margin:0 0 12px !important;
+    padding:10px !important;
+    border:1px solid var(--line) !important;
+    border-radius:14px !important;
+    background:var(--surface-2,var(--card)) !important;
+    box-shadow:0 3px 12px rgba(0,0,0,.07) !important;
+  }
+  #tab-consign .consign-card.open .consign-mobile-edit-toolbar-title{
+    font-size:14px !important;
+    font-weight:800 !important;
+    margin-bottom:8px !important;
+  }
+  #tab-consign .consign-card.open .consign-mobile-edit-actions{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  #tab-consign .consign-card.open .consign-mobile-edit-actions .consign-edit-action{
+    display:flex !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:44px !important;
+    margin:0 !important;
+    padding:7px 8px !important;
+    font-size:13px !important;
+  }
+  /* Remove the duplicate store-level edit controls from the lower operations panel. */
+  #tab-consign .consign-card.open .consign-side-panel .consign-actions .consign-edit-action{
+    display:none !important;
+  }
+}
+</style>
+<script>window.APP_BUILD='V68';</script>
