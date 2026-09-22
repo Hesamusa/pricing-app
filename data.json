@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T10:31:50.565Z",
+  "updatedAt": "2026-09-22T10:32:21.424Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -576,7 +576,7 @@
         }
       ],
       "weight": 17,
-      "marginR": 160,
+      "marginR": 200,
       "marginW": 85,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {},
