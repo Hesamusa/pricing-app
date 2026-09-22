@@ -2577,6 +2577,43 @@ async function saveProductsToSupabaseBridge(){
   }
 }
 </style>
+
+<style id="product-single-panel-v72">
+/* v72 — فقط بخش عکس + مشخصات + قیمت/دکمه‌ها را به یک workspace یکپارچه تبدیل می‌کند.
+   هیچ پنل داخلی و هیچ منطق/رفتار فرم تغییر نمی‌کند. */
+@media (min-width:1201px){
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    position:relative !important;
+    border:1px solid var(--line) !important;
+    border-radius:16px !important;
+    background:var(--card) !important;
+    padding:14px !important;
+    box-sizing:border-box !important;
+  }
+
+  /* همه بخش‌های داخل workspace یکپارچه‌اند؛ فقط فاصله و چینش حفظ می‌شود. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .photo-field,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .grid-2,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-toggle,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .breakdown-wrap,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .result-cards,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .add-btn,
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner > .delete-btn{
+    margin-top:0 !important;
+  }
+
+  /* جلوگیری از ایجاد پنل‌های عمودی اضافه در پایین؛ همه در همان workspace می‌مانند. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body-inner{
+    grid-template-rows:auto auto auto auto auto !important;
+    align-content:start !important;
+  }
+
+  /* در نمایشگرهای عریض، فضای مشترک فشرده می‌شود تا کل فرم در همان صفحه بماند. */
+  body.product-focus-mode #tab-products #products-list > .product.open .product-body{
+    padding:0 !important;
+  }
+}
+</style>
 </head>
 <body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
