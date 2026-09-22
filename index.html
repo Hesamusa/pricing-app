@@ -6217,8 +6217,13 @@ async function handleImageFile(id, inputEl){
   const prod=products.find(p=>p.id===id);
   if(!prod){inputEl.value='';return;}
   if(!Array.isArray(prod.images)) prod.images=[];
-  if(!settings.githubOwner.trim()||!settings.githubRepo.trim()||!settings.githubToken.trim()){
-    setPhotoStatus(id,'اول در تب تنظیمات، اطلاعات گیت‌هاب (کاربر، ریپو، توکن) رو کامل کن','error'); inputEl.value=''; return;
+  if(!settings.githubOwner.trim()||!settings.githubRepo.trim()){
+    setPhotoStatus(id,'اطلاعات کاربر و ریپوی گیت‌هاب کامل نیست.','error'); inputEl.value=''; return;
+  }
+  if(!settings.githubToken.trim()){
+    setPhotoStatus(id,'توکن گیت‌هاب روی این دستگاه وارد نشده است. برای آپلود از موبایل، در تنظیمات همین دستگاه GitHub Token را وارد کن.','error');
+    if(typeof showToast==='function') showToast('توکن GitHub روی این دستگاه وجود ندارد؛ آپلود موبایل بدون توکن انجام نمی‌شود.','error',7000);
+    inputEl.value=''; return;
   }
   const remaining=PRODUCT_MAX_IMAGES-prod.images.length;
   if(remaining<=0){setPhotoStatus(id,'حداکثر ۵ عکس برای هر محصول مجاز است.','error');inputEl.value='';return;}
@@ -6298,21 +6303,30 @@ async function removeProductImage(id, idxParam){
     return;
   }
 
-  setPhotoStatus(id, 'در حال حذف از گیت‌هاب...', 'uploading');
+  if(!settings.githubToken.trim()){
+    setPhotoStatus(id,'توکن GitHub روی این دستگاه وارد نشده است؛ حذف واقعی فایل ممکن نیست.','error');
+    if(typeof showToast==='function') showToast('برای حذف عکس از GitHub، Token این دستگاه را وارد کن.','error',7000);
+    return;
+  }
+  setPhotoStatus(id, 'در حال حذف واقعی عکس از گیت‌هاب...', 'uploading');
   const branch = (settings.githubBranch || 'main').trim();
-  fetch(githubContentsUrl(img.path), {
-    method: 'DELETE',
-    headers: {...githubHeaders(), 'Content-Type':'application/json'},
-    body: JSON.stringify({ message: 'remove product image '+id, sha: img.sha, branch })
-  }).then(()=>{
+  try{
+    const delRes = await fetch(githubContentsUrl(img.path), {
+      method: 'DELETE',
+      headers: {...githubHeaders(), 'Content-Type':'application/json'},
+      body: JSON.stringify({ message: 'remove product image '+id, sha: img.sha, branch })
+    });
+    const delData = await delRes.json().catch(()=>({}));
+    if(!delRes.ok) throw new Error(delData.message || ('خطای GitHub در حذف فایل: '+delRes.status));
+    if(!delData.commit || !delData.commit.sha) throw new Error('GitHub پاسخ حذف داد اما حذف فایل تأیید نشد.');
     cleanupLocal();
-    setPhotoStatus(id, 'عکس حذف شد', 'success');
-    setTimeout(()=>setPhotoStatus(id,'',''), 2000);
-  }).catch(err=>{
-    console.error(err);
-    cleanupLocal();
-    setPhotoStatus(id, 'عکس حذف شد ولی حذف کامل از گیت‌هاب با خطا مواجه شد', 'error');
-  });
+    setPhotoStatus(id, 'عکس واقعاً از گیت‌هاب حذف شد ✓', 'success');
+    setTimeout(()=>setPhotoStatus(id,'',''), 2500);
+  }catch(err){
+    console.error('removeProductImage:',err);
+    setPhotoStatus(id, 'حذف انجام نشد: '+(err.message||'خطای ناشناخته'), 'error');
+    if(typeof showToast==='function') showToast('حذف عکس انجام نشد: '+(err.message||'خطای ناشناخته'),'error',7000);
+  }
 }
 
 // جابجایی ترتیب عکس‌ها (dir: ۱- برای چپ، ۱ برای راست)
