@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-21T19:13:27.205Z",
+  "updatedAt": "2026-09-22T04:36:05.350Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -68,7 +68,13 @@
           "hex": "#ec407a"
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790014671598fm20e/1790051734455_0_Screenshot-2026-09-20-at-13-07-36-Protein-Shaker-Fidget-Keychain-Free-3D-Print-Model-MakerWorld.jpg?v=1790051738586",
+          "path": "product-images/p_1790014671598fm20e/1790051734455_0_Screenshot-2026-09-20-at-13-07-36-Protein-Shaker-Fidget-Keychain-Free-3D-Print-Model-MakerWorld.jpg",
+          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c"
+        }
+      ],
       "weight": 8,
       "marginR": 100,
       "marginW": null,
