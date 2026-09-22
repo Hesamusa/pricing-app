@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T06:34:31.178Z",
+  "updatedAt": "2026-09-22T06:34:46.605Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,13 +56,24 @@
   "products": [
     {
       "id": "p_1790057973753w88de",
-      "name": "محصول جدید",
+      "name": "پنجه گربه م",
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
       "stock": 0,
       "colors": [],
-      "images": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790057973753w88de/1790058875216_0_IMG_2493.jpg?v=1790058878180",
+          "path": "product-images/p_1790057973753w88de/1790058875216_0_IMG_2493.jpg",
+          "sha": "779b48fb5fda3cb9799480a48ba530a145b9f37f"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790057973753w88de/1790058879014_1_IMG_2492.jpg?v=1790058881553",
+          "path": "product-images/p_1790057973753w88de/1790058879014_1_IMG_2492.jpg",
+          "sha": "7fefda1b82a29a752a8b156470031c50bb7468f0"
+        }
+      ],
       "weight": 50,
       "marginR": null,
       "marginW": null,
