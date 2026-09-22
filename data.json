@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T06:19:42.218Z",
+  "updatedAt": "2026-09-22T06:34:25.413Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,7 +56,7 @@
   "products": [
     {
       "id": "p_1790057973753w88de",
-      "name": "محصول جدی",
+      "name": "محصول جدید",
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
@@ -66,14 +66,14 @@
       "weight": 50,
       "marginR": null,
       "marginW": null,
+      "category": null,
       "colorStock": {},
       "paintHours": 0,
       "printHours": 3,
       "manualHours": 0,
       "accessoryCost": 0,
       "catalogDescription": "",
-      "telegramMessageIds": [],
-      "category": null
+      "telegramMessageIds": []
     },
     {
       "id": "p_1790057968143n01r2",
