@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T05:59:02.320Z",
+  "updatedAt": "2026-09-22T05:59:33.378Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -61,7 +61,13 @@
       "sizeL": 0,
       "sizeW": 0,
       "stock": 0,
-      "colors": [],
+      "colors": [
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
       "images": [
         {
           "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790054916805wzw66/1790055746413_0_IMG_2493.jpg?v=1790055751742",
@@ -78,7 +84,9 @@
       "marginR": null,
       "marginW": null,
       "category": "g_mtqsahf4t778",
-      "colorStock": {},
+      "colorStock": {
+        "color_pink": 0
+      },
       "paintHours": 0,
       "printHours": 3,
       "manualHours": 0,
