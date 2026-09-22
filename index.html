@@ -6204,6 +6204,14 @@ function githubRawImageUrl(path, branch){
   const owner=String(settings.githubOwner||'').trim(), repo=String(settings.githubRepo||'').trim(), br=String(branch||'main').trim();
   return `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(br)}/${path.split('/').map(encodeURIComponent).join('/')}`;
 }
+
+function githubImageDisplayUrl(img){
+  if(!img || !img.path) return img && img.url ? img.url : '';
+  const base=githubRawImageUrl(img.path,(settings.githubBranch||'main').trim());
+  const v=String(img.sha||img.url||Date.now()).replace(/[^a-zA-Z0-9_-]/g,'').slice(-24) || String(Date.now());
+  return base + '?v=' + v;
+}
+
 async function verifyImageUrl(url){
   const res=await fetch(url + (url.includes('?')?'&':'?') + 'v=' + Date.now(), {method:'GET', cache:'no-store'});
   if(!res.ok) throw new Error('فایل در آدرس عمومی تصویر قابل خواندن نیست ('+res.status+').');
@@ -6277,54 +6285,79 @@ async function removeProductImage(id, idxParam){
   if(!isAdmin) return;
   const prod = products.find(p=>p.id===id);
   if(!prod || !Array.isArray(prod.images) || !prod.images.length) return;
-  const idx = (idxParam!=null) ? idxParam : Math.min(productCarouselIndex[id]||0, prod.images.length-1);
+  const idx = (idxParam!=null) ? Number(idxParam) : Math.min(productCarouselIndex[id]||0, prod.images.length-1);
   const img = prod.images[idx];
   if(!img) return;
   if(!await customConfirm('این عکس حذف بشه؟')) return;
 
-  const cleanupLocal = () => {
+  const removeFromLocal = async () => {
+    // حذف محلی را فقط بعد از تعیین تکلیف GitHub انجام می‌دهیم.
     prod.images.splice(idx, 1);
-    if((productCarouselIndex[id]||0) >= prod.images.length) productCarouselIndex[id] = Math.max(prod.images.length-1, 0);
-    persist();
+    productCarouselIndex[id] = Math.min(productCarouselIndex[id]||0, Math.max(prod.images.length-1,0));
+    updateProductPhotoUI(id);
+    // ذخیره فوری و بدون debounce تا realtime نتواند تصویر حذف‌شده را برگرداند.
+    const ok = SUPABASE_PRODUCTS_ENABLED ? await saveProductsToSupabaseBridge() : true;
+    if(!ok) throw new Error('عکس از GitHub حذف شد، اما ذخیره حذف عکس در Supabase ناموفق بود.');
+    try{ localStorage.setItem('pricing_app_products', JSON.stringify(products)); }catch(e){}
+    try{ localStorage.setItem('pricing_app_products_supabase_cache', JSON.stringify(products)); }catch(e){}
+    // یک render نهایی بعد از ذخیره ابری برای جلوگیری از نمایش تصویر قدیمی.
     updateProductPhotoUI(id);
     if(lightboxProductId === id){
-      if(!prod.images.length){
-        closePhotoLightbox();
-      }else{
-        lightboxIndex = Math.min(lightboxIndex, prod.images.length-1);
-        lbResetZoom(false);
-        renderLightbox();
-      }
+      if(!prod.images.length){ closePhotoLightbox(); }
+      else { lightboxIndex=Math.min(lightboxIndex,prod.images.length-1); lbResetZoom(false); renderLightbox(); }
     }
   };
 
-  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path || !img.sha){
-    cleanupLocal();
+  if(!settings.githubOwner.trim() || !settings.githubRepo.trim() || !settings.githubToken.trim() || !img.path){
+    setPhotoStatus(id,'اطلاعات GitHub برای حذف واقعی کامل نیست.','error');
+    if(typeof showToast==='function') showToast('برای حذف واقعی عکس، GitHub Token و مسیر فایل لازم است.','error',6000);
     return;
   }
 
-  if(!settings.githubToken.trim()){
-    setPhotoStatus(id,'توکن GitHub روی این دستگاه وارد نشده است؛ حذف واقعی فایل ممکن نیست.','error');
-    if(typeof showToast==='function') showToast('برای حذف عکس از GitHub، Token این دستگاه را وارد کن.','error',7000);
-    return;
-  }
-  setPhotoStatus(id, 'در حال حذف واقعی عکس از گیت‌هاب...', 'uploading');
-  const branch = (settings.githubBranch || 'main').trim();
+  setPhotoStatus(id,'در حال بررسی فایل و حذف واقعی از GitHub...','uploading');
+  const branch=(settings.githubBranch||'main').trim();
   try{
-    const delRes = await fetch(githubContentsUrl(img.path), {
-      method: 'DELETE',
-      headers: {...githubHeaders(), 'Content-Type':'application/json'},
-      body: JSON.stringify({ message: 'remove product image '+id, sha: img.sha, branch })
-    });
-    const delData = await delRes.json().catch(()=>({}));
-    if(!delRes.ok) throw new Error(delData.message || ('خطای GitHub در حذف فایل: '+delRes.status));
-    if(!delData.commit || !delData.commit.sha) throw new Error('GitHub پاسخ حذف داد اما حذف فایل تأیید نشد.');
-    cleanupLocal();
-    setPhotoStatus(id, 'عکس واقعاً از گیت‌هاب حذف شد ✓', 'success');
-    setTimeout(()=>setPhotoStatus(id,'',''), 2500);
+    const apiUrl=githubContentsUrl(img.path);
+    let sha=img.sha||'';
+    // SHA ممکن است به‌علت همگام‌سازی/ویرایش قبلی قدیمی شده باشد؛ همیشه برای حذف SHA فعلی را از GitHub می‌گیریم.
+    const getRes=await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`,{method:'GET',cache:'no-store',headers:githubHeaders()});
+    const getData=await getRes.json().catch(()=>({}));
+    if(getRes.status===404){
+      // فایل قبلاً از GitHub حذف شده؛ دیگر نباید دوباره خطا بدهیم.
+      await removeFromLocal();
+      setPhotoStatus(id,'فایل از قبل از GitHub حذف شده بود؛ عکس از محصول هم حذف شد ✓','success');
+      setTimeout(()=>setPhotoStatus(id,'',''),3000);
+      return;
+    }
+    if(!getRes.ok) throw new Error(getData.message||('خطای GitHub در بررسی فایل: '+getRes.status));
+    if(getData.sha) sha=getData.sha;
+    if(!sha) throw new Error('SHA فعلی فایل از GitHub دریافت نشد.');
+
+    const delRes=await fetch(apiUrl,{method:'DELETE',cache:'no-store',headers:{...githubHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:'remove product image '+id,sha,branch})});
+    const delData=await delRes.json().catch(()=>({}));
+    if(delRes.status===404){
+      await removeFromLocal();
+      setPhotoStatus(id,'فایل از قبل حذف شده بود؛ عکس از محصول حذف شد ✓','success');
+      setTimeout(()=>setPhotoStatus(id,'',''),3000);
+      return;
+    }
+    if(!delRes.ok) throw new Error(delData.message||('خطای GitHub در حذف فایل: '+delRes.status));
+    if(!delData.commit || !delData.commit.sha) throw new Error('GitHub حذف فایل را تأیید نکرد.');
+
+    // تأیید اینکه فایل واقعاً دیگر وجود ندارد.
+    const verifyRes=await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`,{method:'GET',cache:'no-store',headers:githubHeaders()});
+    if(verifyRes.status!==404){
+      const vd=await verifyRes.json().catch(()=>({}));
+      throw new Error('حذف در GitHub ثبت شد اما فایل هنوز قابل مشاهده است: '+(vd.message||verifyRes.status));
+    }
+
+    await removeFromLocal();
+    setPhotoStatus(id,'عکس واقعاً از GitHub حذف شد ✓','success');
+    if(typeof showToast==='function') showToast('عکس با موفقیت حذف شد ✓','success',2500);
+    setTimeout(()=>setPhotoStatus(id,'',''),2500);
   }catch(err){
     console.error('removeProductImage:',err);
-    setPhotoStatus(id, 'حذف انجام نشد: '+(err.message||'خطای ناشناخته'), 'error');
+    setPhotoStatus(id,'حذف انجام نشد: '+(err.message||'خطای ناشناخته'),'error');
     if(typeof showToast==='function') showToast('حذف عکس انجام نشد: '+(err.message||'خطای ناشناخته'),'error',7000);
   }
 }
