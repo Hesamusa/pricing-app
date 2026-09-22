@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T06:19:36.587Z",
+  "updatedAt": "2026-09-22T06:19:42.218Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -56,153 +56,45 @@
   "products": [
     {
       "id": "p_1790057973753w88de",
-      "name": "محصول جدید",
-      "weight": 50,
-      "printHours": 3,
-      "manualHours": 0,
-      "paintHours": 0,
-      "accessoryCost": 0,
+      "name": "محصول جدی",
+      "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "sizeH": 0,
-      "marginW": null,
-      "marginR": null,
-      "images": [],
       "stock": 0,
       "colors": [],
-      "colorStock": {},
-      "catalogDescription": "",
-      "telegramMessageIds": []
-    },
-    {
-      "id": "p_17898772049865cor5",
-      "name": "چارم بگ دمبل باشگاه",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 11,
-      "colors": [
-        {
-          "id": "col_mua2gs728zwd",
-          "name": "آبی پاستلی",
-          "hex": "#52d6fc"
-        },
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        },
-        {
-          "id": "color_black",
-          "name": "مشکی",
-          "hex": "#111111"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877254819_2.jpg?v=1789877256533",
-          "path": "product-images/p_17898772049865cor5_1789877254819_2.jpg",
-          "sha": "273755443e34cd12818e0f99e8c126bf25e5c0e2"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877251879_0.jpg?v=1789877253456",
-          "path": "product-images/p_17898772049865cor5_1789877251879_0.jpg",
-          "sha": "224a4a8c2dbab53c3f663d57e19bbb6e0a6c7c3c"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877253489_1.jpg?v=1789877254752",
-          "path": "product-images/p_17898772049865cor5_1789877253489_1.jpg",
-          "sha": "481d6930d4d8f0a57e571a2ce6a308b01f44c093"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877781644_0.jpg?v=1789877783695",
-          "path": "product-images/p_17898772049865cor5_1789877781644_0.jpg",
-          "sha": "e6a414d093977493a55840d0cba5e57b8a605a21"
-        }
-      ],
-      "weight": 13,
-      "marginR": 150,
+      "images": [],
+      "weight": 50,
+      "marginR": null,
       "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "col_mua2gs728zwd": 4,
-        "color_pink": 4,
-        "color_black": 3
-      },
+      "colorStock": {},
       "paintHours": 0,
-      "printHours": 1,
+      "printHours": 3,
       "manualHours": 0,
       "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه ورزشکاری و دوست داری کیفت حس‌وحال باشگاه داشته باشه، این **چارم بگ دمبل** اصلاً برای خودت ساخته شده! اون‌قدر سبک و جمع‌وجوره که راحت به زیپ ساک یا دسته‌کلیدت آویزون می‌شه و استایلت رو خاص می‌کنه. اگه خوشت اومد، برای سفارش پیام بده 😉 برای دیدن کارای جدیدتر هم عضو کانال شو.",
-      "telegramMessageIds": [
-        272,
-        273,
-        274,
-        275
-      ]
+      "catalogDescription": "",
+      "telegramMessageIds": [],
+      "category": null
     },
     {
-      "id": "p_1789909666043x7sfu",
-      "name": "چارم بگ ابر با بند پاراکورد",
+      "id": "p_1790057968143n01r2",
+      "name": "محصول جدید",
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
       "stock": 0,
-      "colors": [
-        {
-          "id": "color_purple",
-          "name": "بنفش",
-          "hex": "#8e24aa"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
-          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
-          "sha": "c0595468f185a6083f674e20f13778515081c18e"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
-          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
-          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
-          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
-          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
-          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
-          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
-          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
-          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
-        }
-      ],
-      "weight": 20,
-      "marginR": 550,
+      "colors": [],
+      "images": [],
+      "weight": 50,
+      "marginR": null,
       "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "color_purple": 0
-      },
+      "colorStock": {},
       "paintHours": 0,
-      "printHours": 1,
+      "printHours": 3,
       "manualHours": 0,
-      "accessoryCost": 5000,
-      "telegramMessageId": null,
-      "catalogDescription": "ببین چقدر کیفت با این **چارم ابرِ خندون** ناز و متفاوت می‌شه! ☁️ این ابر کوچولو با پاهای آویزون و بند پاراکورد بنفشش اون‌قدر سبکه که اصلاً حسش نمی‌کنی، اما حسابی به کیفت نما میده. از این مدل **همین ۱ عدد** موجود داریم؛ اگه دوستش داری پیام بده تا مال تو بشه. برای دیدن طرح‌های جدیدتر حتماً عضو کانالمون شو 😉",
-      "telegramMessageIds": [
-        285,
-        286,
-        287,
-        288,
-        289
-      ]
+      "accessoryCost": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": [],
+      "category": null
     },
     {
       "id": "p_1789881229899p34e1",
@@ -1292,6 +1184,74 @@
       ]
     },
     {
+      "id": "p_17898772049865cor5",
+      "name": "چارم بگ دمبل باشگاه",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 11,
+      "colors": [
+        {
+          "id": "col_mua2gs728zwd",
+          "name": "آبی پاستلی",
+          "hex": "#52d6fc"
+        },
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        },
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877254819_2.jpg?v=1789877256533",
+          "path": "product-images/p_17898772049865cor5_1789877254819_2.jpg",
+          "sha": "273755443e34cd12818e0f99e8c126bf25e5c0e2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877251879_0.jpg?v=1789877253456",
+          "path": "product-images/p_17898772049865cor5_1789877251879_0.jpg",
+          "sha": "224a4a8c2dbab53c3f663d57e19bbb6e0a6c7c3c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877253489_1.jpg?v=1789877254752",
+          "path": "product-images/p_17898772049865cor5_1789877253489_1.jpg",
+          "sha": "481d6930d4d8f0a57e571a2ce6a308b01f44c093"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17898772049865cor5_1789877781644_0.jpg?v=1789877783695",
+          "path": "product-images/p_17898772049865cor5_1789877781644_0.jpg",
+          "sha": "e6a414d093977493a55840d0cba5e57b8a605a21"
+        }
+      ],
+      "weight": 13,
+      "marginR": 150,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "col_mua2gs728zwd": 4,
+        "color_pink": 4,
+        "color_black": 3
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه ورزشکاری و دوست داری کیفت حس‌وحال باشگاه داشته باشه، این **چارم بگ دمبل** اصلاً برای خودت ساخته شده! اون‌قدر سبک و جمع‌وجوره که راحت به زیپ ساک یا دسته‌کلیدت آویزون می‌شه و استایلت رو خاص می‌کنه. اگه خوشت اومد، برای سفارش پیام بده 😉 برای دیدن کارای جدیدتر هم عضو کانال شو.",
+      "telegramMessageIds": [
+        272,
+        273,
+        274,
+        275
+      ]
+    },
+    {
       "id": "p_1788757924479oy27y",
       "name": "خشم شب سفید",
       "stock": 0,
@@ -1338,6 +1298,68 @@
       "sizeL": 0,
       "sizeW": 0,
       "sizeH": 0
+    },
+    {
+      "id": "p_1789909666043x7sfu",
+      "name": "چارم بگ ابر با بند پاراکورد",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [
+        {
+          "id": "color_purple",
+          "name": "بنفش",
+          "hex": "#8e24aa"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
+          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
+          "sha": "c0595468f185a6083f674e20f13778515081c18e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
+          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
+          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
+          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
+          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
+          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
+          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
+          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
+          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
+        }
+      ],
+      "weight": 20,
+      "marginR": 550,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_purple": 0
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 5000,
+      "telegramMessageId": null,
+      "catalogDescription": "ببین چقدر کیفت با این **چارم ابرِ خندون** ناز و متفاوت می‌شه! ☁️ این ابر کوچولو با پاهای آویزون و بند پاراکورد بنفشش اون‌قدر سبکه که اصلاً حسش نمی‌کنی، اما حسابی به کیفت نما میده. از این مدل **همین ۱ عدد** موجود داریم؛ اگه دوستش داری پیام بده تا مال تو بشه. برای دیدن طرح‌های جدیدتر حتماً عضو کانالمون شو 😉",
+      "telegramMessageIds": [
+        285,
+        286,
+        287,
+        288,
+        289
+      ]
     }
   ]
 }
