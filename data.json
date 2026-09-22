@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T16:57:36.798Z",
+  "updatedAt": "2026-09-22T16:57:42.347Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -345,48 +345,6 @@
         233,
         234,
         235
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
-      "id": "p_1789754149401xhtqx",
-      "name": "گربه تمیزکار",
-      "stock": 7,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754207959_0.jpg?v=1789754209937",
-          "path": "product-images/p_1789754149401xhtqx_1789754207959_0.jpg",
-          "sha": "938ce5537c221fceb462870c79a1ff03205e84c3"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754188096_0.jpg?v=1789754190168",
-          "path": "product-images/p_1789754149401xhtqx_1789754188096_0.jpg",
-          "sha": "cc93a13c931f6664c2df11e1dfaafb2d2a26d639"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754190329_1.jpg?v=1789754192106",
-          "path": "product-images/p_1789754149401xhtqx_1789754190329_1.jpg",
-          "sha": "c63e16cb9de59fb7e7b072510fb235f1e8984507"
-        }
-      ],
-      "weight": 25,
-      "marginR": null,
-      "marginW": 85,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "این فیگور بامزه با اون **ژست خاص و خنده‌دارش** قشنگ حال‌وهوای میزکارت رو عوض می‌کنه! 🐱 جزئیات بانمک و زبان صورتی‌ش انقدر باحاله که یه هدیه‌ی جذاب برای دوستای عاشق گربه‌ست. کلاً ۱۱ تا ازش موجود داریم؛ برای سفارش فقط کافیه پیام بدی و برای دیدن مدل‌های جدیدتر هم عضو کانالمون بشی 😉",
-      "telegramMessageIds": [
-        229,
-        230,
-        231
       ],
       "sizeL": 0,
       "sizeW": 0,
@@ -1101,6 +1059,48 @@
         209,
         210,
         211
+      ]
+    },
+    {
+      "id": "p_1789754149401xhtqx",
+      "name": "گربه تمیزکار",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 11,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754207959_0.jpg?v=1789754209937",
+          "path": "product-images/p_1789754149401xhtqx_1789754207959_0.jpg",
+          "sha": "938ce5537c221fceb462870c79a1ff03205e84c3"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754188096_0.jpg?v=1789754190168",
+          "path": "product-images/p_1789754149401xhtqx_1789754188096_0.jpg",
+          "sha": "cc93a13c931f6664c2df11e1dfaafb2d2a26d639"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754149401xhtqx_1789754190329_1.jpg?v=1789754192106",
+          "path": "product-images/p_1789754149401xhtqx_1789754190329_1.jpg",
+          "sha": "c63e16cb9de59fb7e7b072510fb235f1e8984507"
+        }
+      ],
+      "weight": 25,
+      "marginR": null,
+      "marginW": 85,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {},
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "این فیگور بامزه با اون **ژست خاص و خنده‌دارش** قشنگ حال‌وهوای میزکارت رو عوض می‌کنه! 🐱 جزئیات بانمک و زبان صورتی‌ش انقدر باحاله که یه هدیه‌ی جذاب برای دوستای عاشق گربه‌ست. کلاً ۱۱ تا ازش موجود داریم؛ برای سفارش فقط کافیه پیام بدی و برای دیدن مدل‌های جدیدتر هم عضو کانالمون بشی 😉",
+      "telegramMessageIds": [
+        229,
+        230,
+        231
       ]
     },
     {
