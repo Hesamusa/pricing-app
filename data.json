@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-22T18:55:52.336Z",
+  "updatedAt": "2026-09-23T07:39:39.150Z",
   "settings": {
     "filPrice": 3000000,
     "resinPrice": 3000000,
@@ -54,6 +54,74 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_17901487933989l8nu",
+      "name": "چارم بگ ورزشی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 9,
+      "colors": [
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        },
+        {
+          "id": "color_yellow",
+          "name": "زرد",
+          "hex": "#fdd835"
+        },
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17901487933989l8nu/1790148889914_3_IMG_3995.jpg?v=1790148892623",
+          "path": "product-images/p_17901487933989l8nu/1790148889914_3_IMG_3995.jpg",
+          "sha": "5e6fdeafa010b5d63718baba971a1aa38227204e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17901487933989l8nu/1790148874994_0_0F7BD0FF-188D-4BF9-AB59-D5A4B5DDDDCD.jpg?v=1790148880320",
+          "path": "product-images/p_17901487933989l8nu/1790148874994_0_0F7BD0FF-188D-4BF9-AB59-D5A4B5DDDDCD.jpg",
+          "sha": "39b499e935eb065e1be5112b1c6e34639c2feda8"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17901487933989l8nu/1790148882147_1_IMG_4014.jpg?v=1790148884965",
+          "path": "product-images/p_17901487933989l8nu/1790148882147_1_IMG_4014.jpg",
+          "sha": "6bed1eeb7daecbd5488843c3d5da165f72ae9612"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17901487933989l8nu/1790148886059_2_IMG_4013.jpg?v=1790148888788",
+          "path": "product-images/p_17901487933989l8nu/1790148886059_2_IMG_4013.jpg",
+          "sha": "43cf425da260c326f2355992c93f4a1aad9ba7e3"
+        }
+      ],
+      "weight": 50,
+      "marginR": 250,
+      "marginW": 100,
+      "category": null,
+      "colorStock": {
+        "color_orange": 3,
+        "color_yellow": 3,
+        "color_black": 3
+      },
+      "paintHours": 0,
+      "printHours": 3,
+      "manualHours": 0,
+      "accessoryCost": 50000,
+      "telegramMessageId": null,
+      "catalogDescription": "",
+      "telegramMessageIds": [
+        305,
+        306,
+        307,
+        308
+      ]
+    },
     {
       "id": "p_1790077513651coqau",
       "name": "فیدجت اسپینر",
@@ -152,68 +220,6 @@
       "telegramMessageIds": [
         299,
         300
-      ]
-    },
-    {
-      "id": "p_1789881229899p34e1",
-      "name": "چارم بگ بطری شیکر باشگاه",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 8,
-      "colors": [
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897112721_1.jpg?v=1789897113997",
-          "path": "product-images/p_1789881229899p34e1_1789897112721_1.jpg",
-          "sha": "9e98c8b03d154203b4a75a728585a76fccde16b3"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897110589_0.jpg?v=1789897112667",
-          "path": "product-images/p_1789881229899p34e1_1789897110589_0.jpg",
-          "sha": "a75b1b0e00e2a6dbd0760db639c8573a0f9a1107"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897114071_2.jpg?v=1789897115405",
-          "path": "product-images/p_1789881229899p34e1_1789897114071_2.jpg",
-          "sha": "33faefec97aeb4c9e2513f520f10158cf49941b2"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897115454_3.jpg?v=1789897116973",
-          "path": "product-images/p_1789881229899p34e1_1789897115454_3.jpg",
-          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897164223_0.jpg?v=1789897165748",
-          "path": "product-images/p_1789881229899p34e1_1789897164223_0.jpg",
-          "sha": "40cba78d2e13bff0d8f10a4d996864c43a647cd1"
-        }
-      ],
-      "weight": 8,
-      "marginR": 300,
-      "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "color_pink": 8
-      },
-      "paintHours": 0,
-      "printHours": 0.5,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه اهل ورزش و باشگاهی، این **شیکرهای مینیاتوری** خفن‌ترین چیزیه که می‌تونی به ساک یا کوله‌ت آویزون کنی! فوق‌العاده سبک و نقلیه، ترکیب رنگای جذابی داره و یه هدیه‌ی خیلی بامزه برای دوستای ورزشکارت هم هست. فعلاً فقط ۱۰ تا ازش موجود داریم؛ اگه خوشت اومد پیام بده برات کنار بذاریم و برای دیدن مدل‌های جدیدتر هم عضو کانال شو 😉",
-      "telegramMessageIds": [
-        278,
-        279,
-        280,
-        281,
-        282
       ]
     },
     {
@@ -1536,6 +1542,68 @@
         273,
         274,
         275
+      ]
+    },
+    {
+      "id": "p_1789881229899p34e1",
+      "name": "چارم بگ بطری شیکر باشگاه",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 8,
+      "colors": [
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897112721_1.jpg?v=1789897113997",
+          "path": "product-images/p_1789881229899p34e1_1789897112721_1.jpg",
+          "sha": "9e98c8b03d154203b4a75a728585a76fccde16b3"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897110589_0.jpg?v=1789897112667",
+          "path": "product-images/p_1789881229899p34e1_1789897110589_0.jpg",
+          "sha": "a75b1b0e00e2a6dbd0760db639c8573a0f9a1107"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897114071_2.jpg?v=1789897115405",
+          "path": "product-images/p_1789881229899p34e1_1789897114071_2.jpg",
+          "sha": "33faefec97aeb4c9e2513f520f10158cf49941b2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897115454_3.jpg?v=1789897116973",
+          "path": "product-images/p_1789881229899p34e1_1789897115454_3.jpg",
+          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897164223_0.jpg?v=1789897165748",
+          "path": "product-images/p_1789881229899p34e1_1789897164223_0.jpg",
+          "sha": "40cba78d2e13bff0d8f10a4d996864c43a647cd1"
+        }
+      ],
+      "weight": 8,
+      "marginR": 300,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_pink": 8
+      },
+      "paintHours": 0,
+      "printHours": 0.5,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه اهل ورزش و باشگاهی، این **شیکرهای مینیاتوری** خفن‌ترین چیزیه که می‌تونی به ساک یا کوله‌ت آویزون کنی! فوق‌العاده سبک و نقلیه، ترکیب رنگای جذابی داره و یه هدیه‌ی خیلی بامزه برای دوستای ورزشکارت هم هست. فعلاً فقط ۱۰ تا ازش موجود داریم؛ اگه خوشت اومد پیام بده برات کنار بذاریم و برای دیدن مدل‌های جدیدتر هم عضو کانال شو 😉",
+      "telegramMessageIds": [
+        278,
+        279,
+        280,
+        281,
+        282
       ]
     }
   ]
