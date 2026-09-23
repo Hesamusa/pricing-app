@@ -804,6 +804,14 @@
   .consign-tr.consign-total .cname{color:var(--ink-soft);}
   .consign-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
   .consign-actions .order-status-btn{flex:1 1 44%; min-width:130px;}
+  .consign-top-actions{
+    margin:0 0 14px; padding:12px 14px;
+    border:1px solid var(--line); border-radius:14px;
+    background:var(--surface-2,var(--card));
+  }
+  .consign-top-actions .consign-side-title{margin-bottom:9px;}
+  .consign-top-actions .consign-actions{margin-top:0;}
+
   .consign-tr .product-link{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:right;display:inline-flex;align-items:center;gap:5px;cursor:pointer;max-width:100%;font-weight:750;}
 .consign-tr .product-link:hover{color:var(--blue);}
 .consign-live-stock{display:block;font-size:9px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;}
@@ -1989,7 +1997,7 @@ async function saveProductsToSupabaseBridge(){
 </script>
 
 <style>#syncStatusV11{position:fixed;bottom:10px;left:10px;z-index:99999;display:none;max-width:min(92vw,520px);padding:10px 12px;border:1px solid rgba(255,90,90,.45);border-radius:12px;background:#1d1414;color:#ffd9d9;font:12px/1.6 sans-serif;direction:rtl;box-shadow:0 8px 30px rgba(0,0,0,.25)}</style>
-<script>window.APP_BUILD='V71';</script>
+<script>window.APP_BUILD='V78';</script>
 
 <style id="product-focus-mode-v29">
 /* Desktop product editor: full-workspace shell + deliberately constrained, reflowed form.
@@ -10632,6 +10640,27 @@ function renderConsignCard(c){
       <div class="consign-card-body-inner">
         ${c.address ? `<div class="sale-item-note" style="margin-top:0; border-top:none; padding-top:0;">${escapeHtml(c.address)}</div>` : ''}
 
+        <div class="consign-top-actions">
+          <div class="consign-side-title">عملیات</div>
+          <div class="consign-actions">
+          ${c.status !== 'closed' ? `
+            <button type="button" class="order-status-btn done" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
+            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
+            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); addConsignPayment('${c.id}')">ثبت تسویه</button>
+            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
+            ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>` : ''}
+          ` : ''}
+          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignmentStoreInfo('${c.id}')">اطلاعات فروشگاه</button>` : ''}
+          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignStoreStock('${c.id}')">اصلاح تعداد نزد فروشگاه</button>` : ''}
+          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
+          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
+          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
+          ${isAdmin ? (c.status === 'closed'
+            ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
+            : `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
+          </div>
+        </div>
+
         <div class="consign-workspace">
           <div class="consign-main-panel">
             <div class="consign-table">
@@ -10659,26 +10688,7 @@ function renderConsignCard(c){
             </div>
             ${c.notes ? `<div class="consign-side-section"><div class="consign-side-title">یادداشت</div><div class="sale-item-note">${escapeHtml(c.notes)}</div></div>` : ''}
             ${paymentsHistory ? `<div class="consign-side-section"><div class="consign-side-title">تسویه‌ها</div>${paymentsHistory}</div>` : ''}
-            <div class="consign-side-section">
-              <div class="consign-side-title">عملیات</div>
-              <div class="consign-actions">
-          ${c.status !== 'closed' ? `
-            <button type="button" class="order-status-btn done" onclick="event.stopPropagation(); recordConsignSale('${c.id}')">ثبت فروش فروشگاه</button>
-            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); restockConsign('${c.id}')">فروش + شارژ مجدد</button>
-            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); addConsignPayment('${c.id}')">ثبت تسویه</button>
-            <button type="button" class="order-status-btn" onclick="event.stopPropagation(); returnConsign('${c.id}')">مرجوعی</button>
-            ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); addProductsToConsign('${c.id}')">افزودن محصول</button>` : ''}
-          ` : ''}
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignmentStoreInfo('${c.id}')">اطلاعات فروشگاه</button>` : ''}
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignStoreStock('${c.id}')">اصلاح تعداد نزد فروشگاه</button>` : ''}
-          <button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignTargets('${c.id}')">ظرفیت مطلوب</button>
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignPrices('${c.id}')">قیمت تسویه</button>` : ''}
-          ${isAdmin ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); editConsignItemTotals('${c.id}')">ویرایش جدول</button>` : ''}
-          ${isAdmin ? (c.status === 'closed'
-            ? `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','active')">بازگردانی به فعال</button>`
-            : `<button type="button" class="order-status-btn" onclick="event.stopPropagation(); setConsignStatus('${c.id}','closed')">بستن واگذاری</button>`) : ''}
-              </div>
-            </div>
+
           </aside>
         </div>
       </div>
@@ -11570,6 +11580,9 @@ setTimeout(()=>{
     display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:0;
   }
   #tab-consign .consign-card.open .consign-actions .order-status-btn{min-width:0;width:100%;}
+  #tab-consign .consign-card.open .consign-top-actions{grid-column:1/-1;grid-row:auto;}
+  #tab-consign .consign-card.open .consign-top-actions .consign-actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}
+
 
   /* Summary: dense metric dashboard instead of stretched blocks. */
   #tab-summary #summary-content{
@@ -11611,7 +11624,15 @@ setTimeout(()=>{
   #tab-consign .consign-card.open .consign-card-body-inner > .sale-item-bottom,
   #tab-consign .consign-card.open .consign-card-body-inner > .order-status-btn{grid-column:1;grid-row:auto;}
   #tab-consign .consign-card.open .consign-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
+  #tab-consign .consign-card.open .consign-top-actions{grid-column:1;}
+  #tab-consign .consign-card.open .consign-top-actions .consign-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
+
 }
+  @media (max-width:899px){
+    #tab-consign .consign-top-actions{padding:10px;}
+    #tab-consign .consign-top-actions .consign-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+    #tab-consign .consign-top-actions .order-status-btn{min-width:0;width:100%;min-height:42px;padding:8px 7px;}
+  }
 </style>
 
 <script id="scroll-stability-v30">
