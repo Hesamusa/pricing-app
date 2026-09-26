@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-23T07:47:18.685Z",
+  "updatedAt": "2026-09-26T10:34:03.689Z",
   "settings": {
-    "filPrice": 3000000,
+    "filPrice": 3500000,
     "resinPrice": 3000000,
     "power": 250,
     "elec": 2000,
@@ -54,6 +54,370 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1790413809325w26py",
+      "name": "استار باکس",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 5,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790413809325w26py/1790413861070_0_338BFBFE-98A6-4BA0-8407-EA492275150C.jpg?v=1790413864121",
+          "path": "product-images/p_1790413809325w26py/1790413861070_0_338BFBFE-98A6-4BA0-8407-EA492275150C.jpg",
+          "sha": "04d09b809e7f1ed99b1f2d1ce423add1c4b2bf06"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790413809325w26py/1790413869086_2_IMG_4047.jpg?v=1790413871741",
+          "path": "product-images/p_1790413809325w26py/1790413869086_2_IMG_4047.jpg",
+          "sha": "e18f66c972d302b1952e009a40fc11de03b97457"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790413809325w26py/1790414098203_0_IMG_4049.jpg?v=1790414101481",
+          "path": "product-images/p_1790413809325w26py/1790414098203_0_IMG_4049.jpg",
+          "sha": "14c1f484d98670956018b35238ebd2a0dcbb4938"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790413809325w26py/1790414112456_1_IMG_4048.jpg?v=1790414114873",
+          "path": "product-images/p_1790413809325w26py/1790414112456_1_IMG_4048.jpg",
+          "sha": "25c3b6f5c2598733fb756b072ad3b3b043c28f4e"
+        }
+      ],
+      "weight": 6,
+      "marginR": 518,
+      "marginW": 300,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_white": 5
+      },
+      "paintHours": 0,
+      "printHours": 0.5,
+      "manualHours": 0,
+      "accessoryCost": 25000,
+      "catalogDescription": "اگه تو هم بدون قهوه روزت شب نمی‌شه، این **جاسوییچی طرح قهوه** دقیقاً خوراکِ خودته! اون‌قدر بامزه و جمع‌وجوره که روی کیف یا دسته کلیدت حسابی جلب توجه می‌کنه و برای هدیه دادن هم خیلی خاصه. فعلاً کلاً ۵ تا ازش موجود داریم؛ اگه خوشت اومده، یه پیام بده تا برات بفرستیم 😉",
+      "telegramMessageIds": []
+    },
+    {
+      "id": "p_179040840649773fke",
+      "name": "لاکپشت نگه دارنده",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 6,
+      "colors": [
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_179040840649773fke/1790408479864_0_DE89A73E-99DC-48C5-BD94-3981566DA0CC.jpg?v=1790408483365",
+          "path": "product-images/p_179040840649773fke/1790408479864_0_DE89A73E-99DC-48C5-BD94-3981566DA0CC.jpg",
+          "sha": "8aaae12320dce85cc60f27e85db7736c31696ba3"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_179040840649773fke/1790408497893_4_IMG_4061.jpg?v=1790408500651",
+          "path": "product-images/p_179040840649773fke/1790408497893_4_IMG_4061.jpg",
+          "sha": "53f4d3a78607e6ce1c790a6dff24ba78bcbb9716"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_179040840649773fke/1790408485204_1_IMG_4062.jpg?v=1790408487592",
+          "path": "product-images/p_179040840649773fke/1790408485204_1_IMG_4062.jpg",
+          "sha": "83dbbc5bd9026f4615e3e95003622dc508465464"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_179040840649773fke/1790408488787_2_IMG_4065.jpg?v=1790408491536",
+          "path": "product-images/p_179040840649773fke/1790408488787_2_IMG_4065.jpg",
+          "sha": "5e4db8b6347c30f1e9e0f0796f230039e6ebcf7e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_179040840649773fke/1790408493173_3_IMG_4055.jpg?v=1790408496239",
+          "path": "product-images/p_179040840649773fke/1790408493173_3_IMG_4055.jpg",
+          "sha": "d939c9b8201bbd6daf08744dd88c4f954688bd73"
+        }
+      ],
+      "weight": 20,
+      "marginR": 245,
+      "marginW": 150,
+      "category": null,
+      "colorStock": {
+        "color_orange": 6
+      },
+      "paintHours": 0,
+      "printHours": 1.5,
+      "manualHours": 0,
+      "accessoryCost": 25000,
+      "telegramMessageId": null,
+      "catalogDescription": "یه جاکلیدی بامزه که یه راز کوچولو هم تو دلش داره! لاکِ این **لاک‌پشت نگهدارنده** باز می‌شه و می‌تونی وسایل ریز مثل انگشتر یا زنجیرت رو توش بگذاری. انقدر سبک و جمع‌وجوره که همه‌جا همراهت میاد و واسه یه **هدیه اقتصادی** عالیه؛ کلاً ۶ تا موجود داریم، اگه خوشت اومد پیام بده برات بفرستیم 😉",
+      "telegramMessageIds": [
+        330,
+        331,
+        332,
+        333,
+        334
+      ]
+    },
+    {
+      "id": "p_1790345009764waa94",
+      "name": "کیف و رژ لب",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 4,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        },
+        {
+          "id": "color_brown",
+          "name": "قهوه‌ای",
+          "hex": "#795548"
+        },
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        },
+        {
+          "id": "color_silver",
+          "name": "نقره‌ای",
+          "hex": "#b0bec5"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790345009764waa94/1790345054758_0_87D57839-E1D8-4C62-A0AB-4D0F2ED929F7.jpg?v=1790345088181",
+          "path": "product-images/p_1790345009764waa94/1790345054758_0_87D57839-E1D8-4C62-A0AB-4D0F2ED929F7.jpg",
+          "sha": "cf57d9f91dc158c901e1a85cdd4aed0954c0855e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790345009764waa94/1790345151055_0_IMG_4051.jpg?v=1790345187004",
+          "path": "product-images/p_1790345009764waa94/1790345151055_0_IMG_4051.jpg",
+          "sha": "f10a6c2dee4efce667ae1e622c7c40e1e03ab23e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790345009764waa94/1790345187965_1_IMG_4053.jpg?v=1790345211760",
+          "path": "product-images/p_1790345009764waa94/1790345187965_1_IMG_4053.jpg",
+          "sha": "aa16d2961fbf6b92bb1e88122264edb933c74245"
+        }
+      ],
+      "weight": 15,
+      "marginR": 200,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_black": 1,
+        "color_brown": 1,
+        "color_pink": 1,
+        "color_silver": 1
+      },
+      "paintHours": 0.08333333333333333,
+      "printHours": 0.5,
+      "manualHours": 0,
+      "accessoryCost": 20000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه دنبال یه اکسسوری بامزه و شیک برای کیف یا کلیداتی، این **ست مینیاتوری کیف و رژ لب** خوراک خودته! با جزئیات ظریف و وزن فوق‌العاده سبکش اصلاً کیفت رو سنگین نمی‌کنه و کلی به استایلت نما میده. از این کار کلاً ۴ تا موجود داریم؛ پس اگه خوشت اومده همین الان پیام بده تا برات ثبتش کنیم 😉 راستی برای دیدن کارهای جدید، عضو کانالمون شو.",
+      "telegramMessageIds": [
+        322,
+        323,
+        324
+      ]
+    },
+    {
+      "id": "p_1790317190421imyp3",
+      "name": "سگ شیتزو میکس",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 6,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        },
+        {
+          "id": "color_brown",
+          "name": "قهوه‌ای",
+          "hex": "#795548"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790317190421imyp3/1790317759154_0_9F51C0BF-8105-4036-B7AB-CC9B72546DA3.jpg?v=1790317790337",
+          "path": "product-images/p_1790317190421imyp3/1790317759154_0_9F51C0BF-8105-4036-B7AB-CC9B72546DA3.jpg",
+          "sha": "9979645db502c29f9f99d58940df1743dc4daaa1"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790317190421imyp3/1790317791974_0_9F51C0BF-8105-4036-B7AB-CC9B72546DA3.jpg?v=1790317823071",
+          "path": "product-images/p_1790317190421imyp3/1790317791974_0_9F51C0BF-8105-4036-B7AB-CC9B72546DA3.jpg",
+          "sha": "9979645db502c29f9f99d58940df1743dc4daaa1"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790317190421imyp3/1790317824151_1_IMG_4074.jpg?v=1790317848233",
+          "path": "product-images/p_1790317190421imyp3/1790317824151_1_IMG_4074.jpg",
+          "sha": "73e6879222f8110ad1b1a19d7a8fc45c0275eb0c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790317190421imyp3/1790317849349_2_IMG_4070.jpg?v=1790317896586",
+          "path": "product-images/p_1790317190421imyp3/1790317849349_2_IMG_4070.jpg",
+          "sha": "65a2edfb8e62cd3f55f38cc59739320d05a96bf7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790317190421imyp3/1790317898203_3_IMG_4075.jpg?v=1790317921292",
+          "path": "product-images/p_1790317190421imyp3/1790317898203_3_IMG_4075.jpg",
+          "sha": "1354d6d31605446f25ab797fed1c36b77e0e9831"
+        }
+      ],
+      "weight": 10,
+      "marginR": 165,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_white": 3,
+        "color_brown": 3
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0.3333333333333333,
+      "accessoryCost": 20,
+      "telegramMessageId": null,
+      "catalogDescription": "یه **هاپوی دوست‌داشتنی** که همیشه همراه‌ته و هیچ‌وقت ازت جدا نمیشه! این جاسوییچی سگ شیتزو اون‌قدر سبک و جمع‌وجوره که راحت به کلید یا کیفت وصل میشه و هر بار می‌بینیش کلی حس خوب بهت میده. اگه خوشت اومده برامون پیام بفرست تا برات آماده‌ش کنیم؛ برای دیدن مدل‌های جدیدتر هم عضو کانال شو 🐶",
+      "telegramMessageIds": [
+        317,
+        318,
+        319,
+        320,
+        321
+      ]
+    },
+    {
+      "id": "p_17902534596491mv1l",
+      "name": "فنجان قهوه و شکلات",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 3,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17902534596491mv1l/1790253636500_0_A9BC1721-CD32-45F6-817A-877C2E9665D9.jpg?v=1790253640190",
+          "path": "product-images/p_17902534596491mv1l/1790253636500_0_A9BC1721-CD32-45F6-817A-877C2E9665D9.jpg",
+          "sha": "83a3e36601cadead3c5ba5c8699abb3108b1e53c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17902534596491mv1l/1790253641822_1_IMG_4021.jpg?v=1790253645000",
+          "path": "product-images/p_17902534596491mv1l/1790253641822_1_IMG_4021.jpg",
+          "sha": "e421b01b1911a21f0e7b05635ef5e5092b003f06"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17902534596491mv1l/1790253647217_2_IMG_4020.jpg?v=1790253650241",
+          "path": "product-images/p_17902534596491mv1l/1790253647217_2_IMG_4020.jpg",
+          "sha": "e664520a339a4c77fc2fdec835f261f82c76c89c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17902534596491mv1l/1790253651393_3_IMG_4022.jpg?v=1790253654403",
+          "path": "product-images/p_17902534596491mv1l/1790253651393_3_IMG_4022.jpg",
+          "sha": "44a778e69134205e13727e0bf499f9b525f0b0be"
+        }
+      ],
+      "weight": 25,
+      "marginR": 124,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {},
+      "paintHours": 0,
+      "printHours": 2,
+      "manualHours": 0,
+      "accessoryCost": 50000,
+      "telegramMessageId": null,
+      "catalogDescription": "ترکیب **فنجان قهوه با لاته‌آرت و شکلات گاززده** انقدر جذابه که هربار نگاهش می‌کنی حس خوب می‌گیری ☕️ این جاکلیدی بانمک خیلی سبکه و برای کلید یا آویز کیف عالیه. از این مدل فقط ۳ تا موجود داریم؛ اگه می‌خوایش یه پیام بده تا برات ثبتش کنیم 😉",
+      "telegramMessageIds": [
+        313,
+        314,
+        315,
+        316
+      ]
+    },
+    {
+      "id": "p_1790149661534q9elf",
+      "name": "چارم بگ ورزشی ",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 9,
+      "colors": [
+        {
+          "id": "color_yellow",
+          "name": "زرد",
+          "hex": "#fdd835"
+        },
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        },
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790149661534q9elf/1790149781568_1_IMG_4010.jpg?v=1790149784405",
+          "path": "product-images/p_1790149661534q9elf/1790149781568_1_IMG_4010.jpg",
+          "sha": "e96e6509be1b7de7f809ee2930d382abf22199fe"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790149661534q9elf/1790149777034_0_IMG_4012.jpg?v=1790149780047",
+          "path": "product-images/p_1790149661534q9elf/1790149777034_0_IMG_4012.jpg",
+          "sha": "c3de9c91f208a64e07db9d345600fb429b5135b9"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790149661534q9elf/1790149785281_2_IMG_4014.jpg?v=1790149788031",
+          "path": "product-images/p_1790149661534q9elf/1790149785281_2_IMG_4014.jpg",
+          "sha": "6bed1eeb7daecbd5488843c3d5da165f72ae9612"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790149661534q9elf/1790149788914_3_IMG_4013.jpg?v=1790149791470",
+          "path": "product-images/p_1790149661534q9elf/1790149788914_3_IMG_4013.jpg",
+          "sha": "43cf425da260c326f2355992c93f4a1aad9ba7e3"
+        }
+      ],
+      "weight": 50,
+      "marginR": 250,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_yellow": 3,
+        "color_orange": 3,
+        "color_black": 3
+      },
+      "paintHours": 0,
+      "printHours": 3,
+      "manualHours": 0,
+      "accessoryCost": 50000,
+      "telegramMessageId": null,
+      "catalogDescription": "خوراک بچه‌های باشگاه که دوست دارن استایل ساک ورزشی‌شون خاص و متفاوت باشه! این **چارم بگ‌های ورزشی** با جزئیات بانمک مینیاتوری پرینت شدن و انقدر سبک‌ان که اصلاً کیفت رو سنگین نمی‌کنن. تعدادشون محدوده؛ اگه می‌خوایش یه پیام بده برات ثبت کنیم 😉 برای دیدن مدل‌های جدیدتر هم عضو کانالمون شو.",
+      "telegramMessageIds": [
+        309,
+        310,
+        311,
+        312
+      ]
+    },
     {
       "id": "p_1790077513651coqau",
       "name": "فیدجت اسپینر",
@@ -152,316 +516,6 @@
       "telegramMessageIds": [
         299,
         300
-      ]
-    },
-    {
-      "id": "p_1789881229899p34e1",
-      "name": "چارم بگ بطری شیکر باشگاه",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 8,
-      "colors": [
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897112721_1.jpg?v=1789897113997",
-          "path": "product-images/p_1789881229899p34e1_1789897112721_1.jpg",
-          "sha": "9e98c8b03d154203b4a75a728585a76fccde16b3"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897110589_0.jpg?v=1789897112667",
-          "path": "product-images/p_1789881229899p34e1_1789897110589_0.jpg",
-          "sha": "a75b1b0e00e2a6dbd0760db639c8573a0f9a1107"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897114071_2.jpg?v=1789897115405",
-          "path": "product-images/p_1789881229899p34e1_1789897114071_2.jpg",
-          "sha": "33faefec97aeb4c9e2513f520f10158cf49941b2"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897115454_3.jpg?v=1789897116973",
-          "path": "product-images/p_1789881229899p34e1_1789897115454_3.jpg",
-          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897164223_0.jpg?v=1789897165748",
-          "path": "product-images/p_1789881229899p34e1_1789897164223_0.jpg",
-          "sha": "40cba78d2e13bff0d8f10a4d996864c43a647cd1"
-        }
-      ],
-      "weight": 8,
-      "marginR": 300,
-      "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "color_pink": 8
-      },
-      "paintHours": 0,
-      "printHours": 0.5,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه اهل ورزش و باشگاهی، این **شیکرهای مینیاتوری** خفن‌ترین چیزیه که می‌تونی به ساک یا کوله‌ت آویزون کنی! فوق‌العاده سبک و نقلیه، ترکیب رنگای جذابی داره و یه هدیه‌ی خیلی بامزه برای دوستای ورزشکارت هم هست. فعلاً فقط ۱۰ تا ازش موجود داریم؛ اگه خوشت اومد پیام بده برات کنار بذاریم و برای دیدن مدل‌های جدیدتر هم عضو کانال شو 😉",
-      "telegramMessageIds": [
-        278,
-        279,
-        280,
-        281,
-        282
-      ]
-    },
-    {
-      "id": "p_1789755299953t7rtq",
-      "name": "پنجه گربه فلت ",
-      "stock": 6,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755403595_1.jpg?v=1789755405265",
-          "path": "product-images/p_1789755299953t7rtq_1789755403595_1.jpg",
-          "sha": "7cc0f8a3f3b31867af9a1f51cac0dd2d78d754ed"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755401692_0.jpg?v=1789755403460",
-          "path": "product-images/p_1789755299953t7rtq_1789755401692_0.jpg",
-          "sha": "c94daabc2cbbb20482e19e9a1f37522982fb29de"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755426000_0.jpg?v=1789755427869",
-          "path": "product-images/p_1789755299953t7rtq_1789755426000_0.jpg",
-          "sha": "5850f30b9e73c99b4b50484ec8bc6a0efaea58b7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755427939_1.jpg?v=1789755429747",
-          "path": "product-images/p_1789755299953t7rtq_1789755427939_1.jpg",
-          "sha": "cffc7b07361435585b51f03adcd9cdc5b6279f92"
-        }
-      ],
-      "weight": 8,
-      "marginR": null,
-      "marginW": null,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "نگاه به این پنجه‌های کیوت و رنگارنگ بنداز، مگه می‌شه عاشقشون نشد؟ 🐾\nاین **جاسوییچی‌های پنجه‌ای** انقدر سبک و جمع‌وجورن که برای آویز کیف و کلید یا یه هدیه‌ بانمک عالی‌ان.\nفعلاً فقط ۱۰ تا موجود داریم؛ اگه می‌خوایش پیام بده تا برات بفرستیم، برای دیدن بقیه مدل‌ها هم همراه کانالمون باش.",
-      "telegramMessageIds": [
-        237,
-        238,
-        239,
-        240
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
-      "id": "p_1789810661693swjgy",
-      "name": "چارم بگ ابر بامزه با پاهای مفصلی",
-      "sizeH": 7,
-      "sizeL": 5.5,
-      "sizeW": 6,
-      "stock": 5,
-      "colors": [
-        {
-          "id": "color_white",
-          "name": "سفید",
-          "hex": "#ffffff"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810673753_0.jpg?v=1789810675380",
-          "path": "product-images/p_1789810661693swjgy_1789810673753_0.jpg",
-          "sha": "b5384740fe87bbcf8cbd02b3ff3fc2946e483431"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810675443_1.jpg?v=1789810677159",
-          "path": "product-images/p_1789810661693swjgy_1789810675443_1.jpg",
-          "sha": "bb3f802e77e9b7db9275e3cf9ce041bb639ba14b"
-        }
-      ],
-      "weight": 10,
-      "marginR": 200,
-      "marginW": 85,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "color_white": 5
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "نگاه به پاهای آویزونش کن! فک کن این **چارم بگ ابر** خندون آویزون کیفت باشه و با هر حرکتت تکون بخوره. اون‌قدر سبک و بانمکه که کلی انرژی خوب به کیفت می‌ده و برای یه هدیه دوست‌داشتنی هم حرف نداره.\nتعدادش محدوده، اگه می‌خوایش همین الان پیام بده 😉 برای دیدن بقیه مدل‌ها هم عضو کانالمون شو!",
-      "telegramMessageIds": [
-        261,
-        262
-      ]
-    },
-    {
-      "id": "p_1789754876369ry8py",
-      "name": "پنجه گربه مفصلی",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 1,
-      "colors": [
-        {
-          "id": "color_white",
-          "name": "سفید",
-          "hex": "#ffffff"
-        },
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754975129_0.jpg?v=1789754977424",
-          "path": "product-images/p_1789754876369ry8py_1789754975129_0.jpg",
-          "sha": "25bc42255337dc81b5cb7800e41882269eacaa4b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754977547_1.jpg?v=1789754979620",
-          "path": "product-images/p_1789754876369ry8py_1789754977547_1.jpg",
-          "sha": "73f4e5974d31caf962e32d519e1e17973d08b1ad"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754987933_0.jpg?v=1789754989801",
-          "path": "product-images/p_1789754876369ry8py_1789754987933_0.jpg",
-          "sha": "7ca1a89ad09860ac7bf3babe77ebc0ec5677b94f"
-        }
-      ],
-      "weight": 10,
-      "marginR": 170,
-      "marginW": null,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_white": 1,
-        "color_pink": 0
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه دنبال یه آویز جذاب و گوگولی برای کلید یا کیفت می‌گردی، این **پنجه‌های بامزه** دقیقاً همون چیزیه که حالتو خوب می‌کنه! ترکیب رنگ سفید و صورتی‌شون خیلی دلنشینه و خوراک **ست کردن با دوستت** یا هدیه دادنه. برای داشتنش فقط کافیه بهم پیام بدی؛ راستی عضو کانال هم بشو تا مدل‌های جدید رو از دست ندی 🐾",
-      "telegramMessageIds": [
-        233,
-        234,
-        235
-      ]
-    },
-    {
-      "id": "p_17896307539150tvyy",
-      "name": "جا کلیدی توپ بسکتبال",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 2,
-      "colors": [
-        {
-          "id": "color_orange",
-          "name": "نارنجی",
-          "hex": "#fb8c00"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17896307539150tvyy_1789632970554_0.jpg?v=1789632974680",
-          "path": "product-images/p_17896307539150tvyy_1789632970554_0.jpg",
-          "sha": "e7851bdb2e59ccf2974396d7c97d6e330bdd54c2"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17896307539150tvyy_1789641223010_0.jpg?v=1789641225544",
-          "path": "product-images/p_17896307539150tvyy_1789641223010_0.jpg",
-          "sha": "9a9738435dbee78fb17cdc4da932c3ac7e835027"
-        }
-      ],
-      "weight": 13,
-      "marginR": 210,
-      "marginW": 120,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_orange": 2
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه خوره‌ی بسکتبالی یا دوست داری کلیدات یه **استایل اسپرت** و خاص داشته باشن، این جاکلیدی کاملاً خوراک خودته 🏀  \nجزئیاتش و حک NBA روی توپ انقدر **دقیق و تمیز** دراومده که هربار دستت می‌گیری کیف می‌کنی؛ واسه کادو دادن به دوستای بسکتبالیستت هم عالیه.  \nکلاً ۸ عدد ازش موجود داریم؛ برای ثبت سفارش پیام بده و برای دیدن طرح‌های جدیدتر عضو کانالمون باش 😉",
-      "telegramMessageIds": [
-        126,
-        127
-      ]
-    },
-    {
-      "id": "p_1789547116518l5j1s",
-      "name": "جنگ ستارگان",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 7,
-      "colors": [
-        {
-          "id": "color_black",
-          "name": "مشکی",
-          "hex": "#111111"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650672521_0.jpg?v=1789650674311",
-          "path": "product-images/p_1789547116518l5j1s_1789650672521_0.jpg",
-          "sha": "088449ed02267967a38deb821c6f40c7d7ae04d7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650642756_0.jpg?v=1789650644718",
-          "path": "product-images/p_1789547116518l5j1s_1789650642756_0.jpg",
-          "sha": "8877b41289d5e57ad293db0d914dc97edaac90b7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789547134528_0.jpg?v=1789547135788",
-          "path": "product-images/p_1789547116518l5j1s_1789547134528_0.jpg",
-          "sha": "e7aa639f4a97085e26a65898111ff4faf830add5"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650644977_1.jpg?v=1789650667015",
-          "path": "product-images/p_1789547116518l5j1s_1789650644977_1.jpg",
-          "sha": "030e569fed27e77284a78f7e15fdedae7d952c94"
-        }
-      ],
-      "weight": 17,
-      "marginR": 185,
-      "marginW": 85,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_black": 7
-      },
-      "paintHours": 0,
-      "printHours": 2,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "اگه تو هم عاشق دنیای خفنِ کهکشانی هستی، با دیدن این روی کلیدات هر روز کیف می‌کنی!\nیه کار فوق‌العاده سبک و دقیق پرینت‌شده که هم استایلت رو خاص می‌کنه، هم یه کادوی بی‌نظیره.\nکلاً ۷ تا ازش موجود داریم و احتمالاً خیلی زود پر می‌کشه؛ همین الان پیام بده تا قبل از تموم شدنش مال تو بشه! 🚀",
-      "telegramMessageIds": [
-        130,
-        131,
-        132,
-        133
       ]
     },
     {
@@ -1536,6 +1590,316 @@
         273,
         274,
         275
+      ]
+    },
+    {
+      "id": "p_1789881229899p34e1",
+      "name": "چارم بگ بطری شیکر باشگاه",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 8,
+      "colors": [
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897112721_1.jpg?v=1789897113997",
+          "path": "product-images/p_1789881229899p34e1_1789897112721_1.jpg",
+          "sha": "9e98c8b03d154203b4a75a728585a76fccde16b3"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897110589_0.jpg?v=1789897112667",
+          "path": "product-images/p_1789881229899p34e1_1789897110589_0.jpg",
+          "sha": "a75b1b0e00e2a6dbd0760db639c8573a0f9a1107"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897114071_2.jpg?v=1789897115405",
+          "path": "product-images/p_1789881229899p34e1_1789897114071_2.jpg",
+          "sha": "33faefec97aeb4c9e2513f520f10158cf49941b2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897115454_3.jpg?v=1789897116973",
+          "path": "product-images/p_1789881229899p34e1_1789897115454_3.jpg",
+          "sha": "9c7fc30d673901cfd8b73c60af3603639dc6f59c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789881229899p34e1_1789897164223_0.jpg?v=1789897165748",
+          "path": "product-images/p_1789881229899p34e1_1789897164223_0.jpg",
+          "sha": "40cba78d2e13bff0d8f10a4d996864c43a647cd1"
+        }
+      ],
+      "weight": 8,
+      "marginR": 300,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_pink": 8
+      },
+      "paintHours": 0,
+      "printHours": 0.5,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه اهل ورزش و باشگاهی، این **شیکرهای مینیاتوری** خفن‌ترین چیزیه که می‌تونی به ساک یا کوله‌ت آویزون کنی! فوق‌العاده سبک و نقلیه، ترکیب رنگای جذابی داره و یه هدیه‌ی خیلی بامزه برای دوستای ورزشکارت هم هست. فعلاً فقط ۱۰ تا ازش موجود داریم؛ اگه خوشت اومد پیام بده برات کنار بذاریم و برای دیدن مدل‌های جدیدتر هم عضو کانال شو 😉",
+      "telegramMessageIds": [
+        278,
+        279,
+        280,
+        281,
+        282
+      ]
+    },
+    {
+      "id": "p_1789755299953t7rtq",
+      "name": "پنجه گربه فلت ",
+      "stock": 6,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755403595_1.jpg?v=1789755405265",
+          "path": "product-images/p_1789755299953t7rtq_1789755403595_1.jpg",
+          "sha": "7cc0f8a3f3b31867af9a1f51cac0dd2d78d754ed"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755401692_0.jpg?v=1789755403460",
+          "path": "product-images/p_1789755299953t7rtq_1789755401692_0.jpg",
+          "sha": "c94daabc2cbbb20482e19e9a1f37522982fb29de"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755426000_0.jpg?v=1789755427869",
+          "path": "product-images/p_1789755299953t7rtq_1789755426000_0.jpg",
+          "sha": "5850f30b9e73c99b4b50484ec8bc6a0efaea58b7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755427939_1.jpg?v=1789755429747",
+          "path": "product-images/p_1789755299953t7rtq_1789755427939_1.jpg",
+          "sha": "cffc7b07361435585b51f03adcd9cdc5b6279f92"
+        }
+      ],
+      "weight": 8,
+      "marginR": null,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {},
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "نگاه به این پنجه‌های کیوت و رنگارنگ بنداز، مگه می‌شه عاشقشون نشد؟ 🐾\nاین **جاسوییچی‌های پنجه‌ای** انقدر سبک و جمع‌وجورن که برای آویز کیف و کلید یا یه هدیه‌ بانمک عالی‌ان.\nفعلاً فقط ۱۰ تا موجود داریم؛ اگه می‌خوایش پیام بده تا برات بفرستیم، برای دیدن بقیه مدل‌ها هم همراه کانالمون باش.",
+      "telegramMessageIds": [
+        237,
+        238,
+        239,
+        240
+      ],
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0
+    },
+    {
+      "id": "p_1789810661693swjgy",
+      "name": "چارم بگ ابر بامزه با پاهای مفصلی",
+      "sizeH": 7,
+      "sizeL": 5.5,
+      "sizeW": 6,
+      "stock": 5,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810673753_0.jpg?v=1789810675380",
+          "path": "product-images/p_1789810661693swjgy_1789810673753_0.jpg",
+          "sha": "b5384740fe87bbcf8cbd02b3ff3fc2946e483431"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789810661693swjgy_1789810675443_1.jpg?v=1789810677159",
+          "path": "product-images/p_1789810661693swjgy_1789810675443_1.jpg",
+          "sha": "bb3f802e77e9b7db9275e3cf9ce041bb639ba14b"
+        }
+      ],
+      "weight": 10,
+      "marginR": 200,
+      "marginW": 85,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_white": 5
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "نگاه به پاهای آویزونش کن! فک کن این **چارم بگ ابر** خندون آویزون کیفت باشه و با هر حرکتت تکون بخوره. اون‌قدر سبک و بانمکه که کلی انرژی خوب به کیفت می‌ده و برای یه هدیه دوست‌داشتنی هم حرف نداره.\nتعدادش محدوده، اگه می‌خوایش همین الان پیام بده 😉 برای دیدن بقیه مدل‌ها هم عضو کانالمون شو!",
+      "telegramMessageIds": [
+        261,
+        262
+      ]
+    },
+    {
+      "id": "p_1789754876369ry8py",
+      "name": "پنجه گربه مفصلی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        },
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754975129_0.jpg?v=1789754977424",
+          "path": "product-images/p_1789754876369ry8py_1789754975129_0.jpg",
+          "sha": "25bc42255337dc81b5cb7800e41882269eacaa4b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754977547_1.jpg?v=1789754979620",
+          "path": "product-images/p_1789754876369ry8py_1789754977547_1.jpg",
+          "sha": "73f4e5974d31caf962e32d519e1e17973d08b1ad"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754987933_0.jpg?v=1789754989801",
+          "path": "product-images/p_1789754876369ry8py_1789754987933_0.jpg",
+          "sha": "7ca1a89ad09860ac7bf3babe77ebc0ec5677b94f"
+        }
+      ],
+      "weight": 10,
+      "marginR": 170,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_white": 1,
+        "color_pink": 0
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه دنبال یه آویز جذاب و گوگولی برای کلید یا کیفت می‌گردی، این **پنجه‌های بامزه** دقیقاً همون چیزیه که حالتو خوب می‌کنه! ترکیب رنگ سفید و صورتی‌شون خیلی دلنشینه و خوراک **ست کردن با دوستت** یا هدیه دادنه. برای داشتنش فقط کافیه بهم پیام بدی؛ راستی عضو کانال هم بشو تا مدل‌های جدید رو از دست ندی 🐾",
+      "telegramMessageIds": [
+        233,
+        234,
+        235
+      ]
+    },
+    {
+      "id": "p_17896307539150tvyy",
+      "name": "جا کلیدی توپ بسکتبال",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 2,
+      "colors": [
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17896307539150tvyy_1789632970554_0.jpg?v=1789632974680",
+          "path": "product-images/p_17896307539150tvyy_1789632970554_0.jpg",
+          "sha": "e7851bdb2e59ccf2974396d7c97d6e330bdd54c2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17896307539150tvyy_1789641223010_0.jpg?v=1789641225544",
+          "path": "product-images/p_17896307539150tvyy_1789641223010_0.jpg",
+          "sha": "9a9738435dbee78fb17cdc4da932c3ac7e835027"
+        }
+      ],
+      "weight": 13,
+      "marginR": 210,
+      "marginW": 120,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_orange": 2
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه خوره‌ی بسکتبالی یا دوست داری کلیدات یه **استایل اسپرت** و خاص داشته باشن، این جاکلیدی کاملاً خوراک خودته 🏀  \nجزئیاتش و حک NBA روی توپ انقدر **دقیق و تمیز** دراومده که هربار دستت می‌گیری کیف می‌کنی؛ واسه کادو دادن به دوستای بسکتبالیستت هم عالیه.  \nکلاً ۸ عدد ازش موجود داریم؛ برای ثبت سفارش پیام بده و برای دیدن طرح‌های جدیدتر عضو کانالمون باش 😉",
+      "telegramMessageIds": [
+        126,
+        127
+      ]
+    },
+    {
+      "id": "p_1789547116518l5j1s",
+      "name": "جنگ ستارگان",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 7,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650672521_0.jpg?v=1789650674311",
+          "path": "product-images/p_1789547116518l5j1s_1789650672521_0.jpg",
+          "sha": "088449ed02267967a38deb821c6f40c7d7ae04d7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650642756_0.jpg?v=1789650644718",
+          "path": "product-images/p_1789547116518l5j1s_1789650642756_0.jpg",
+          "sha": "8877b41289d5e57ad293db0d914dc97edaac90b7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789547134528_0.jpg?v=1789547135788",
+          "path": "product-images/p_1789547116518l5j1s_1789547134528_0.jpg",
+          "sha": "e7aa639f4a97085e26a65898111ff4faf830add5"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789547116518l5j1s_1789650644977_1.jpg?v=1789650667015",
+          "path": "product-images/p_1789547116518l5j1s_1789650644977_1.jpg",
+          "sha": "030e569fed27e77284a78f7e15fdedae7d952c94"
+        }
+      ],
+      "weight": 17,
+      "marginR": 185,
+      "marginW": 85,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_black": 7
+      },
+      "paintHours": 0,
+      "printHours": 2,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه تو هم عاشق دنیای خفنِ کهکشانی هستی، با دیدن این روی کلیدات هر روز کیف می‌کنی!\nیه کار فوق‌العاده سبک و دقیق پرینت‌شده که هم استایلت رو خاص می‌کنه، هم یه کادوی بی‌نظیره.\nکلاً ۷ تا ازش موجود داریم و احتمالاً خیلی زود پر می‌کشه؛ همین الان پیام بده تا قبل از تموم شدنش مال تو بشه! 🚀",
+      "telegramMessageIds": [
+        130,
+        131,
+        132,
+        133
       ]
     }
   ]
