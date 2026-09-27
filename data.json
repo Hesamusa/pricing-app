@@ -1,15 +1,15 @@
 {
-  "updatedAt": "2026-09-26T10:34:03.689Z",
+  "updatedAt": "2026-09-27T17:29:33.625Z",
   "settings": {
     "filPrice": 3500000,
-    "resinPrice": 3000000,
+    "resinPrice": 4000000,
     "power": 250,
-    "elec": 2000,
+    "elec": 3000,
     "depr": 15000,
-    "labor": 0,
-    "paint": 25000,
-    "marginW": 85,
-    "marginR": 200,
+    "labor": 200000,
+    "paint": 300000,
+    "marginW": 50,
+    "marginR": 120,
     "roundStep": 5000,
     "productGroups": [
       {
@@ -54,6 +54,148 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1790486244561xwx7m",
+      "name": "گربه گارفیلد",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 6,
+      "colors": [
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        },
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        },
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790486244561xwx7m/1790486275862_0_B7F3D259-854E-4200-948B-ADA9EDA94703.jpg?v=1790486279281",
+          "path": "product-images/p_1790486244561xwx7m/1790486275862_0_B7F3D259-854E-4200-948B-ADA9EDA94703.jpg",
+          "sha": "1f44ba2f7add409265be9e330f8835acacc3f592"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790486244561xwx7m/1790486280883_1_IMG_4115.jpg?v=1790486283953",
+          "path": "product-images/p_1790486244561xwx7m/1790486280883_1_IMG_4115.jpg",
+          "sha": "4085dae975336769d11af01993ab534fb853a6b0"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790486244561xwx7m/1790486285124_2_IMG_4114.jpg?v=1790486288197",
+          "path": "product-images/p_1790486244561xwx7m/1790486285124_2_IMG_4114.jpg",
+          "sha": "3fd6603b816f10ec5d594d657ced3569844e6308"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790486244561xwx7m/1790486289252_3_IMG_4113.jpg?v=1790486292465",
+          "path": "product-images/p_1790486244561xwx7m/1790486289252_3_IMG_4113.jpg",
+          "sha": "514a19134bd4b0bee339ba903d4a34e7a62af882"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790486244561xwx7m/1790486293482_4_IMG_4112.jpg?v=1790486296122",
+          "path": "product-images/p_1790486244561xwx7m/1790486293482_4_IMG_4112.jpg",
+          "sha": "b2b67a7136b0c94624279e05401115483f8ded64"
+        }
+      ],
+      "weight": 15,
+      "marginR": 200,
+      "marginW": 100,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_orange": 2,
+        "color_white": 2,
+        "color_black": 2
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 50000,
+      "telegramMessageId": null,
+      "catalogDescription": "نگاه کردن به قیافه‌ی بامزه و چشم‌های چرخون این **جاسوییچی‌های گربه** واقعاً حال آدم رو خوب می‌کنه! با اون دم بندبندی و وزن خیلی سبکشون، بهترین گزینه برای آویز کیف، جاکلیدی یا حتی یه **هدیه بامزه** به دوستاته. اگه خوشت اومده، همین الان پیام بده تا برات آماده‌ش کنیم 😉",
+      "telegramMessageIds": [
+        345,
+        346,
+        347,
+        348,
+        349
+      ]
+    },
+    {
+      "id": "p_1790433935283meizj",
+      "name": "قلبی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 2,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        },
+        {
+          "id": "color_red",
+          "name": "قرمز",
+          "hex": "#e53935"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790433935283meizj/1790434080124_0_2E24F06F-BEB3-4CC8-B5E7-D192C61459B3.jpg?v=1790434083144",
+          "path": "product-images/p_1790433935283meizj/1790434080124_0_2E24F06F-BEB3-4CC8-B5E7-D192C61459B3.jpg",
+          "sha": "d99a03a16921b1f7ac60bd47191ac35226b7c4cc"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790433935283meizj/1790434094927_0_IMG_4069.jpg?v=1790434097526",
+          "path": "product-images/p_1790433935283meizj/1790434094927_0_IMG_4069.jpg",
+          "sha": "3c9ee46fe3dc0e85a04c7cec1560d1d21f35b42a"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790433935283meizj/1790434098586_1_IMG_4068.jpg?v=1790434101120",
+          "path": "product-images/p_1790433935283meizj/1790434098586_1_IMG_4068.jpg",
+          "sha": "fc86d01c080d7579498eb72c567eb04a23a7b431"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790433935283meizj/1790434102221_2_IMG_4067.jpg?v=1790434105691",
+          "path": "product-images/p_1790433935283meizj/1790434102221_2_IMG_4067.jpg",
+          "sha": "2b5cb0c036235ea6551f62f5f6419a51ca5f3076"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1790433935283meizj/1790434106738_3_IMG_4066.jpg?v=1790434109506",
+          "path": "product-images/p_1790433935283meizj/1790434106738_3_IMG_4066.jpg",
+          "sha": "2ed11640b5b128d93dee6aab1ce5d6e25fb5b904"
+        }
+      ],
+      "weight": 20,
+      "marginR": 285,
+      "marginW": 150,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_black": 1,
+        "color_red": 1
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 25000,
+      "telegramMessageId": null,
+      "catalogDescription": "یه **جاسوییچی قلبی** با بافت خاص و جذاب که حسابی به کیف یا کلیدات جلوه میده! اون‌قدر سبک و جمع‌وجوره که راحت همه‌جا همراهت می‌مونه و برای ست کردن با دوستت یا پارتنرت هم عالیه. کلاً ۲ تا ازش موجود داریم؛ اگه خوشت اومده همین الان پیام بده تا مال تو بشه 😉",
+      "telegramMessageIds": [
+        339,
+        340,
+        341,
+        342,
+        343
+      ]
+    },
     {
       "id": "p_1790413809325w26py",
       "name": "استار باکس",
@@ -101,8 +243,14 @@
       "printHours": 0.5,
       "manualHours": 0,
       "accessoryCost": 25000,
+      "telegramMessageId": null,
       "catalogDescription": "اگه تو هم بدون قهوه روزت شب نمی‌شه، این **جاسوییچی طرح قهوه** دقیقاً خوراکِ خودته! اون‌قدر بامزه و جمع‌وجوره که روی کیف یا دسته کلیدت حسابی جلب توجه می‌کنه و برای هدیه دادن هم خیلی خاصه. فعلاً کلاً ۵ تا ازش موجود داریم؛ اگه خوشت اومده، یه پیام بده تا برات بفرستیم 😉",
-      "telegramMessageIds": []
+      "telegramMessageIds": [
+        335,
+        336,
+        337,
+        338
+      ]
     },
     {
       "id": "p_179040840649773fke",
@@ -517,78 +665,6 @@
         299,
         300
       ]
-    },
-    {
-      "id": "p_17887965710100v1nz",
-      "name": "تیرکس مکانیکی مفصل ثابت",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 1,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1789664987751_0.jpg?v=1789664993678",
-          "path": "product-images/p_17887965710100v1nz_1789664987751_0.jpg",
-          "sha": "8760cfe9ed64acc695aa6e09f6816d94538501f5"
-        }
-      ],
-      "weight": 45,
-      "marginR": 85,
-      "marginW": null,
-      "category": "g_mtreb2q5k4dk",
-      "colorStock": {},
-      "paintHours": 1,
-      "printHours": 4.5,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "وقتی خستگی کار کلافت می‌کنه، بازی کردن با مفاصل نرم و متحرک این غول ماقبل تاریخ حسابی سرگرمت می‌کنه! یه دکوری خاص و مدرن برای روی میزت که هم جلای قشنگی به فضات میده و هم بهترین فیجت برای کاهش استرسه. با توجه به اینکه فقط همین یه دونه آماده ارسال داریم، وقت رو تلف نکن. 🦖",
-      "telegramMessageIds": [
-        222
-      ]
-    },
-    {
-      "id": "p_1789318632241mto8f",
-      "name": "سیلوستر تیپ شهری",
-      "sizeH": 50,
-      "stock": 1,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664524381_1.jpg?v=1789664531474",
-          "path": "product-images/p_1789318632241mto8f_1789664524381_1.jpg",
-          "sha": "2168110f90756cc51df7c816800c3700e8dd1b0a"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664518542_0.jpg?v=1789664524282",
-          "path": "product-images/p_1789318632241mto8f_1789664518542_0.jpg",
-          "sha": "2f0585b745ac9dd5fb1c477a5f512bd621341a1b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664531591_2.jpg?v=1789664541307",
-          "path": "product-images/p_1789318632241mto8f_1789664531591_2.jpg",
-          "sha": "0a1388eafb9897829c7e27a81cdd2d2a940c6c77"
-        }
-      ],
-      "weight": 1100,
-      "marginR": 60,
-      "marginW": 40,
-      "category": "g_mtreb2q5k4dk",
-      "colorStock": {},
-      "paintHours": 2,
-      "printHours": 48,
-      "manualHours": 20,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "سیلوستر نوستالژیک بچگی‌هامون این‌بار با یه **استایل خفن** و مدرن اومده تا نمای اتاقت رو کلاً عوض کنه! \nیه فیگور بزرگ، سنگین‌وزن و پرجزئیات که روی میز کار یا توی ویترینت بدجور جلب‌توجه می‌کنه. \nچون کلاً همین **یک عدد** ازش موجود داریم، اگه می‌خوایش همین الان پیام بده تا مال تو بشه 😎 برای دیدن مدل‌های جدیدتر هم حتماً عضو کانالمون شو.",
-      "telegramMessageIds": [
-        217,
-        218,
-        219
-      ],
-      "sizeL": 0,
-      "sizeW": 0
     },
     {
       "id": "p_1788796315293vahtq",
@@ -1901,6 +1977,78 @@
         132,
         133
       ]
+    },
+    {
+      "id": "p_17887965710100v1nz",
+      "name": "تیرکس مکانیکی مفصل ثابت",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1789664987751_0.jpg?v=1789664993678",
+          "path": "product-images/p_17887965710100v1nz_1789664987751_0.jpg",
+          "sha": "8760cfe9ed64acc695aa6e09f6816d94538501f5"
+        }
+      ],
+      "weight": 45,
+      "marginR": 85,
+      "marginW": null,
+      "category": "g_mtreb2q5k4dk",
+      "colorStock": {},
+      "paintHours": 1,
+      "printHours": 4.5,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "وقتی خستگی کار کلافت می‌کنه، بازی کردن با مفاصل نرم و متحرک این غول ماقبل تاریخ حسابی سرگرمت می‌کنه! یه دکوری خاص و مدرن برای روی میزت که هم جلای قشنگی به فضات میده و هم بهترین فیجت برای کاهش استرسه. با توجه به اینکه فقط همین یه دونه آماده ارسال داریم، وقت رو تلف نکن. 🦖",
+      "telegramMessageIds": [
+        222
+      ]
+    },
+    {
+      "id": "p_1789318632241mto8f",
+      "name": "سیلوستر تیپ شهری",
+      "sizeH": 50,
+      "stock": 1,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664524381_1.jpg?v=1789664531474",
+          "path": "product-images/p_1789318632241mto8f_1789664524381_1.jpg",
+          "sha": "2168110f90756cc51df7c816800c3700e8dd1b0a"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664518542_0.jpg?v=1789664524282",
+          "path": "product-images/p_1789318632241mto8f_1789664518542_0.jpg",
+          "sha": "2f0585b745ac9dd5fb1c477a5f512bd621341a1b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789318632241mto8f_1789664531591_2.jpg?v=1789664541307",
+          "path": "product-images/p_1789318632241mto8f_1789664531591_2.jpg",
+          "sha": "0a1388eafb9897829c7e27a81cdd2d2a940c6c77"
+        }
+      ],
+      "weight": 1100,
+      "marginR": 60,
+      "marginW": 40,
+      "category": "g_mtreb2q5k4dk",
+      "colorStock": {},
+      "paintHours": 2,
+      "printHours": 48,
+      "manualHours": 20,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "سیلوستر نوستالژیک بچگی‌هامون این‌بار با یه **استایل خفن** و مدرن اومده تا نمای اتاقت رو کلاً عوض کنه! \nیه فیگور بزرگ، سنگین‌وزن و پرجزئیات که روی میز کار یا توی ویترینت بدجور جلب‌توجه می‌کنه. \nچون کلاً همین **یک عدد** ازش موجود داریم، اگه می‌خوایش همین الان پیام بده تا مال تو بشه 😎 برای دیدن مدل‌های جدیدتر هم حتماً عضو کانالمون شو.",
+      "telegramMessageIds": [
+        217,
+        218,
+        219
+      ],
+      "sizeL": 0,
+      "sizeW": 0
     }
   ]
 }
