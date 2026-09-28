@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-28T08:29:00.282Z",
+  "updatedAt": "2026-09-28T13:32:46.614Z",
   "settings": {
     "filPrice": 4000000,
     "resinPrice": 4000000,
@@ -54,6 +54,27 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_1790602165752ys9dc",
+      "name": "محصول جدید",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [],
+      "images": [],
+      "weight": 50,
+      "marginR": null,
+      "marginW": null,
+      "colorStock": {},
+      "paintHours": 0,
+      "printHours": 3,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "catalogDescription": "",
+      "telegramMessageIds": [],
+      "category": null
+    },
     {
       "id": "p_17905301777815xu4t",
       "name": "نظم دهنده لوازم آرایش طرح گوتیک",
@@ -295,8 +316,8 @@
         }
       ],
       "weight": 6,
-      "marginR": 518,
-      "marginW": 300,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
         "color_white": 5
@@ -304,7 +325,7 @@
       "paintHours": 0,
       "printHours": 0.5,
       "manualHours": 0,
-      "accessoryCost": 25000,
+      "accessoryCost": 10000,
       "telegramMessageId": null,
       "catalogDescription": "اگه تو هم بدون قهوه روزت شب نمی‌شه، این **جاسوییچی طرح قهوه** دقیقاً خوراکِ خودته! اون‌قدر بامزه و جمع‌وجوره که روی کیف یا دسته کلیدت حسابی جلب توجه می‌کنه و برای هدیه دادن هم خیلی خاصه. فعلاً کلاً ۵ تا ازش موجود داریم؛ اگه خوشت اومده، یه پیام بده تا برات بفرستیم 😉",
       "telegramMessageIds": [
@@ -365,7 +386,7 @@
       "paintHours": 0,
       "printHours": 1.5,
       "manualHours": 0,
-      "accessoryCost": 25000,
+      "accessoryCost": 10000,
       "telegramMessageId": null,
       "catalogDescription": "یه جاکلیدی بامزه که یه راز کوچولو هم تو دلش داره! لاکِ این **لاک‌پشت نگهدارنده** باز می‌شه و می‌تونی وسایل ریز مثل انگشتر یا زنجیرت رو توش بگذاری. انقدر سبک و جمع‌وجوره که همه‌جا همراهت میاد و واسه یه **هدیه اقتصادی** عالیه؛ کلاً ۶ تا موجود داریم، اگه خوشت اومد پیام بده برات بفرستیم 😉",
       "telegramMessageIds": [
@@ -435,7 +456,7 @@
       "paintHours": 0.08333333333333333,
       "printHours": 0.5,
       "manualHours": 0,
-      "accessoryCost": 20000,
+      "accessoryCost": 10000,
       "telegramMessageId": null,
       "catalogDescription": "اگه دنبال یه اکسسوری بامزه و شیک برای کیف یا کلیداتی، این **ست مینیاتوری کیف و رژ لب** خوراک خودته! با جزئیات ظریف و وزن فوق‌العاده سبکش اصلاً کیفت رو سنگین نمی‌کنه و کلی به استایلت نما میده. از این کار کلاً ۴ تا موجود داریم؛ پس اگه خوشت اومده همین الان پیام بده تا برات ثبتش کنیم 😉 راستی برای دیدن کارهای جدید، عضو کانالمون شو.",
       "telegramMessageIds": [
@@ -491,7 +512,7 @@
         }
       ],
       "weight": 10,
-      "marginR": 165,
+      "marginR": 200,
       "marginW": null,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
@@ -500,8 +521,8 @@
       },
       "paintHours": 0,
       "printHours": 1,
-      "manualHours": 0.3333333333333333,
-      "accessoryCost": 20,
+      "manualHours": 0,
+      "accessoryCost": 10000,
       "telegramMessageId": null,
       "catalogDescription": "یه **هاپوی دوست‌داشتنی** که همیشه همراه‌ته و هیچ‌وقت ازت جدا نمیشه! این جاسوییچی سگ شیتزو اون‌قدر سبک و جمع‌وجوره که راحت به کلید یا کیفت وصل میشه و هر بار می‌بینیش کلی حس خوب بهت میده. اگه خوشت اومده برامون پیام بفرست تا برات آماده‌ش کنیم؛ برای دیدن مدل‌های جدیدتر هم عضو کانال شو 🐶",
       "telegramMessageIds": [
@@ -543,14 +564,14 @@
         }
       ],
       "weight": 25,
-      "marginR": 124,
-      "marginW": null,
+      "marginR": 100,
+      "marginW": 85,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {},
       "paintHours": 0,
       "printHours": 2,
       "manualHours": 0,
-      "accessoryCost": 50000,
+      "accessoryCost": 10000,
       "telegramMessageId": null,
       "catalogDescription": "ترکیب **فنجان قهوه با لاته‌آرت و شکلات گاززده** انقدر جذابه که هربار نگاهش می‌کنی حس خوب می‌گیری ☕️ این جاکلیدی بانمک خیلی سبکه و برای کلید یا آویز کیف عالیه. از این مدل فقط ۳ تا موجود داریم؛ اگه می‌خوایش یه پیام بده تا برات ثبتش کنیم 😉",
       "telegramMessageIds": [
@@ -606,9 +627,9 @@
           "sha": "43cf425da260c326f2355992c93f4a1aad9ba7e3"
         }
       ],
-      "weight": 50,
-      "marginR": 250,
-      "marginW": null,
+      "weight": 30,
+      "marginR": 150,
+      "marginW": 100,
       "category": "g_mtqsahf4t778",
       "colorStock": {
         "color_yellow": 3,
@@ -665,8 +686,8 @@
         }
       ],
       "weight": 20,
-      "marginR": 500,
-      "marginW": 200,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
         "color_green": 16,
@@ -727,96 +748,6 @@
         299,
         300
       ]
-    },
-    {
-      "id": "p_17887958075931fier",
-      "name": "گربه مفصلی دراز ماری",
-      "stock": 0,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier_1789649403715_0.jpg?v=1789649407316",
-          "path": "product-images/p_17887958075931fier_1789649403715_0.jpg",
-          "sha": "da15fc673bf19ae4d2ab8a7442fe84c9f82e882b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier_1789649371618_0.jpg?v=1789649374934",
-          "path": "product-images/p_17887958075931fier_1789649371618_0.jpg",
-          "sha": "01e294d03d7d5da5dba6f696ad2fdeedd5fecf53"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier_1789649375062_1.jpg?v=1789649377528",
-          "path": "product-images/p_17887958075931fier_1789649375062_1.jpg",
-          "sha": "f2a42e47c396e3067719ba7d6e79ce6076a9cb41"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier.jpg?v=1788796163243",
-          "path": "product-images/p_17887958075931fier.jpg",
-          "sha": "29f4ef6432f8d8bf1c5f4131b68fca9e2d262aa7"
-        }
-      ],
-      "weight": 50,
-      "marginR": 65,
-      "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {},
-      "paintHours": 0.5,
-      "printHours": 4,
-      "manualHours": 0,
-      "accessoryCost": 50000,
-      "telegramMessageId": null,
-      "catalogDescription": "با این چارم جذاب و انعطاف‌پذیر، به کیفت یه شخصیت خاص و متفاوت بده! حرکت‌های نرم و روونش انقدر حس خوبی میده که نمی‌تونی از بازی کردن باهاش دست بکشی. انقدر سبکه که اصلاً احساسش نمی‌کنی، ولی استایلت رو در لحظه متمایز می‌کنه. ✨",
-      "telegramMessageIds": [
-        146,
-        147,
-        148,
-        149
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
-    },
-    {
-      "id": "p_1788795669560tpznq",
-      "name": "اوختاپوس مفصلی",
-      "stock": 0,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq_1789657860856_1.jpg?v=1789657863039",
-          "path": "product-images/p_1788795669560tpznq_1789657860856_1.jpg",
-          "sha": "68ae520f22831d5a7e3ab28f0b27c7ce50b19a99"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq_1789657874418_0.jpg?v=1789657876079",
-          "path": "product-images/p_1788795669560tpznq_1789657874418_0.jpg",
-          "sha": "b78d217bf0c0d0e368b5c7cc9dc1f32cf906fd61"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq_1789657876097_1.jpg?v=1789657878892",
-          "path": "product-images/p_1788795669560tpznq_1789657876097_1.jpg",
-          "sha": "535af65bb4c75d9f8d30ed55f9512c541e3128ee"
-        }
-      ],
-      "weight": 60,
-      "marginR": 75,
-      "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {},
-      "paintHours": 0.5,
-      "printHours": 6,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "این هشت‌پای مشکی جذاب با پاهای مفصلی روانش انقدر حس باحالی داره که بازی کردن باهاش بهترین **فیجت ضداسترس** طول روزه! وقتی وصلش کنی به کیف یا کلیدات، یه **استایل خاص** و خفن بهت میده که همه‌جا جلب توجه می‌کنه. 🐙\nاگه خوشت اومد، همین الان برای سفارشش پیام بده 😉",
-      "telegramMessageIds": [
-        173,
-        174,
-        175
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
     },
     {
       "id": "p_1788795486741tfdfu",
@@ -1082,8 +1013,8 @@
         }
       ],
       "weight": 17,
-      "marginR": 190,
-      "marginW": 85,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
         "color_black": 8
@@ -1133,13 +1064,13 @@
         }
       ],
       "weight": 14,
-      "marginR": 80,
-      "marginW": 65,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
         "color_white": 3
       },
-      "paintHours": 1,
+      "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
       "accessoryCost": 10000,
@@ -1223,7 +1154,7 @@
         }
       ],
       "weight": 16,
-      "marginR": 85,
+      "marginR": 200,
       "marginW": 65,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
@@ -1232,7 +1163,7 @@
         "color_pink": 1,
         "color_orange": 1
       },
-      "paintHours": 0.5,
+      "paintHours": 0,
       "printHours": 1.5,
       "manualHours": 0,
       "accessoryCost": 10000,
@@ -1378,13 +1309,13 @@
         }
       ],
       "weight": 15,
-      "marginR": 185,
-      "marginW": 85,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
         "color_black": 16
       },
-      "paintHours": 1,
+      "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
       "accessoryCost": 10000,
@@ -1449,6 +1380,62 @@
       "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
       "telegramMessageIds": [
         138
+      ]
+    },
+    {
+      "id": "p_1789754876369ry8py",
+      "name": "پنجه گربه مفصلی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        },
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754975129_0.jpg?v=1789754977424",
+          "path": "product-images/p_1789754876369ry8py_1789754975129_0.jpg",
+          "sha": "25bc42255337dc81b5cb7800e41882269eacaa4b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754977547_1.jpg?v=1789754979620",
+          "path": "product-images/p_1789754876369ry8py_1789754977547_1.jpg",
+          "sha": "73f4e5974d31caf962e32d519e1e17973d08b1ad"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754987933_0.jpg?v=1789754989801",
+          "path": "product-images/p_1789754876369ry8py_1789754987933_0.jpg",
+          "sha": "7ca1a89ad09860ac7bf3babe77ebc0ec5677b94f"
+        }
+      ],
+      "weight": 10,
+      "marginR": 200,
+      "marginW": 100,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_white": 1,
+        "color_pink": 0
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه دنبال یه آویز جذاب و گوگولی برای کلید یا کیفت می‌گردی، این **پنجه‌های بامزه** دقیقاً همون چیزیه که حالتو خوب می‌کنه! ترکیب رنگ سفید و صورتی‌شون خیلی دلنشینه و خوراک **ست کردن با دوستت** یا هدیه دادنه. برای داشتنش فقط کافیه بهم پیام بدی؛ راستی عضو کانال هم بشو تا مدل‌های جدید رو از دست ندی 🐾",
+      "telegramMessageIds": [
+        233,
+        234,
+        235
       ]
     },
     {
@@ -1679,8 +1666,8 @@
         }
       ],
       "weight": 13,
-      "marginR": 250,
-      "marginW": null,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mtqsahf4t778",
       "colorStock": {
         "col_mua2gs728zwd": 5,
@@ -1742,8 +1729,8 @@
         }
       ],
       "weight": 8,
-      "marginR": 300,
-      "marginW": null,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mtqsahf4t778",
       "colorStock": {
         "color_pink": 8
@@ -1761,54 +1748,6 @@
         281,
         282
       ]
-    },
-    {
-      "id": "p_1789755299953t7rtq",
-      "name": "پنجه گربه فلت ",
-      "stock": 6,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755403595_1.jpg?v=1789755405265",
-          "path": "product-images/p_1789755299953t7rtq_1789755403595_1.jpg",
-          "sha": "7cc0f8a3f3b31867af9a1f51cac0dd2d78d754ed"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755401692_0.jpg?v=1789755403460",
-          "path": "product-images/p_1789755299953t7rtq_1789755401692_0.jpg",
-          "sha": "c94daabc2cbbb20482e19e9a1f37522982fb29de"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755426000_0.jpg?v=1789755427869",
-          "path": "product-images/p_1789755299953t7rtq_1789755426000_0.jpg",
-          "sha": "5850f30b9e73c99b4b50484ec8bc6a0efaea58b7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755427939_1.jpg?v=1789755429747",
-          "path": "product-images/p_1789755299953t7rtq_1789755427939_1.jpg",
-          "sha": "cffc7b07361435585b51f03adcd9cdc5b6279f92"
-        }
-      ],
-      "weight": 8,
-      "marginR": null,
-      "marginW": null,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "نگاه به این پنجه‌های کیوت و رنگارنگ بنداز، مگه می‌شه عاشقشون نشد؟ 🐾\nاین **جاسوییچی‌های پنجه‌ای** انقدر سبک و جمع‌وجورن که برای آویز کیف و کلید یا یه هدیه‌ بانمک عالی‌ان.\nفعلاً فقط ۱۰ تا موجود داریم؛ اگه می‌خوایش پیام بده تا برات بفرستیم، برای دیدن بقیه مدل‌ها هم همراه کانالمون باش.",
-      "telegramMessageIds": [
-        237,
-        238,
-        239,
-        240
-      ],
-      "sizeL": 0,
-      "sizeW": 0,
-      "sizeH": 0
     },
     {
       "id": "p_1789810661693swjgy",
@@ -1855,59 +1794,51 @@
       ]
     },
     {
-      "id": "p_1789754876369ry8py",
-      "name": "پنجه گربه مفصلی",
+      "id": "p_1789755299953t7rtq",
+      "name": "پنجه گربه فلت ",
       "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
-      "stock": 1,
-      "colors": [
-        {
-          "id": "color_white",
-          "name": "سفید",
-          "hex": "#ffffff"
-        },
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        }
-      ],
+      "stock": 6,
+      "colors": [],
       "images": [
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754975129_0.jpg?v=1789754977424",
-          "path": "product-images/p_1789754876369ry8py_1789754975129_0.jpg",
-          "sha": "25bc42255337dc81b5cb7800e41882269eacaa4b"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755403595_1.jpg?v=1789755405265",
+          "path": "product-images/p_1789755299953t7rtq_1789755403595_1.jpg",
+          "sha": "7cc0f8a3f3b31867af9a1f51cac0dd2d78d754ed"
         },
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754977547_1.jpg?v=1789754979620",
-          "path": "product-images/p_1789754876369ry8py_1789754977547_1.jpg",
-          "sha": "73f4e5974d31caf962e32d519e1e17973d08b1ad"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755401692_0.jpg?v=1789755403460",
+          "path": "product-images/p_1789755299953t7rtq_1789755401692_0.jpg",
+          "sha": "c94daabc2cbbb20482e19e9a1f37522982fb29de"
         },
         {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789754876369ry8py_1789754987933_0.jpg?v=1789754989801",
-          "path": "product-images/p_1789754876369ry8py_1789754987933_0.jpg",
-          "sha": "7ca1a89ad09860ac7bf3babe77ebc0ec5677b94f"
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755426000_0.jpg?v=1789755427869",
+          "path": "product-images/p_1789755299953t7rtq_1789755426000_0.jpg",
+          "sha": "5850f30b9e73c99b4b50484ec8bc6a0efaea58b7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789755299953t7rtq_1789755427939_1.jpg?v=1789755429747",
+          "path": "product-images/p_1789755299953t7rtq_1789755427939_1.jpg",
+          "sha": "cffc7b07361435585b51f03adcd9cdc5b6279f92"
         }
       ],
-      "weight": 10,
-      "marginR": 170,
-      "marginW": null,
+      "weight": 8,
+      "marginR": 200,
+      "marginW": 100,
       "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_white": 1,
-        "color_pink": 0
-      },
+      "colorStock": {},
       "paintHours": 0,
       "printHours": 1,
       "manualHours": 0,
       "accessoryCost": 10000,
       "telegramMessageId": null,
-      "catalogDescription": "اگه دنبال یه آویز جذاب و گوگولی برای کلید یا کیفت می‌گردی، این **پنجه‌های بامزه** دقیقاً همون چیزیه که حالتو خوب می‌کنه! ترکیب رنگ سفید و صورتی‌شون خیلی دلنشینه و خوراک **ست کردن با دوستت** یا هدیه دادنه. برای داشتنش فقط کافیه بهم پیام بدی؛ راستی عضو کانال هم بشو تا مدل‌های جدید رو از دست ندی 🐾",
+      "catalogDescription": "نگاه به این پنجه‌های کیوت و رنگارنگ بنداز، مگه می‌شه عاشقشون نشد؟ 🐾\nاین **جاسوییچی‌های پنجه‌ای** انقدر سبک و جمع‌وجورن که برای آویز کیف و کلید یا یه هدیه‌ بانمک عالی‌ان.\nفعلاً فقط ۱۰ تا موجود داریم؛ اگه می‌خوایش پیام بده تا برات بفرستیم، برای دیدن بقیه مدل‌ها هم همراه کانالمون باش.",
       "telegramMessageIds": [
-        233,
-        234,
-        235
+        237,
+        238,
+        239,
+        240
       ]
     },
     {
@@ -1937,7 +1868,7 @@
         }
       ],
       "weight": 13,
-      "marginR": 210,
+      "marginR": 200,
       "marginW": 120,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {
@@ -2111,6 +2042,96 @@
       "telegramMessageIds": [
         145
       ]
+    },
+    {
+      "id": "p_17887958075931fier",
+      "name": "گربه مفصلی دراز ماری",
+      "stock": 0,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier_1789649403715_0.jpg?v=1789649407316",
+          "path": "product-images/p_17887958075931fier_1789649403715_0.jpg",
+          "sha": "da15fc673bf19ae4d2ab8a7442fe84c9f82e882b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier_1789649371618_0.jpg?v=1789649374934",
+          "path": "product-images/p_17887958075931fier_1789649371618_0.jpg",
+          "sha": "01e294d03d7d5da5dba6f696ad2fdeedd5fecf53"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier_1789649375062_1.jpg?v=1789649377528",
+          "path": "product-images/p_17887958075931fier_1789649375062_1.jpg",
+          "sha": "f2a42e47c396e3067719ba7d6e79ce6076a9cb41"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887958075931fier.jpg?v=1788796163243",
+          "path": "product-images/p_17887958075931fier.jpg",
+          "sha": "29f4ef6432f8d8bf1c5f4131b68fca9e2d262aa7"
+        }
+      ],
+      "weight": 50,
+      "marginR": 65,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {},
+      "paintHours": 0.5,
+      "printHours": 4,
+      "manualHours": 0,
+      "accessoryCost": 50000,
+      "telegramMessageId": null,
+      "catalogDescription": "با این چارم جذاب و انعطاف‌پذیر، به کیفت یه شخصیت خاص و متفاوت بده! حرکت‌های نرم و روونش انقدر حس خوبی میده که نمی‌تونی از بازی کردن باهاش دست بکشی. انقدر سبکه که اصلاً احساسش نمی‌کنی، ولی استایلت رو در لحظه متمایز می‌کنه. ✨",
+      "telegramMessageIds": [
+        146,
+        147,
+        148,
+        149
+      ],
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0
+    },
+    {
+      "id": "p_1788795669560tpznq",
+      "name": "اوختاپوس مفصلی",
+      "stock": 0,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq_1789657860856_1.jpg?v=1789657863039",
+          "path": "product-images/p_1788795669560tpznq_1789657860856_1.jpg",
+          "sha": "68ae520f22831d5a7e3ab28f0b27c7ce50b19a99"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq_1789657874418_0.jpg?v=1789657876079",
+          "path": "product-images/p_1788795669560tpznq_1789657874418_0.jpg",
+          "sha": "b78d217bf0c0d0e368b5c7cc9dc1f32cf906fd61"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788795669560tpznq_1789657876097_1.jpg?v=1789657878892",
+          "path": "product-images/p_1788795669560tpznq_1789657876097_1.jpg",
+          "sha": "535af65bb4c75d9f8d30ed55f9512c541e3128ee"
+        }
+      ],
+      "weight": 60,
+      "marginR": 75,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {},
+      "paintHours": 0.5,
+      "printHours": 6,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "این هشت‌پای مشکی جذاب با پاهای مفصلی روانش انقدر حس باحالی داره که بازی کردن باهاش بهترین **فیجت ضداسترس** طول روزه! وقتی وصلش کنی به کیف یا کلیدات، یه **استایل خاص** و خفن بهت میده که همه‌جا جلب توجه می‌کنه. 🐙\nاگه خوشت اومد، همین الان برای سفارشش پیام بده 😉",
+      "telegramMessageIds": [
+        173,
+        174,
+        175
+      ],
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0
     }
   ]
 }
