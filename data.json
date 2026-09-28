@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-27T17:29:33.625Z",
+  "updatedAt": "2026-09-28T08:28:57.983Z",
   "settings": {
-    "filPrice": 3500000,
+    "filPrice": 40000,
     "resinPrice": 4000000,
     "power": 250,
     "elec": 3000,
@@ -54,6 +54,68 @@
     "adminPin": "373763"
   },
   "products": [
+    {
+      "id": "p_17905301777815xu4t",
+      "name": "نظم دهنده لوازم آرایش طرح گوتیک",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [
+        {
+          "id": "color_black",
+          "name": "مشکی",
+          "hex": "#111111"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17905301777815xu4t/1790530271889_0_3F0BF551-D848-44C6-A820-372495FD08E2.jpg?v=1790530275197",
+          "path": "product-images/p_17905301777815xu4t/1790530271889_0_3F0BF551-D848-44C6-A820-372495FD08E2.jpg",
+          "sha": "16a07e614d8addc3b5a50873ce879e5fc2fa2e79"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17905301777815xu4t/1790530277172_1_D2F761F6-4770-4E54-90AC-535B9A60CB9A.jpg?v=1790530279735",
+          "path": "product-images/p_17905301777815xu4t/1790530277172_1_D2F761F6-4770-4E54-90AC-535B9A60CB9A.jpg",
+          "sha": "5bb41596f5a1dfd7dd8a3887045e5ced403c4917"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17905301777815xu4t/1790530280815_2_413EA2BF-6955-44B0-9541-B8CF6A36A276.jpg?v=1790530283729",
+          "path": "product-images/p_17905301777815xu4t/1790530280815_2_413EA2BF-6955-44B0-9541-B8CF6A36A276.jpg",
+          "sha": "060a2c05c435fd4346bb0b0d20408753f5245f72"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17905301777815xu4t/1790530285350_3_D8533582-5BEA-4138-9445-9C0292AF1838.jpg?v=1790530287327",
+          "path": "product-images/p_17905301777815xu4t/1790530285350_3_D8533582-5BEA-4138-9445-9C0292AF1838.jpg",
+          "sha": "56ec1812e53fe2192039931460e3e4987bce9223"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17905301777815xu4t/1790530288501_4_D8533582-5BEA-4138-9445-9C0292AF1838.jpg?v=1790530291174",
+          "path": "product-images/p_17905301777815xu4t/1790530288501_4_D8533582-5BEA-4138-9445-9C0292AF1838.jpg",
+          "sha": "b45db39b5d780f135bd7d25088c718a188a338d4"
+        }
+      ],
+      "weight": 100,
+      "marginR": 115,
+      "marginW": 60,
+      "category": "g_mtreb2q5k4dk",
+      "colorStock": {
+        "color_black": 1
+      },
+      "paintHours": 0,
+      "printHours": 6,
+      "manualHours": 0,
+      "accessoryCost": 20000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه می‌خوای میز آرایشت یه حال‌وهوای دارک و خاص پیدا کنه، این **نظم‌دهنده طرح کرست** دقیقاً همون چیزیه که لازم داری! با جزئیات گوتیک جذابش، هم وسایلت رو مرتب می‌کنه هم خودش مثل یه دکوری شیک روی میز می‌درخشه. کلاً **همین یک عدد** ازش موجوده؛ اگه دوستش داری پیام بده تا مال تو بشه 😉 برای دیدن مدل‌های جدیدتر هم حتماً عضو کانال شو.",
+      "telegramMessageIds": [
+        350,
+        351,
+        352,
+        353,
+        354
+      ]
+    },
     {
       "id": "p_1790486244561xwx7m",
       "name": "گربه گارفیلد",
@@ -664,36 +726,6 @@
       "telegramMessageIds": [
         299,
         300
-      ]
-    },
-    {
-      "id": "p_1788796315293vahtq",
-      "name": "جغد کوچک",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 1,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
-          "path": "product-images/p_1788796315293vahtq.jpg",
-          "sha": "d7a4f9f92a924fe7cd1ad1875c5ef238af865f57"
-        }
-      ],
-      "weight": 12,
-      "marginR": null,
-      "marginW": null,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {},
-      "paintHours": 1,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "یه همراه کوچولو و بامزه که می‌تونه همیشه روی کیفت یا دسته‌کلیدت باشه! جزئیات ظریف پرینت سه‌بعدیش واقعاً چشم‌نوازه و اون‌قدر سبکه که اصلاً حسش نمی‌کنی. فقط همین یک دونه ازش باقی مونده، پس تا نپریده مال خودت کن! 🦉",
-      "telegramMessageIds": [
-        145
       ]
     },
     {
@@ -2049,6 +2081,36 @@
       ],
       "sizeL": 0,
       "sizeW": 0
+    },
+    {
+      "id": "p_1788796315293vahtq",
+      "name": "جغد کوچک",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1788796315293vahtq.jpg?v=1788796361902",
+          "path": "product-images/p_1788796315293vahtq.jpg",
+          "sha": "d7a4f9f92a924fe7cd1ad1875c5ef238af865f57"
+        }
+      ],
+      "weight": 12,
+      "marginR": null,
+      "marginW": null,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {},
+      "paintHours": 1,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "یه همراه کوچولو و بامزه که می‌تونه همیشه روی کیفت یا دسته‌کلیدت باشه! جزئیات ظریف پرینت سه‌بعدیش واقعاً چشم‌نوازه و اون‌قدر سبکه که اصلاً حسش نمی‌کنی. فقط همین یک دونه ازش باقی مونده، پس تا نپریده مال خودت کن! 🦉",
+      "telegramMessageIds": [
+        145
+      ]
     }
   ]
 }
