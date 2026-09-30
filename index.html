@@ -4415,6 +4415,9 @@ function persist(opts){
     else if(localOk) showToast('محلی ذخیره شد، ولی ذخیره در Supabase ناموفق بود', 'warn', 3500);
     else showToast('ذخیره‌سازی ناموفق بود', 'error', 3500);
 
+    if(!deferCloud && typeof syncPublicCatalog === 'function' && currentUser && isAdmin){
+      try{ await syncPublicCatalog(); }catch(e){ console.warn('Public catalog sync skipped:', e); }
+    }
     if(!deferCloud && !(opts && opts.skipSync)) scheduleSync();
     if(!deferCloud && opts && opts.telegramProductId && !(opts && opts.skipTelegram)) queueTelegramSync(opts.telegramProductId);
   }, 250);
@@ -5486,6 +5489,7 @@ function renderProducts(){
           </div>
 
           ${lk ? '' : `
+          <button type="button" class="public-qr-btn" onclick="event.stopPropagation(); openProductQr('${prod.id}')">📱 نمایش / چاپ QR محصول</button>
           <button type="button" class="add-btn" id="saveSendBtn_${prod.id}" style="background:var(--blue); margin-top:4px;" onclick="event.stopPropagation(); saveAndSendProduct('${prod.id}')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
             ذخیره و ارسال به کانال تلگرام
@@ -6317,6 +6321,9 @@ async function saveAndSendProduct(id){
     localStorage.setItem('pricing_app_products', JSON.stringify(products));
     const cloudOk = SUPABASE_PRODUCTS_ENABLED ? await saveProductsToSupabaseBridge() : true;
     if(!cloudOk) throw new Error('ذخیره محصول در Supabase ناموفق بود. اتصال یا مجوز جدول products را بررسی کن.');
+    if(typeof syncPublicCatalog === 'function'){
+      try{ await syncPublicCatalog(); }catch(e){ console.warn('Public catalog sync skipped:', e); }
+    }
 
     if(!telegramConfigured()){
       showToast('محصول در Supabase ذخیره شد ✓ ولی اتصال تلگرام تنظیم نشده است', 'warn', 3500);
@@ -11516,6 +11523,43 @@ setTimeout(()=>{
   setTimeout(schedule,1000);
 })();
 </script>
+
+<style id="public-product-qr-v1">
+.public-qr-btn{width:100%;min-height:44px;margin-top:4px;border:1px solid var(--blue);border-radius:12px;background:color-mix(in srgb,var(--blue) 10%,var(--card));color:var(--blue);font-weight:800;cursor:pointer;padding:9px 12px;font-size:14px}
+.public-qr-btn:hover{filter:brightness(.98)}
+#public-product-mode{min-height:100vh;background:var(--bg);color:var(--ink);font-family:inherit;padding:18px 12px 40px}
+.public-product-shell{width:min(760px,100%);margin:0 auto}
+.public-product-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.public-product-brand{font-weight:900;font-size:18px}
+.public-product-admin{font-size:12px;color:var(--green);font-weight:800}
+.public-product-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--saas-shadow);overflow:hidden}
+.public-product-media{position:relative;background:var(--saas-surface-2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+.public-product-media img{width:100%;height:100%;object-fit:contain;display:block}
+.public-product-nav{position:absolute;inset-inline:10px;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none}
+.public-product-nav button{pointer-events:auto;border:0;border-radius:50%;width:42px;height:42px;background:rgba(0,0,0,.55);color:#fff;font-size:25px;cursor:pointer}
+.public-product-dots{position:absolute;bottom:10px;left:0;right:0;text-align:center}
+.public-product-dots span{display:inline-block;width:7px;height:7px;border-radius:50%;background:#bbb;margin:0 3px}.public-product-dots span.active{background:#333}
+.public-product-content{padding:18px}
+.public-product-title{font-size:24px;font-weight:900;line-height:1.5;margin:0 0 7px}
+.public-product-category{font-size:13px;color:var(--ink-soft);margin-bottom:12px}
+.public-product-prices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.public-product-price{border:1px solid var(--line);border-radius:15px;padding:13px;background:var(--saas-surface-2)}
+.public-product-price .label{font-size:12px;color:var(--ink-soft)}
+.public-product-price .value{font-size:22px;font-weight:900;margin-top:4px}
+.public-product-desc{font-size:15px;line-height:2;margin-top:14px;white-space:pre-wrap}
+.public-product-specs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.public-product-spec{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--saas-surface-2)}
+.public-product-spec b{display:block;margin-top:3px}
+.public-product-colors{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.public-product-color{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:13px}
+.public-product-color i{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.18);display:inline-block}
+.public-product-manager{margin-top:14px;padding:14px;border:1px dashed var(--orange);border-radius:15px;background:color-mix(in srgb,var(--orange) 8%,var(--card))}
+.public-product-manager h3{margin:0 0 9px;font-size:16px}.public-product-manager .mgr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.public-product-page > header{display:none!important}.public-product-page{background:var(--bg)!important}.public-product-error{text-align:center;padding:50px 18px}.public-product-error h2{margin:0 0 8px}.public-product-error p{color:var(--ink-soft);line-height:1.9}
+.public-product-loading{text-align:center;padding:60px 18px;color:var(--ink-soft)}
+@media(max-width:520px){.public-product-title{font-size:21px}.public-product-prices,.public-product-specs,.public-product-manager .mgr-grid{grid-template-columns:1fr}.public-product-content{padding:15px}}
+</style>
+
 </body>
 
 
@@ -11661,6 +11705,138 @@ setTimeout(()=>{
   };
 })();
 </script>
+
+<script id="public-product-sync-v1">
+/* Keeps a deliberately public-safe catalog table in sync. Internal cost fields never enter this table. */
+function getPublicProductUrl(productId){
+  const u=new URL(window.location.href);
+  u.search=''; u.hash='';
+  u.searchParams.set('product', productId);
+  return u.toString();
+}
+function openProductQr(productId){
+  if(!productId) return;
+  const url=getPublicProductUrl(productId);
+  if(typeof openQrOverlay==='function') openQrOverlay(url, 'اسکن برای مشاهده مشخصات محصول');
+}
+
+async function syncPublicCatalog(){
+  if(!SUPABASE_PRODUCTS_ENABLED || typeof sb==='undefined' || !sb || !currentUser || !isAdmin || !Array.isArray(products)) return false;
+  const rows=products.map(p=>{
+    const c=calc(p), group=(settings.productGroups||[]).find(g=>g.id===p.category);
+    return {id:p.id,name:p.name||'',category_name:group?group.name:null,price_w:Number(c.priceW)||0,price_r:Number(c.priceR)||0,stock:Number(p.stock)||0,catalog_description:p.catalogDescription||'',weight:Number(p.weight)||0,size_l:Number(p.sizeL)||0,size_w:Number(p.sizeW)||0,size_h:Number(p.sizeH)||0,images:Array.isArray(p.images)?p.images.map(im=>({url:im.url||''})).filter(im=>im.url):[],colors:Array.isArray(p.colors)?p.colors.map(x=>({name:x.name||'',hex:x.hex||null})):[],updated_at:new Date().toISOString()};
+  });
+  const {error}=await sb.from('product_public_catalog').upsert(rows,{onConflict:'id'});
+  if(error) throw error;
+  return true;
+}
+// Populate/update the public catalog once an administrator has a valid session.
+// Failure is deliberately non-blocking for the private management app.
+setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console.warn('Initial public catalog sync skipped:',e)); }, 1200);
+</script>
+
+
+<script id="public-product-mode-v1">
+/* Public product page — no app installation required. QR opens this same web file with ?product=<uuid>. */
+(function(){
+  const params=new URLSearchParams(location.search);
+  const publicProductId=params.get('product') || params.get('p');
+  if(!publicProductId) return;
+  document.title='مشخصات محصول';
+
+  const appContent=document.getElementById('app-content');
+  const appGate=document.getElementById('app-login-gate');
+  if(appContent) appContent.style.display='none';
+  if(appGate) appGate.style.display='none';
+  document.body.classList.add('public-product-page');
+
+  const host=document.createElement('div');
+  host.id='public-product-mode';
+  host.innerHTML=`<div class="public-product-shell">
+    <div class="public-product-top"><div class="public-product-brand">مشخصات محصول</div><div id="public-product-admin" class="public-product-admin"></div></div>
+    <div id="public-product-view" class="public-product-card"><div class="public-product-loading">در حال دریافت اطلاعات محصول…</div></div>
+  </div>`;
+  document.body.prepend(host);
+
+  let publicItem=null, publicImages=[], publicImageIndex=0;
+  const esc=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const faFmt=new Intl.NumberFormat('fa-IR',{maximumFractionDigits:0});
+  const money=(n)=>faFmt.format(Math.round(Number(n)||0))+' تومان';
+
+  function render(){
+    const el=document.getElementById('public-product-view'); if(!el) return;
+    if(!publicItem){el.innerHTML='<div class="public-product-error"><h2>محصول پیدا نشد</h2><p>این QR Code نامعتبر است یا اطلاعات محصول در دسترس نیست.</p></div>';return;}
+    publicImages=Array.isArray(publicItem.images)?publicItem.images.filter(x=>x&&x.url):[];
+    const img=publicImages[publicImageIndex] || publicImages[0];
+    const colors=Array.isArray(publicItem.colors)?publicItem.colors:[];
+    const admin=publicItem._admin;
+    el.innerHTML=`
+      <div class="public-product-media">${img?`<img src="${esc(img.url)}" alt="${esc(publicItem.name)}" loading="eager">`:'<div style="color:var(--ink-soft)">عکسی برای این محصول ثبت نشده</div>'}
+        ${publicImages.length>1?`<div class="public-product-nav"><button onclick="window.__publicProductStep(-1)">‹</button><button onclick="window.__publicProductStep(1)">›</button></div><div class="public-product-dots">${publicImages.map((_,i)=>`<span class="${i===publicImageIndex?'active':''}"></span>`).join('')}</div>`:''}
+      </div>
+      <div class="public-product-content">
+        <h1 class="public-product-title">${esc(publicItem.name||'بدون نام')}</h1>
+        ${publicItem.category_name?`<div class="public-product-category">دسته‌بندی: ${esc(publicItem.category_name)}</div>`:''}
+        <div class="public-product-prices">
+          <div class="public-product-price"><div class="label">قیمت فروش مستقیم</div><div class="value">${money(publicItem.price_r)}</div></div>
+          <div class="public-product-price"><div class="label">قیمت فروش به مغازه‌دار</div><div class="value">${money(publicItem.price_w)}</div></div>
+        </div>
+        ${publicItem.catalog_description?`<div class="public-product-desc">${esc(publicItem.catalog_description)}</div>`:''}
+        ${colors.length?`<div style="margin-top:15px;font-weight:800">رنگ‌ها</div><div class="public-product-colors">${colors.map(c=>`<span class="public-product-color"><i style="background:${esc(c.hex||'#ddd')}"></i>${esc(c.name||'')}</span>`).join('')}</div>`:''}
+        <div class="public-product-specs">
+          ${publicItem.size_l||publicItem.size_w||publicItem.size_h?`<div class="public-product-spec">ابعاد<b>${faFmt.format(Number(publicItem.size_l)||0)} × ${faFmt.format(Number(publicItem.size_w)||0)} × ${faFmt.format(Number(publicItem.size_h)||0)} سانتی‌متر</b></div>`:''}
+          ${publicItem.weight?`<div class="public-product-spec">وزن<b>${faFmt.format(Number(publicItem.weight)||0)} گرم</b></div>`:''}
+          <div class="public-product-spec">وضعیت موجودی<b>${Number(publicItem.stock)>0?'موجود':'ناموجود'}</b></div>
+        </div>
+        ${admin?`<div class="public-product-manager"><h3>اطلاعات مدیر</h3><div class="mgr-grid">
+          <div>شناسه محصول<b>${esc(admin.id)}</b></div><div>موجودی دقیق<b>${faFmt.format(Number(admin.stock)||0)} عدد</b></div>
+          <div>قیمت تمام‌شده<b>${money(admin.cost)}</b></div><div>قیمت عمده<b>${money(admin.priceW)}</b></div>
+          <div>قیمت خرده<b>${money(admin.priceR)}</b></div><div>وزن<b>${faFmt.format(Number(admin.weight)||0)} گرم</b></div>
+          <div>زمان پرینت<b>${esc(admin.print_hours||0)} ساعت</b></div><div>کار دستی<b>${esc(admin.manual_hours||0)} ساعت</b></div>
+          <div>نقاشی<b>${esc(admin.paint_hours||0)} ساعت</b></div><div>هزینه متعلقات<b>${money(admin.accessory_cost)}</b></div>
+          <div>سود عمده<b>${esc(admin.margin_w ?? '—')}٪</b></div><div>سود خرده<b>${esc(admin.margin_r ?? '—')}٪</b></div>
+          ${Array.isArray(admin.colors)&&admin.colors.length?`<div style="grid-column:1/-1"><b>موجودی رنگ‌ها</b>${admin.colors.map(c=>`<div style="display:flex;justify-content:space-between;margin-top:5px"><span>${esc(c.name||'')}</span><b>${faFmt.format(Number(c.stock)||0)} عدد</b></div>`).join('')}</div>`:''}
+        </div></div>`:''}
+      </div>`;
+    const adminEl=document.getElementById('public-product-admin'); if(adminEl) adminEl.textContent=admin?'✓ حالت مدیر':'نمایش عمومی';
+  }
+  window.__publicProductStep=function(dir){if(publicImages.length<2)return;publicImageIndex=(publicImageIndex+dir+publicImages.length)%publicImages.length;render();};
+
+  async function loadPublic(){
+    try{
+      if(typeof sb==='undefined') throw new Error('Supabase unavailable');
+      const {data,error}=await sb.from('product_public_catalog').select('id,name,category_name,price_w,price_r,stock,catalog_description,weight,size_l,size_w,size_h,images,colors,updated_at').eq('id',publicProductId).maybeSingle();
+      if(error) throw error;
+      if(!data){publicItem=null;render();return;}
+      publicItem=data;
+      render();
+      // If an authenticated admin opened the QR, enrich the same page with internal data.
+      try{
+        const {data:{session}}=await sb.auth.getSession();
+        if(session&&session.user){
+          const {data:profile}=await sb.from('profiles').select('role').eq('id',session.user.id).maybeSingle();
+          if(profile&&profile.role==='admin'){
+            const {data:p}=await sb.from('products').select('id,name,weight,print_hours,manual_hours,paint_hours,accessory_cost,stock,margin_w,margin_r,size_l,size_w,size_h,category,catalog_description').eq('id',publicProductId).maybeSingle();
+            if(p){
+              const {data:colorRows}=await sb.from('product_colors').select('name,hex,stock,sort_order').eq('product_id',publicProductId).order('sort_order',{ascending:true});
+              const priceW=Number(data.price_w)||0, priceR=Number(data.price_r)||0;
+              let cost=0;
+              try{ cost=typeof calc==='function' ? Number(calc({...p,printHours:Number(p.print_hours)||0,manualHours:Number(p.manual_hours)||0,paintHours:Number(p.paint_hours)||0,accessoryCost:Number(p.accessory_cost)||0,sizeL:Number(p.size_l)||0,sizeW:Number(p.size_w)||0,sizeH:Number(p.size_h)||0,marginW:p.margin_w,marginR:p.margin_r}).total)||0 : 0; }catch(_e){}
+              publicItem._admin={...p,priceW,priceR,cost,colors:Array.isArray(colorRows)?colorRows:[]};
+              render();
+            }
+          }
+        }
+      }catch(e){console.warn('Admin enrichment unavailable',e);}
+    }catch(e){
+      console.error('Public product load failed',e);
+      const el=document.getElementById('public-product-view'); if(el) el.innerHTML='<div class="public-product-error"><h2>اتصال برقرار نشد</h2><p>لطفاً اینترنت را بررسی کنید و دوباره QR را اسکن کنید.</p></div>';
+    }
+  }
+  loadPublic();
+})();
+</script>
+
 </html>
 
 <style>
