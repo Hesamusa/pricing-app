@@ -5078,7 +5078,7 @@ async function showShareQr(){
   const url = normalizeInstagramUrl(raw);
   const handle = instagramHandleOnly(raw);
   if(!url){ await customAlert('آدرس صفحه اینستاگرام نامعتبره.'); return; }
-  openQrOverlay(url, handle ? '@' + handle : url);
+  openQrOverlay(url, handle ? '@' + handle : url, true);
 }
 function renderQrImagePreview(){
   const wrap = document.getElementById('qr-image-preview');
@@ -5144,12 +5144,14 @@ async function removeQrImage(){
   renderQrImagePreview();
 }
 
-function openQrOverlay(url, label){
+function openQrOverlay(url, label, useCustomQrImage=false){
   const overlay = document.getElementById('qr-overlay');
   const img = document.getElementById('qr-image');
   const labelEl = document.getElementById('qr-label');
   if(!overlay || !img) return;
-  img.src = settings.qrImageUrl
+  // QR اینستاگرام می‌تواند از تصویر سفارشی تنظیمات استفاده کند؛
+  // اما QR محصول همیشه باید از URL همان محصول ساخته شود و هرگز QR اینستاگرام نباشد.
+  img.src = (useCustomQrImage && settings.qrImageUrl)
     ? settings.qrImageUrl
     : 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=0&data=' + encodeURIComponent(url);
   if(labelEl) labelEl.textContent = label || '';
@@ -11717,7 +11719,8 @@ function getPublicProductUrl(productId){
 function openProductQr(productId){
   if(!productId) return;
   const url=getPublicProductUrl(productId);
-  if(typeof openQrOverlay==='function') openQrOverlay(url, 'اسکن برای مشاهده مشخصات محصول');
+  // QR محصول کاملاً مستقل از QR اینستاگرام است و همیشه از لینک همین محصول ساخته می‌شود.
+  if(typeof openQrOverlay==='function') openQrOverlay(url, 'اسکن برای مشاهده مشخصات محصول', false);
 }
 
 async function syncPublicCatalog(){
