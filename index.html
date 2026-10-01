@@ -3780,8 +3780,8 @@ let currentUser = null; // {id, email}
 let userRole = null; // 'admin' | 'user' | null
 
 const DEFAULT_SETTINGS = {
-  filPrice: 1200000, resinPrice: 0, power: 250, elec: 3000, depr: 15000,
-  marginW: 50, marginR: 120,
+  filPrice: 4500000, resinPrice: 5000000, power: 250, elec: 3000, depr: 15000,
+  marginW: 100, marginR: 200,
   roundStep: 1000,
   productGroups: [],
   githubOwner: 'Hesamusa', githubRepo: 'pricing-app', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
@@ -4119,7 +4119,7 @@ function makeProduct(name, weight, printHours){
     id: 'p_' + Date.now() + Math.random().toString(36).slice(2,7),
     productCode: generateProductCode(),
     name, weight, printHours,
-    accessoryCost: 0,
+    accessoryCost: 10000,
     sizeL: 0, sizeW: 0, sizeH: 0, // ابعاد محصول به سانتی‌متر: طول، عرض، ارتفاع (اختیاری)
     marginW: null, marginR: null, // null = use global default
     images: [],
