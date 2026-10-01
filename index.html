@@ -300,13 +300,18 @@
 
   /* Fullscreen product photo viewer (swipeable) */
   .photo-lightbox{
-    display:none; position:fixed; inset:0; z-index:200;
-    background:rgba(0,0,0,0.94);
-    align-items:center; justify-content:center;
+    display:none; position:fixed; inset:0; width:100vw; height:100dvh; z-index:2147483000;
+    background:#000; align-items:center; justify-content:center;
+    overflow:hidden; overscroll-behavior:none;
   }
   .photo-lightbox.show{display:flex;}
-  .photo-lightbox-inner{position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;}
-  .photo-lightbox-img{max-width:92vw; max-height:80vh; object-fit:contain; display:block; touch-action:none; user-select:none; -webkit-user-drag:none; cursor:pointer;}
+  html.photo-lightbox-open, body.photo-lightbox-open{overflow:hidden !important; overscroll-behavior:none !important; touch-action:none !important;}
+  @supports not (height: 100dvh){
+    .photo-lightbox, .photo-lightbox-inner{height:100vh;}
+    .photo-lightbox-img{height:100vh;}
+  }
+  .photo-lightbox-inner{position:relative; width:100vw; height:100dvh; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; overscroll-behavior:none;}
+  .photo-lightbox-img{width:100vw; height:100dvh; max-width:none; max-height:none; object-fit:contain; display:block; touch-action:none; user-select:none; -webkit-user-drag:none; cursor:default; will-change:transform;}
   .photo-lightbox-close{
     position:fixed; top:calc(18px + env(safe-area-inset-top)); left:18px; z-index:201;
     width:44px; height:44px; border-radius:50%; border:none;
@@ -3782,7 +3787,6 @@ async function saveProductsToSupabaseBridge(){
   <button type="button" class="photo-lightbox-nav next" id="lbNextBtn" onclick="event.stopPropagation(); lightboxStep(1)">›</button>
   <div class="photo-lightbox-inner" onclick="if(event.target===this) closePhotoLightbox()">
     <img id="photo-lightbox-img" class="photo-lightbox-img" alt=""
-      onclick="onLightboxImgClick(event)"
       ontouchstart="onLightboxTouchStart(event)"
       ontouchmove="onLightboxTouchMove(event)"
       ontouchend="onLightboxTouchEnd(event)">
@@ -5846,11 +5850,15 @@ function openPhotoLightbox(id){
   renderLightbox();
   const overlay = document.getElementById('photo-lightbox');
   if(overlay) overlay.classList.add('show');
+  document.documentElement.classList.add('photo-lightbox-open');
+  document.body.classList.add('photo-lightbox-open');
 }
 
 function closePhotoLightbox(){
   const overlay = document.getElementById('photo-lightbox');
   if(overlay) overlay.classList.remove('show');
+  document.documentElement.classList.remove('photo-lightbox-open');
+  document.body.classList.remove('photo-lightbox-open');
   lightboxProductId = null;
   lbResetZoom(false);
 }
@@ -11559,15 +11567,32 @@ setTimeout(()=>{
 <style id="public-product-qr-v1">
 .public-qr-btn{width:100%;min-height:44px;margin-top:4px;border:1px solid var(--blue);border-radius:12px;background:color-mix(in srgb,var(--blue) 10%,var(--card));color:var(--blue);font-weight:800;cursor:pointer;padding:9px 12px;font-size:14px}
 .public-qr-btn:hover{filter:brightness(.98)}
-#public-product-mode{min-height:100vh;background:var(--bg);color:var(--ink);font-family:inherit;padding:18px 12px 40px}
+#public-product-mode{min-height:100vh;background:var(--bg);color:var(--ink);font-family:inherit;padding:18px 12px 40px;transition:background-color .2s,color .2s}
 .public-product-shell{width:min(760px,100%);margin:0 auto}
 .public-product-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.public-product-theme{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--card);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.public-product-theme button{border:0;background:transparent;color:var(--ink-soft);min-width:38px;height:34px;padding:0 8px;border-radius:999px;font:700 12px/1 inherit;cursor:pointer;transition:.18s}
+.public-product-theme button.active{background:var(--ink);color:var(--card)}
+.public-product-theme button:active{transform:scale(.96)}
+.public-product-theme button span{display:inline-flex;align-items:center;gap:4px}
+@media(max-width:520px){.public-product-theme button{min-width:34px;padding:0 7px}.public-product-theme button .theme-label{display:none}}
 .public-product-brand{font-weight:900;font-size:18px}
 .public-product-admin{font-size:12px;color:var(--green);font-weight:800}
 .public-product-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--saas-shadow);overflow:hidden}
 .public-product-price-single{grid-column:1/-1}.public-telegram-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;min-height:48px;border-radius:14px;background:#229ED9;color:#fff;text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 6px 18px rgba(34,158,217,.18)}.public-telegram-btn:hover{filter:brightness(.97)}
 .public-product-media{position:relative;background:var(--saas-surface-2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
-.public-product-media img{width:100%;height:100%;object-fit:contain;display:block}
+.public-product-media img{width:100%;height:100%;object-fit:contain;display:block;cursor:zoom-in;-webkit-tap-highlight-color:transparent}
+.public-product-lightbox{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;touch-action:none;overscroll-behavior:none}
+.public-product-lightbox.open{display:flex}
+.public-product-lightbox-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.public-product-lightbox-img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;user-select:none;-webkit-user-drag:none;transform-origin:center center;will-change:transform;cursor:grab}
+.public-product-lightbox-img.dragging{cursor:grabbing}
+.public-product-lightbox-close{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:28px;line-height:44px;z-index:3;cursor:pointer}
+.public-product-lightbox-counter{position:absolute;top:max(18px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.35);padding:6px 11px;border-radius:999px;font-size:13px;font-weight:700;z-index:3;direction:ltr}
+.public-product-lightbox-hint{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);color:rgba(255,255,255,.8);font-size:12px;z-index:3;white-space:nowrap;pointer-events:none}
+.public-product-lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:32px;line-height:40px;z-index:3;cursor:pointer}
+.public-product-lightbox-nav.prev{left:14px}.public-product-lightbox-nav.next{right:14px}
+@media(max-width:600px){.public-product-lightbox-nav{display:none}.public-product-lightbox-hint{font-size:11px}.public-product-lightbox-img{max-width:100vw;max-height:100vh}}
 .public-product-nav{position:absolute;inset-inline:10px;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none}
 .public-product-nav button{pointer-events:auto;border:0;border-radius:50%;width:42px;height:42px;background:rgba(0,0,0,.55);color:#fff;font-size:25px;cursor:pointer}
 .public-product-dots{position:absolute;bottom:10px;left:0;right:0;text-align:center}
@@ -11797,7 +11822,17 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
   const host=document.createElement('div');
   host.id='public-product-mode';
   host.innerHTML=`<div class="public-product-shell">
-    <div class="public-product-top"><div class="public-product-brand">مشخصات محصول</div><div id="public-product-admin" class="public-product-admin"></div></div>
+    <div class="public-product-top">
+      <div class="public-product-brand">مشخصات محصول</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="public-product-theme" role="group" aria-label="ظاهر صفحه">
+          <button type="button" data-public-theme="light" aria-label="حالت روشن"><span>☀️<span class="theme-label">روشن</span></span></button>
+          <button type="button" data-public-theme="dark" aria-label="حالت تاریک"><span>🌙<span class="theme-label">تاریک</span></span></button>
+          <button type="button" data-public-theme="auto" aria-label="حالت خودکار"><span>⚙️<span class="theme-label">خودکار</span></span></button>
+        </div>
+        <div id="public-product-admin" class="public-product-admin"></div>
+      </div>
+    </div>
     <div id="public-product-view" class="public-product-card"><div class="public-product-loading">در حال دریافت اطلاعات محصول…</div></div>
   </div>`;
   document.body.prepend(host);
@@ -11814,6 +11849,39 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
     return handle && /^[A-Za-z0-9_]{4,}$/.test(handle) ? `https://t.me/${handle}` : '';
   })();
 
+  // ظاهر صفحه عمومی مستقل از تنظیمات پنل مدیریت است.
+  // light = روشن، dark = تاریک، auto = پیروی از ظاهر گوشی/مرورگر.
+  const publicThemeKey='public_product_theme';
+  const publicThemeButtons=()=>Array.from(host.querySelectorAll('[data-public-theme]'));
+  function systemTheme(){
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function applyPublicTheme(mode){
+    const effective=mode==='auto' ? systemTheme() : (mode==='dark' ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme',effective);
+    document.body.setAttribute('data-public-theme-choice',mode);
+    publicThemeButtons().forEach(btn=>btn.classList.toggle('active',btn.getAttribute('data-public-theme')===mode));
+    try{localStorage.setItem(publicThemeKey,mode);}catch(e){}
+  }
+  function initPublicTheme(){
+    let mode='auto';
+    try{
+      const saved=localStorage.getItem(publicThemeKey);
+      if(saved==='light'||saved==='dark'||saved==='auto') mode=saved;
+    }catch(e){}
+    publicThemeButtons().forEach(btn=>btn.addEventListener('click',()=>applyPublicTheme(btn.getAttribute('data-public-theme'))));
+    applyPublicTheme(mode);
+    if(window.matchMedia){
+      const mq=window.matchMedia('(prefers-color-scheme: dark)');
+      const onSystemChange=()=>{
+        try{ if(localStorage.getItem(publicThemeKey)==='auto') applyPublicTheme('auto'); }catch(e){}
+      };
+      if(mq.addEventListener) mq.addEventListener('change',onSystemChange);
+      else if(mq.addListener) mq.addListener(onSystemChange);
+    }
+  }
+  initPublicTheme();
+
   function render(){
     const el=document.getElementById('public-product-view'); if(!el) return;
     if(!publicItem){el.innerHTML='<div class="public-product-error"><h2>محصول پیدا نشد</h2><p>این QR Code نامعتبر است یا اطلاعات محصول در دسترس نیست.</p></div>';return;}
@@ -11822,7 +11890,7 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
     const colors=Array.isArray(publicItem.colors)?publicItem.colors:[];
     const admin=publicItem._admin;
     el.innerHTML=`
-      <div class="public-product-media">${img?`<img src="${esc(img.url)}" alt="${esc(publicItem.name)}" loading="eager">`:'<div style="color:var(--ink-soft)">عکسی برای این محصول ثبت نشده</div>'}
+      <div class="public-product-media">${img?`<img src="${esc(img.url)}" alt="${esc(publicItem.name)}" loading="eager" onclick="window.__publicProductOpenGallery(${publicImageIndex})">`:'<div style="color:var(--ink-soft)">عکسی برای این محصول ثبت نشده</div>'}
         ${publicImages.length>1?`<div class="public-product-nav"><button onclick="window.__publicProductStep(-1)">‹</button><button onclick="window.__publicProductStep(1)">›</button></div><div class="public-product-dots">${publicImages.map((_,i)=>`<span class="${i===publicImageIndex?'active':''}"></span>`).join('')}</div>`:''}
       </div>
       <div class="public-product-content">
@@ -11850,6 +11918,36 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
       </div>`;
     const adminEl=document.getElementById('public-product-admin'); if(adminEl) adminEl.textContent=admin?'✓ حالت مدیر':'نمایش عمومی';
   }
+  const lightbox=document.createElement('div');
+  lightbox.className='public-product-lightbox';
+  lightbox.innerHTML=`<button class="public-product-lightbox-close" aria-label="بستن">×</button><div class="public-product-lightbox-counter"></div><button class="public-product-lightbox-nav prev" aria-label="عکس قبلی">‹</button><div class="public-product-lightbox-stage"><img class="public-product-lightbox-img" alt=""></div><button class="public-product-lightbox-nav next" aria-label="عکس بعدی">›</button><div class="public-product-lightbox-hint">دو انگشتی برای زوم · کشیدن برای جابه‌جایی یا ورق‌زدن</div>`;
+  document.body.appendChild(lightbox);
+  const lbImg=lightbox.querySelector('.public-product-lightbox-img'), lbCounter=lightbox.querySelector('.public-product-lightbox-counter');
+  let lbIndex=0, scale=1, tx=0, ty=0, startX=0, startY=0, startTx=0, startTy=0, pinchStart=0, pinchScale=1, dragging=false, moved=false;
+  const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  function resetZoom(){scale=1;tx=0;ty=0;lbImg.style.transform='translate3d(0,0,0) scale(1)';}
+  function updateLb(){
+    if(!publicImages.length)return;
+    const item=publicImages[lbIndex]; lbImg.src=item.url; lbImg.alt=publicItem?.name||''; lbCounter.textContent=`${faFmt.format(lbIndex+1)} / ${faFmt.format(publicImages.length)}`; resetZoom();
+    lightbox.querySelector('.prev').style.display=publicImages.length>1?'block':'none'; lightbox.querySelector('.next').style.display=publicImages.length>1?'block':'none';
+  }
+  function openLb(index){lbIndex=Math.max(0,Math.min(index,publicImages.length-1));updateLb();lightbox.classList.add('open');document.body.style.overflow='hidden';}
+  function closeLb(){lightbox.classList.remove('open');document.body.style.overflow='';resetZoom();}
+  function stepLb(dir){if(scale>1){resetZoom();return;}if(publicImages.length<2)return;lbIndex=(lbIndex+dir+publicImages.length)%publicImages.length;updateLb();}
+  window.__publicProductOpenGallery=openLb;
+  lightbox.querySelector('.public-product-lightbox-close').onclick=closeLb;
+  lightbox.querySelector('.prev').onclick=()=>stepLb(-1); lightbox.querySelector('.next').onclick=()=>stepLb(1);
+  lightbox.addEventListener('click',e=>{if(e.target===lightbox||e.target===lightbox.querySelector('.public-product-lightbox-stage'))closeLb();});
+  document.addEventListener('keydown',e=>{if(!lightbox.classList.contains('open'))return;if(e.key==='Escape')closeLb();else if(e.key==='ArrowLeft')stepLb(-1);else if(e.key==='ArrowRight')stepLb(1);});
+  lbImg.addEventListener('wheel',e=>{e.preventDefault();scale=Math.max(1,Math.min(4,scale+(e.deltaY<0?.2:-.2)));if(scale===1){tx=0;ty=0;}lbImg.style.transform=`translate3d(${tx}px,${ty}px,0) scale(${scale})`;},{passive:false});
+  lbImg.addEventListener('pointerdown',e=>{lbImg.setPointerCapture(e.pointerId);startX=e.clientX;startY=e.clientY;startTx=tx;startTy=ty;moved=false;dragging=true;lbImg.classList.add('dragging');});
+  lbImg.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)+Math.abs(dy)>8)moved=true;if(scale>1){tx=startTx+dx;ty=startTy+dy;lbImg.style.transform=`translate3d(${tx}px,${ty}px,0) scale(${scale})`;}});
+  lbImg.addEventListener('pointerup',e=>{dragging=false;lbImg.classList.remove('dragging');if(scale===1&&moved){const dx=e.clientX-startX;if(Math.abs(dx)>55)stepLb(dx<0?1:-1);}});
+  let pinchA=null,pinchB=null;
+  lightbox.addEventListener('touchstart',e=>{if(e.touches.length===2){pinchA=e.touches[0];pinchB=e.touches[1];pinchStart=dist(pinchA,pinchB);pinchScale=scale; }},{passive:false});
+  lightbox.addEventListener('touchmove',e=>{if(e.touches.length===2&&pinchStart){e.preventDefault();const now=dist(e.touches[0],e.touches[1]);scale=Math.max(1,Math.min(4,pinchScale*(now/pinchStart)));if(scale===1){tx=0;ty=0;}lbImg.style.transform=`translate3d(${tx}px,${ty}px,0) scale(${scale})`; }},{passive:false});
+  lightbox.addEventListener('touchend',()=>{if(pinchStart){pinchStart=0;if(scale<1.05){scale=1;tx=0;ty=0;lbImg.style.transform='translate3d(0,0,0) scale(1)';}}});
+
   window.__publicProductStep=function(dir){if(publicImages.length<2)return;publicImageIndex=(publicImageIndex+dir+publicImages.length)%publicImages.length;render();};
 
   async function loadPublic(){
