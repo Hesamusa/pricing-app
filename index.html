@@ -1771,7 +1771,6 @@ function productSyncFingerprint(p){
   return JSON.stringify({
     id:p.id, productCode:p.productCode||'', name:p.name||'', category:p.category||null,
     weight:Number(p.weight||0), printHours:Number(p.printHours||0),
-    manualHours:Number(p.manualHours||0), paintHours:Number(p.paintHours||0),
     accessoryCost:Number(p.accessoryCost||0), sizeL:Number(p.sizeL||0),
     sizeW:Number(p.sizeW||0), sizeH:Number(p.sizeH||0),
     marginW:p.marginW ?? null, marginR:p.marginR ?? null,
@@ -1794,7 +1793,7 @@ async function loadProductsFromSupabaseBridge(){
   if(!SUPABASE_PRODUCTS_ENABLED || typeof sb === 'undefined' || !sb) return false;
   try{
     const { data: rows, error } = await sb.from('products')
-      .select('id,product_code,name,category,weight,print_hours,manual_hours,paint_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
+      .select('id,product_code,name,category,weight,print_hours,accessory_cost,size_l,size_w,size_h,margin_w,margin_r,stock,catalog_description,telegram_message_ids,legacy_payload')
       .order('created_at', { ascending:false });
     if(error) throw error;
     if(!Array.isArray(rows)) throw new Error('پاسخ نامعتبر از جدول products');
@@ -1852,8 +1851,6 @@ async function loadProductsFromSupabaseBridge(){
         category:r.category ?? legacy.category ?? null,
         weight:Number(r.weight ?? legacy.weight ?? 0),
         printHours:Number(r.print_hours ?? legacy.printHours ?? 0),
-        manualHours:Number(r.manual_hours ?? legacy.manualHours ?? 0),
-        paintHours:Number(r.paint_hours ?? legacy.paintHours ?? 0),
         accessoryCost:Number(r.accessory_cost ?? legacy.accessoryCost ?? 0),
         sizeL:Number(r.size_l ?? legacy.sizeL ?? 0),
         sizeW:Number(r.size_w ?? legacy.sizeW ?? 0),
@@ -1941,7 +1938,6 @@ async function saveProductsToSupabaseBridge(){
       const productPayload = changed.map(p => ({
         id:p.id, product_code:p.productCode||null, name:p.name||'', category:p.category||null,
         weight:Number(p.weight||0), print_hours:Number(p.printHours||0),
-        manual_hours:Number(p.manualHours||0), paint_hours:Number(p.paintHours||0),
         accessory_cost:Number(p.accessoryCost||0), size_l:Number(p.sizeL||0),
         size_w:Number(p.sizeW||0), size_h:Number(p.sizeH||0),
         margin_w:p.marginW ?? null, margin_r:p.marginR ?? null,
@@ -2838,25 +2834,6 @@ async function saveProductsToSupabaseBridge(){
             <span class="unit">تومان/ساعت</span>
           </div>
           <div class="hint">قیمت خرید دستگاه و قطعات یدکی تقسیم بر عمر مفید تخمینی به ساعت</div>
-        </div>
-      </div>
-        </div>
-      </div>
-
-      <div class="settings-section">
-        <button type="button" class="settings-section-head" onclick="toggleSettingsSection(this)">
-          <span class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span>
-          <span class="settings-section-title">دستمزد</span>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="settings-section-body">
-      <div class="card">
-        <div class="field">
-          <label>نرخ دستمزد نقاشی</label>
-          <div class="input-row">
-            <input type="text" class="num-input" id="s_paint" inputmode="numeric">
-            <span class="unit">تومان/ساعت</span>
-          </div>
         </div>
       </div>
         </div>
@@ -3804,7 +3781,7 @@ let userRole = null; // 'admin' | 'user' | null
 
 const DEFAULT_SETTINGS = {
   filPrice: 1200000, resinPrice: 0, power: 250, elec: 3000, depr: 15000,
-  labor: 200000, paint: 300000, marginW: 50, marginR: 120,
+  marginW: 50, marginR: 120,
   roundStep: 1000,
   productGroups: [],
   githubOwner: 'Hesamusa', githubRepo: 'pricing-app', githubBranch: 'main', githubFolder: 'product-images', githubToken: '',
@@ -3822,7 +3799,7 @@ let settings = {...DEFAULT_SETTINGS};
 // محاسبه شوند؛ نسخه قدیمی تنظیمات که از GitHub می‌آید نباید قیمت کارت را برگرداند.
 // محصولات خودشان از Supabase می‌آیند و GitHub فقط برای تنظیمات جانبی/سازگاری استفاده می‌شود.
 const PRICE_CALC_SETTING_KEYS = [
-  'filPrice','resinPrice','power','elec','depr','labor','paint',
+  'filPrice','resinPrice','power','elec','depr',
   'marginW','marginR','roundStep'
 ];
 function mergeGithubSettingsWithoutPriceRollback(remoteSettings){
@@ -4086,11 +4063,6 @@ function loadState(){
   // باز کردن تب مشتریان، از سرور می‌آد (به updateCustomersAuthUI نگاه کن).
   // سفارش‌ها دیگه لوکال ذخیره نمی‌شن؛ منبع اصلی‌شون Supabase هست (هر کاربر
   // فقط سفارش‌های خودش رو می‌بینه، مدیر همه رو) — با ورود، از سرور می‌آد.
-  // پاک‌سازی یک‌باره‌ی محصول نمونه‌ای که قبلاً به‌صورت خودکار ساخته می‌شد
-  // (اگه هنوز دست‌نخورده مونده و کاربر خودش عمداً همچین محصولی نساخته باشه)
-  if(products.length){
-    products = products.filter(p => !(p.name==='مجسمه اژدها ۱۵ سانتی' && p.weight===85 && p.printHours===6 && p.manualHours===0.5 && p.paintHours===1 && !p.imageUrl && !(p.images&&p.images.length) && (p.stock||0)===0));
-  }
   ready = true;
   refreshAuthState();
   updateModeUI();
@@ -4142,11 +4114,11 @@ function ensureProductCode(prod){
   return prod.productCode;
 }
 
-function makeProduct(name, weight, printHours, manualHours, paintHours){
+function makeProduct(name, weight, printHours){
   return {
     id: 'p_' + Date.now() + Math.random().toString(36).slice(2,7),
     productCode: generateProductCode(),
-    name, weight, printHours, manualHours, paintHours,
+    name, weight, printHours,
     accessoryCost: 0,
     sizeL: 0, sizeW: 0, sizeH: 0, // ابعاد محصول به سانتی‌متر: طول، عرض، ارتفاع (اختیاری)
     marginW: null, marginR: null, // null = use global default
@@ -4840,7 +4812,6 @@ function renderSettings(){
   document.getElementById('s_power').value = groupDigits(settings.power);
   document.getElementById('s_elec').value = groupDigits(settings.elec);
   document.getElementById('s_depr').value = groupDigits(settings.depr);
-  document.getElementById('s_paint').value = groupDigits(settings.paint);
   document.getElementById('s_marginW').value = toFaNum(settings.marginW, 2);
   document.getElementById('s_marginR').value = toFaNum(settings.marginR, 2);
   document.querySelectorAll('#round-step-row .sale-type-chip').forEach(b=>{
@@ -4913,7 +4884,7 @@ function groupDigits(n){
   return toFaNum(n, 0);
 }
 
-const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_paint:'paint'};
+const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
 const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
 const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken', s_tgApiBase:'telegramApiBase'};
@@ -5233,14 +5204,13 @@ function calc(prod){
   const filamentCost = (prod.weight/1000) * settings.filPrice;
   const elecCost = prod.printHours * (settings.power/1000) * settings.elec;
   const deprCost = prod.printHours * settings.depr;
-  const paintCost = (prod.paintHours||0) * settings.paint;
   const accessoryCost = prod.accessoryCost||0;
-  const total = filamentCost + elecCost + deprCost + paintCost + accessoryCost;
+  const total = filamentCost + elecCost + deprCost + accessoryCost;
   const mW = (prod.marginW ?? settings.marginW) / 100;
   const mR = (prod.marginR ?? settings.marginR) / 100;
   const priceW = roundToStep(total * (1 + mW));
   const priceR = roundToStep(total * (1 + mR));
-  return {filamentCost, elecCost, deprCost, paintCost, accessoryCost, total, priceW, priceR};
+  return {filamentCost, elecCost, deprCost, accessoryCost, total, priceW, priceR};
 }
 
 function migrateProductImages(){
@@ -5456,15 +5426,6 @@ function renderProducts(){
                 <span class="unit">دقیقه</span>
               </div>
             </div>
-            <div class="field" style="grid-column:1 / -1;">
-              <label>ساعت نقاشی (ساعت و دقیقه)</label>
-              <div class="input-row" style="gap:6px;">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintHrs_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.paintHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
-                <span class="unit">ساعت</span>
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintMins_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.paintHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
-                <span class="unit">دقیقه</span>
-              </div>
-            </div>
           </div>
 
           ${lk ? '' : `
@@ -5480,7 +5441,6 @@ function renderProducts(){
               <div class="breakdown-row"><span>فیلامنت</span><b id="bd_filament_${prod.id}">${fmt(c.filamentCost)}</b></div>
               <div class="breakdown-row"><span>برق</span><b id="bd_elec_${prod.id}">${fmt(c.elecCost)}</b></div>
               <div class="breakdown-row"><span>استهلاک دستگاه</span><b id="bd_depr_${prod.id}">${fmt(c.deprCost)}</b></div>
-              <div class="breakdown-row"><span>نقاشی</span><b id="bd_paint_${prod.id}">${fmt(c.paintCost)}</b></div>
               <div class="breakdown-row"><span>متعلقات</span><b id="bd_accessory_${prod.id}">${fmt(c.accessoryCost)}</b></div>
               <div class="breakdown-row total"><span>جمع قیمت تمام‌شده</span><b id="bd_total_${prod.id}">${fmt(c.total)} تومان</b></div>
             </div>
@@ -6955,7 +6915,6 @@ function updateProductDisplay(id){
   setText('bd_filament_'+id, fmt(c.filamentCost));
   setText('bd_elec_'+id, fmt(c.elecCost));
   setText('bd_depr_'+id, fmt(c.deprCost));
-  setText('bd_paint_'+id, fmt(c.paintCost));
   setText('bd_accessory_'+id, fmt(c.accessoryCost));
   setText('bd_total_'+id, fmt(c.total)+' تومان');
   setText('bd_total_head_'+id, fmt(c.total)+' تومان');
@@ -7050,7 +7009,7 @@ function onProductGroupChange(prodId, selectEl){
 
 function addProduct(){
   if(!isAdmin) return;
-  const p = makeProduct('محصول جدید', 50, 3, 0, 0);
+  const p = makeProduct('محصول جدید', 50, 3);
   products.unshift(p);
   openProductId = p.id;
   renderProducts();
@@ -11902,7 +11861,7 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
           <div>قیمت تمام‌شده<b>${money(admin.cost)}</b></div><div>قیمت عمده<b>${money(admin.priceW)}</b></div>
           <div>قیمت خرده<b>${money(admin.priceR)}</b></div><div>وزن<b>${faFmt.format(Number(admin.weight)||0)} گرم</b></div>
           <div>زمان پرینت<b>${esc(admin.print_hours||0)} ساعت</b></div>
-          <div>نقاشی<b>${esc(admin.paint_hours||0)} ساعت</b></div><div>هزینه متعلقات<b>${money(admin.accessory_cost)}</b></div>
+          <div>هزینه متعلقات<b>${money(admin.accessory_cost)}</b></div>
           <div>سود عمده<b>${esc(admin.margin_w ?? '—')}٪</b></div><div>سود خرده<b>${esc(admin.margin_r ?? '—')}٪</b></div>
           ${Array.isArray(admin.colors)&&admin.colors.length?`<div style="grid-column:1/-1"><b>موجودی رنگ‌ها</b>${admin.colors.map(c=>`<div style="display:flex;justify-content:space-between;margin-top:5px"><span>${esc(c.name||'')}</span><b>${faFmt.format(Number(c.stock)||0)} عدد</b></div>`).join('')}</div>`:''}
         </div></div>`:''}
@@ -11956,12 +11915,12 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
         if(session&&session.user){
           const {data:profile}=await sb.from('profiles').select('role').eq('id',session.user.id).maybeSingle();
           if(profile&&profile.role==='admin'){
-            const {data:p}=await sb.from('products').select('id,name,weight,print_hours,manual_hours,paint_hours,accessory_cost,stock,margin_w,margin_r,size_l,size_w,size_h,category,catalog_description').eq('id',publicItem.id).maybeSingle();
+            const {data:p}=await sb.from('products').select('id,name,weight,print_hours,accessory_cost,stock,margin_w,margin_r,size_l,size_w,size_h,category,catalog_description').eq('id',publicItem.id).maybeSingle();
             if(p){
               const {data:colorRows}=await sb.from('product_colors').select('name,hex,stock,sort_order').eq('product_id',publicItem.id).order('sort_order',{ascending:true});
               const priceW=Number(data.price_w)||0, priceR=Number(data.price_r)||0;
               let cost=0;
-              try{ cost=typeof calc==='function' ? Number(calc({...p,printHours:Number(p.print_hours)||0,manualHours:Number(p.manual_hours)||0,paintHours:Number(p.paint_hours)||0,accessoryCost:Number(p.accessory_cost)||0,sizeL:Number(p.size_l)||0,sizeW:Number(p.size_w)||0,sizeH:Number(p.size_h)||0,marginW:p.margin_w,marginR:p.margin_r}).total)||0 : 0; }catch(_e){}
+              try{ cost=typeof calc==='function' ? Number(calc({...p,printHours:Number(p.print_hours)||0,accessoryCost:Number(p.accessory_cost)||0,sizeL:Number(p.size_l)||0,sizeW:Number(p.size_w)||0,sizeH:Number(p.size_h)||0,marginW:p.margin_w,marginR:p.margin_r}).total)||0 : 0; }catch(_e){}
               publicItem._admin={...p,priceW,priceR,cost,colors:Array.isArray(colorRows)?colorRows:[]};
               render();
             }
