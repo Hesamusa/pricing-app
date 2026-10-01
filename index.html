@@ -11565,6 +11565,7 @@ setTimeout(()=>{
 .public-product-brand{font-weight:900;font-size:18px}
 .public-product-admin{font-size:12px;color:var(--green);font-weight:800}
 .public-product-card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--saas-shadow);overflow:hidden}
+.public-product-price-single{grid-column:1/-1}.public-telegram-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;min-height:48px;border-radius:14px;background:#229ED9;color:#fff;text-decoration:none;font-weight:900;font-size:15px;box-shadow:0 6px 18px rgba(34,158,217,.18)}.public-telegram-btn:hover{filter:brightness(.97)}
 .public-product-media{position:relative;background:var(--saas-surface-2);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
 .public-product-media img{width:100%;height:100%;object-fit:contain;display:block}
 .public-product-nav{position:absolute;inset-inline:10px;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none}
@@ -11805,6 +11806,13 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
   const esc=(v)=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const faFmt=new Intl.NumberFormat('fa-IR',{maximumFractionDigits:0});
   const money=(n)=>faFmt.format(Math.round(Number(n)||0))+' تومان';
+  const publicTelegramUrl=(()=>{
+    const raw=String((typeof settings!=='undefined' && settings.telegramChannelId)||'').trim();
+    if(!raw) return '';
+    if(/^https?:\/\//i.test(raw)) return raw;
+    const handle=raw.replace(/^@/,'').trim();
+    return handle && /^[A-Za-z0-9_]{4,}$/.test(handle) ? `https://t.me/${handle}` : '';
+  })();
 
   function render(){
     const el=document.getElementById('public-product-view'); if(!el) return;
@@ -11821,16 +11829,15 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
         <h1 class="public-product-title">${esc(publicItem.name||'بدون نام')}</h1>
         ${publicItem.category_name?`<div class="public-product-category">دسته‌بندی: ${esc(publicItem.category_name)}</div>`:''}
         <div class="public-product-prices">
-          <div class="public-product-price"><div class="label">قیمت فروش مستقیم</div><div class="value">${money(publicItem.price_r)}</div></div>
-          <div class="public-product-price"><div class="label">قیمت فروش به مغازه‌دار</div><div class="value">${money(publicItem.price_w)}</div></div>
+          <div class="public-product-price public-product-price-single"><div class="label">قیمت فروش</div><div class="value">${money(publicItem.price_r)}</div></div>
         </div>
         ${publicItem.catalog_description?`<div class="public-product-desc">${esc(publicItem.catalog_description)}</div>`:''}
         ${colors.length?`<div style="margin-top:15px;font-weight:800">رنگ‌ها</div><div class="public-product-colors">${colors.map(c=>`<span class="public-product-color"><i style="background:${esc(c.hex||'#ddd')}"></i>${esc(c.name||'')}</span>`).join('')}</div>`:''}
         <div class="public-product-specs">
           ${publicItem.size_l||publicItem.size_w||publicItem.size_h?`<div class="public-product-spec">ابعاد<b>${faFmt.format(Number(publicItem.size_l)||0)} × ${faFmt.format(Number(publicItem.size_w)||0)} × ${faFmt.format(Number(publicItem.size_h)||0)} سانتی‌متر</b></div>`:''}
-          ${publicItem.weight?`<div class="public-product-spec">وزن<b>${faFmt.format(Number(publicItem.weight)||0)} گرم</b></div>`:''}
           <div class="public-product-spec">وضعیت موجودی<b>${Number(publicItem.stock)>0?'موجود':'ناموجود'}</b></div>
         </div>
+        ${publicTelegramUrl?`<a class="public-telegram-btn" href="${esc(publicTelegramUrl)}" target="_blank" rel="noopener noreferrer">📲 همه محصولات در تلگرام</a>`:''}
         ${admin?`<div class="public-product-manager"><h3>اطلاعات مدیر</h3><div class="mgr-grid">
           <div>شناسه محصول<b>${esc(admin.id)}</b></div><div>موجودی دقیق<b>${faFmt.format(Number(admin.stock)||0)} عدد</b></div>
           <div>قیمت تمام‌شده<b>${money(admin.cost)}</b></div><div>قیمت عمده<b>${money(admin.priceW)}</b></div>
