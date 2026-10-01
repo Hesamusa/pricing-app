@@ -1935,6 +1935,23 @@ async function saveProductsToSupabaseBridge(){
     }
 
     if(changed.length){
+      // دسته‌بندی‌های برنامه در settings.productGroups نگهداری می‌شوند،
+      // اما products.category در Supabase به product_groups(id) وابسته است.
+      // قبل از upsert محصول، گروه‌های مورد استفاده را روی سرور تضمین می‌کنیم
+      // تا خطای products_category_fkey هنگام ذخیره/افزودن عکس رخ ندهد.
+      const categoryIds = [...new Set(
+        changed.map(p => p && p.category ? String(p.category) : '').filter(Boolean)
+      )];
+      if(categoryIds.length){
+        const groupPayload = categoryIds.map(gid => {
+          const g = (settings.productGroups || []).find(x => String(x.id) === gid);
+          return { id: gid, name: g?.name || gid };
+        });
+        stage = 'همگام‌سازی دسته‌بندی‌ها';
+        const {error:ge} = await sb.from('product_groups').upsert(groupPayload, {onConflict:'id'});
+        if(ge) throw new Error('ذخیره دسته‌بندی‌ها: ' + ge.message + (ge.code ? ' ['+ge.code+']' : ''));
+      }
+
       const productPayload = changed.map(p => ({
         id:p.id, product_code:p.productCode||null, name:p.name||'', category:p.category||null,
         weight:Number(p.weight||0), print_hours:Number(p.printHours||0),
