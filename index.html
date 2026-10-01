@@ -344,6 +344,11 @@
   .lb-tool-btn.danger{color:#ff8a8a; border-color:rgba(255,138,138,0.55); background:rgba(255,80,80,0.1);}
   .lb-tool-btn.active-thumb{color:var(--orange); border-color:var(--orange); background:rgba(255,255,255,0.16);}
 
+  /* مشتری: ویوئر کاملاً بدون دکمه؛ فقط ژست‌های لمسی مثل گالری گوشی */
+  .photo-lightbox-close, .photo-lightbox-nav{display:none !important;}
+  .photo-lightbox-dots{display:none !important;}
+  .photo-lightbox-toolbar{display:none !important;}
+
   .stock-field{margin-bottom:20px;}
   .stock-stepper{display:flex; align-items:center; gap:10px;}
   .stock-btn{
@@ -3781,11 +3786,8 @@ async function saveProductsToSupabaseBridge(){
 </div>
 
 <!-- ویوئر تمام‌صفحه و سوایپ‌شونده‌ی عکس‌های محصول -->
-<div id="photo-lightbox" class="photo-lightbox" onclick="if(event.target===this) closePhotoLightbox()">
-  <button type="button" class="photo-lightbox-close" onclick="closePhotoLightbox()">✕</button>
-  <button type="button" class="photo-lightbox-nav prev" id="lbPrevBtn" onclick="event.stopPropagation(); lightboxStep(-1)">‹</button>
-  <button type="button" class="photo-lightbox-nav next" id="lbNextBtn" onclick="event.stopPropagation(); lightboxStep(1)">›</button>
-  <div class="photo-lightbox-inner" onclick="if(event.target===this) closePhotoLightbox()">
+<div id="photo-lightbox" class="photo-lightbox" aria-hidden="true">
+  <div class="photo-lightbox-inner">
     <img id="photo-lightbox-img" class="photo-lightbox-img" alt=""
       ontouchstart="onLightboxTouchStart(event)"
       ontouchmove="onLightboxTouchMove(event)"
@@ -5797,6 +5799,7 @@ let lbPinchStartDist = 0, lbPinchStartScale = 1;
 let lbTouchStartY = null;
 let lbPanStartX = 0, lbPanStartY = 0, lbPanStartTX = 0, lbPanStartTY = 0;
 let lbLastTapTime = 0, lbLastTapX = 0, lbLastTapY = 0;
+let lbSwipeStartTime = 0;
 const LB_MAX_SCALE = 4, LB_MIN_SCALE = 1;
 
 function lbApplyTransform(withTransition){
@@ -5849,14 +5852,14 @@ function openPhotoLightbox(id){
   lbResetZoom(false);
   renderLightbox();
   const overlay = document.getElementById('photo-lightbox');
-  if(overlay) overlay.classList.add('show');
+  if(overlay){ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
   document.documentElement.classList.add('photo-lightbox-open');
   document.body.classList.add('photo-lightbox-open');
 }
 
 function closePhotoLightbox(){
   const overlay = document.getElementById('photo-lightbox');
-  if(overlay) overlay.classList.remove('show');
+  if(overlay){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
   document.documentElement.classList.remove('photo-lightbox-open');
   document.body.classList.remove('photo-lightbox-open');
   lightboxProductId = null;
@@ -5929,6 +5932,7 @@ function onLightboxTouchStart(e){
   }else if(e.touches.length === 1){
     lbTouchStartX = e.touches[0].clientX;
     lbTouchStartY = e.touches[0].clientY;
+    lbSwipeStartTime = Date.now();
     if(lbScale > 1.01){
       lbGestureMode = 'pan';
       lbPanStartX = lbTouchStartX; lbPanStartY = lbTouchStartY;
@@ -5988,7 +5992,14 @@ function onLightboxTouchEnd(e){
     }
     return;
   }
-  if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
+  const elapsed = Date.now() - lbSwipeStartTime;
+  // مثل گالری آیفون: کشیدن عمودی به پایین، گالری را می‌بندد.
+  if(dy > 90 && Math.abs(dy) > Math.abs(dx) * 1.15 && elapsed < 900){
+    closePhotoLightbox();
+    return;
+  }
+  // سوایپ افقی: عکس قبلی/بعدی
+  if(Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.15){
     lightboxStep(dx < 0 ? 1 : -1);
   }
 }
