@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-10-01T09:16:07.137Z",
+  "updatedAt": "2026-10-01T09:16:28.521Z",
   "settings": {
     "filPrice": 4000000,
-    "resinPrice": 400000,
+    "resinPrice": 4000000,
     "power": 250,
     "elec": 2000,
     "depr": 15000,
