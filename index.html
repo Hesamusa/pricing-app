@@ -2852,13 +2852,6 @@ async function saveProductsToSupabaseBridge(){
         <div class="settings-section-body">
       <div class="card">
         <div class="field">
-          <label>نرخ دستمزد کار دستی (تمیزکاری/فینیش)</label>
-          <div class="input-row">
-            <input type="text" class="num-input" id="s_labor" inputmode="numeric">
-            <span class="unit">تومان/ساعت</span>
-          </div>
-        </div>
-        <div class="field">
           <label>نرخ دستمزد نقاشی</label>
           <div class="input-row">
             <input type="text" class="num-input" id="s_paint" inputmode="numeric">
@@ -4847,7 +4840,6 @@ function renderSettings(){
   document.getElementById('s_power').value = groupDigits(settings.power);
   document.getElementById('s_elec').value = groupDigits(settings.elec);
   document.getElementById('s_depr').value = groupDigits(settings.depr);
-  document.getElementById('s_labor').value = groupDigits(settings.labor);
   document.getElementById('s_paint').value = groupDigits(settings.paint);
   document.getElementById('s_marginW').value = toFaNum(settings.marginW, 2);
   document.getElementById('s_marginR').value = toFaNum(settings.marginR, 2);
@@ -4921,7 +4913,7 @@ function groupDigits(n){
   return toFaNum(n, 0);
 }
 
-const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_labor:'labor', s_paint:'paint'};
+const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr', s_paint:'paint'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
 const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
 const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken', s_tgApiBase:'telegramApiBase'};
@@ -5241,15 +5233,14 @@ function calc(prod){
   const filamentCost = (prod.weight/1000) * settings.filPrice;
   const elecCost = prod.printHours * (settings.power/1000) * settings.elec;
   const deprCost = prod.printHours * settings.depr;
-  const laborCost = (prod.manualHours||0) * settings.labor;
   const paintCost = (prod.paintHours||0) * settings.paint;
   const accessoryCost = prod.accessoryCost||0;
-  const total = filamentCost + elecCost + deprCost + laborCost + paintCost + accessoryCost;
+  const total = filamentCost + elecCost + deprCost + paintCost + accessoryCost;
   const mW = (prod.marginW ?? settings.marginW) / 100;
   const mR = (prod.marginR ?? settings.marginR) / 100;
   const priceW = roundToStep(total * (1 + mW));
   const priceR = roundToStep(total * (1 + mR));
-  return {filamentCost, elecCost, deprCost, laborCost, paintCost, accessoryCost, total, priceW, priceR};
+  return {filamentCost, elecCost, deprCost, paintCost, accessoryCost, total, priceW, priceR};
 }
 
 function migrateProductImages(){
@@ -5466,15 +5457,6 @@ function renderProducts(){
               </div>
             </div>
             <div class="field" style="grid-column:1 / -1;">
-              <label>ساعت کار دستی (ساعت و دقیقه)</label>
-              <div class="input-row" style="gap:6px;">
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualHrs_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.manualHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
-                <span class="unit">ساعت</span>
-                <input type="text" class="num-input ${lkClass}" ${lkAttr} id="manualMins_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.manualHours).m,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','manualHours','manualHrs_${prod.id}','manualMins_${prod.id}')" onblur="formatNumField(this,0)">
-                <span class="unit">دقیقه</span>
-              </div>
-            </div>
-            <div class="field" style="grid-column:1 / -1;">
               <label>ساعت نقاشی (ساعت و دقیقه)</label>
               <div class="input-row" style="gap:6px;">
                 <input type="text" class="num-input ${lkClass}" ${lkAttr} id="paintHrs_${prod.id}" inputmode="numeric" style="min-width:56px;" value="${toFaNum(hoursToHM(prod.paintHours).h,0)}" onclick="event.stopPropagation()" oninput="handleGroupedIntInput(this, ()=>{}); updateProductHM('${prod.id}','paintHours','paintHrs_${prod.id}','paintMins_${prod.id}')" onblur="formatNumField(this,0)">
@@ -5498,7 +5480,6 @@ function renderProducts(){
               <div class="breakdown-row"><span>فیلامنت</span><b id="bd_filament_${prod.id}">${fmt(c.filamentCost)}</b></div>
               <div class="breakdown-row"><span>برق</span><b id="bd_elec_${prod.id}">${fmt(c.elecCost)}</b></div>
               <div class="breakdown-row"><span>استهلاک دستگاه</span><b id="bd_depr_${prod.id}">${fmt(c.deprCost)}</b></div>
-              <div class="breakdown-row"><span>دستمزد کار دستی</span><b id="bd_labor_${prod.id}">${fmt(c.laborCost)}</b></div>
               <div class="breakdown-row"><span>نقاشی</span><b id="bd_paint_${prod.id}">${fmt(c.paintCost)}</b></div>
               <div class="breakdown-row"><span>متعلقات</span><b id="bd_accessory_${prod.id}">${fmt(c.accessoryCost)}</b></div>
               <div class="breakdown-row total"><span>جمع قیمت تمام‌شده</span><b id="bd_total_${prod.id}">${fmt(c.total)} تومان</b></div>
@@ -6974,7 +6955,6 @@ function updateProductDisplay(id){
   setText('bd_filament_'+id, fmt(c.filamentCost));
   setText('bd_elec_'+id, fmt(c.elecCost));
   setText('bd_depr_'+id, fmt(c.deprCost));
-  setText('bd_labor_'+id, fmt(c.laborCost));
   setText('bd_paint_'+id, fmt(c.paintCost));
   setText('bd_accessory_'+id, fmt(c.accessoryCost));
   setText('bd_total_'+id, fmt(c.total)+' تومان');
@@ -11921,7 +11901,7 @@ setTimeout(()=>{ if(currentUser && isAdmin) syncPublicCatalog().catch(e=>console
           <div>شناسه محصول<b>${esc(admin.id)}</b></div><div>موجودی دقیق<b>${faFmt.format(Number(admin.stock)||0)} عدد</b></div>
           <div>قیمت تمام‌شده<b>${money(admin.cost)}</b></div><div>قیمت عمده<b>${money(admin.priceW)}</b></div>
           <div>قیمت خرده<b>${money(admin.priceR)}</b></div><div>وزن<b>${faFmt.format(Number(admin.weight)||0)} گرم</b></div>
-          <div>زمان پرینت<b>${esc(admin.print_hours||0)} ساعت</b></div><div>کار دستی<b>${esc(admin.manual_hours||0)} ساعت</b></div>
+          <div>زمان پرینت<b>${esc(admin.print_hours||0)} ساعت</b></div>
           <div>نقاشی<b>${esc(admin.paint_hours||0)} ساعت</b></div><div>هزینه متعلقات<b>${money(admin.accessory_cost)}</b></div>
           <div>سود عمده<b>${esc(admin.margin_w ?? '—')}٪</b></div><div>سود خرده<b>${esc(admin.margin_r ?? '—')}٪</b></div>
           ${Array.isArray(admin.colors)&&admin.colors.length?`<div style="grid-column:1/-1"><b>موجودی رنگ‌ها</b>${admin.colors.map(c=>`<div style="display:flex;justify-content:space-between;margin-top:5px"><span>${esc(c.name||'')}</span><b>${faFmt.format(Number(c.stock)||0)} عدد</b></div>`).join('')}</div>`:''}
