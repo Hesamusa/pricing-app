@@ -4122,8 +4122,30 @@ function loadState(){
 }
 
 function generateProductCode(){
-  // کد مستقل محصول؛ بعد از ایجاد ذخیره می‌شود و با تغییر نام/قیمت/عکس ثابت می‌ماند.
-  return 'PRD-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,6).toUpperCase();
+  // کد محصول باید ترتیبی، خوانا و دائمی باشد: PRD-000001، PRD-000002، ...
+  // شمارنده محلی فقط برای تولید کد اولیه رابط کاربری است؛ در Supabase نیز
+  // trigger مربوط به product_code به‌عنوان محافظ نهایی وجود دارد.
+  const used = new Set();
+  let max = 0;
+  for(const p of (Array.isArray(products) ? products : [])){
+    const code = String(p?.productCode || '').trim().toUpperCase();
+    const m = /^PRD-(\d+)$/.exec(code);
+    if(m){
+      const n = Number(m[1]);
+      if(Number.isFinite(n)){
+        used.add(n);
+        if(n > max) max = n;
+      }
+    }
+  }
+
+  let next = Number(settings?.productCodeNextNumber || 0);
+  if(!Number.isFinite(next) || next < 1) next = 1;
+  next = Math.max(next, max + 1);
+  while(used.has(next)) next++;
+
+  settings.productCodeNextNumber = next + 1;
+  return 'PRD-' + String(next).padStart(6, '0');
 }
 function ensureProductCode(prod){
   if(!prod) return '';
@@ -11530,6 +11552,33 @@ setTimeout(()=>{
   setTimeout(schedule,1000);
 })();
 </script>
+
+<style id="public-product-iran-sans-font">
+@font-face{
+  font-family:"IRANSansWebCustom";
+  src:url("./fonts/IRANSansWeb_Bold_FaNum.woff2") format("woff2");
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+}
+#public-product-mode,
+#public-product-mode *{
+  font-family:"IRANSansWebCustom",sans-serif !important;
+}
+#public-product-mode{
+  font-weight:700;
+}
+</style>
+<style id="public-product-iran-sans-readability">
+/* IRANSans public product readability */
+#public-product-mode .public-product-title{font-size:clamp(24px,6vw,34px)!important;line-height:1.65!important;font-weight:700!important;}
+#public-product-mode .public-product-price{font-size:clamp(25px,6.5vw,36px)!important;line-height:1.5!important;font-weight:700!important;}
+#public-product-mode .public-product-description{font-size:17px!important;line-height:2.05!important;font-weight:700!important;}
+#public-product-mode .public-product-meta{font-size:16px!important;line-height:1.9!important;}
+#public-product-mode .public-product-color{font-size:15px!important;}
+#public-product-mode button{font-size:16px!important;line-height:1.7!important;}
+
+</style>
 
 <style id="public-product-qr-v1">
 .public-qr-btn{width:100%;min-height:44px;margin-top:4px;border:1px solid var(--blue);border-radius:12px;background:color-mix(in srgb,var(--blue) 10%,var(--card));color:var(--blue);font-weight:800;cursor:pointer;padding:9px 12px;font-size:14px}
