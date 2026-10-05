@@ -1,15 +1,13 @@
 {
-  "updatedAt": "2026-10-01T09:16:28.521Z",
+  "updatedAt": "2026-10-05T08:29:38.114Z",
   "settings": {
     "filPrice": 4000000,
     "resinPrice": 4000000,
     "power": 250,
-    "elec": 2000,
+    "elec": 3000,
     "depr": 15000,
-    "labor": 0,
-    "paint": 25000,
-    "marginW": 85,
-    "marginR": 200,
+    "marginW": 50,
+    "marginR": 120,
     "roundStep": 5000,
     "productGroups": [
       {
@@ -51,9 +49,31 @@
     "aiSendWeight": true,
     "aiSendStock": true,
     "aiSendImage": true,
-    "adminPin": "373763"
+    "labor": 0,
+    "paint": 25000,
+    "adminPin": "373763",
+    "productCodeNextNumber": 42
   },
   "products": [
+    {
+      "id": "p_1791188977708ucn2r",
+      "productCode": "PRD-000041",
+      "name": "محصول جدید",
+      "weight": 50,
+      "printHours": 3,
+      "accessoryCost": 10000,
+      "sizeL": 0,
+      "sizeW": 0,
+      "sizeH": 0,
+      "marginW": null,
+      "marginR": null,
+      "images": [],
+      "stock": 0,
+      "colors": [],
+      "colorStock": {},
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_17906023795313h0xk",
       "name": "بالم لب کپسولی",
