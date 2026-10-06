@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-10-05T08:29:38.114Z",
+  "updatedAt": "2026-10-06T17:41:59.337Z",
   "settings": {
-    "filPrice": 4000000,
-    "resinPrice": 4000000,
+    "filPrice": 3500000,
+    "resinPrice": 3000000,
     "power": 250,
-    "elec": 3000,
+    "elec": 2000,
     "depr": 15000,
-    "marginW": 50,
-    "marginR": 120,
+    "marginW": 85,
+    "marginR": 200,
     "roundStep": 5000,
     "productGroups": [
       {
@@ -56,23 +56,120 @@
   },
   "products": [
     {
-      "id": "p_1791188977708ucn2r",
-      "productCode": "PRD-000041",
-      "name": "محصول جدید",
-      "weight": 50,
-      "printHours": 3,
-      "accessoryCost": 10000,
+      "id": "p_1791268565465hfh9m",
+      "name": "سگ سامویید دم بلند سفید سایز بزرگ",
+      "sizeH": 0,
       "sizeL": 0,
       "sizeW": 0,
+      "stock": 7,
+      "colors": [
+        {
+          "id": "color_white",
+          "name": "سفید",
+          "hex": "#ffffff"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791268565465hfh9m/1791268616815_0_7752819C-35D6-4BC4-9F68-20605E67EAA0.jpg?v=1791268619985",
+          "path": "product-images/p_1791268565465hfh9m/1791268616815_0_7752819C-35D6-4BC4-9F68-20605E67EAA0.jpg",
+          "sha": "636af70864a32ae7cd4fe26b8ecae14b04539f17"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791268565465hfh9m/1791268622228_1_IMG_4259.jpg?v=1791268625129",
+          "path": "product-images/p_1791268565465hfh9m/1791268622228_1_IMG_4259.jpg",
+          "sha": "501281be504610a38ce27328cda482ac70f78d95"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791268565465hfh9m/1791268626911_2_IMG_4260.jpg?v=1791268629788",
+          "path": "product-images/p_1791268565465hfh9m/1791268626911_2_IMG_4260.jpg",
+          "sha": "1814ef0eb35fa0feffcce9a066dde59f2f71bf05"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791268565465hfh9m/1791268631088_3_IMG_4258.jpg?v=1791268634295",
+          "path": "product-images/p_1791268565465hfh9m/1791268631088_3_IMG_4258.jpg",
+          "sha": "2ab83435023c8bfde45a1be0118566b1df67d5fb"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791268565465hfh9m/1791268635994_4_IMG_4257.jpg?v=1791268639243",
+          "path": "product-images/p_1791268565465hfh9m/1791268635994_4_IMG_4257.jpg",
+          "sha": "5419fbcac01ea64fc941851ed3e4d529d5f86744"
+        }
+      ],
+      "weight": 20,
+      "marginR": 130,
+      "marginW": 53,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_white": 7
+      },
+      "printHours": 2,
+      "productCode": "PRD-000044",
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "اگه دنبال یه همراه بامزه برای کیف یا کلیداتی، این **جاسوییچی سگ سامویید** با دم بلند و بدنه متحرکش بدجور دلبری می‌کنه! فوق‌العاده سبکه، جزییات صورت و پاهاش خیلی تمیز درآمده و چون کلاً ۷ تا ازش موجود داریم، اگه می‌خوایش سریع‌تر پیام بده تا مال تو بشه 😉\nبرای دیدن مدل‌های جذاب‌تر هم حتماً عضو کانالمون شو.",
+      "telegramMessageIds": [
+        370,
+        371,
+        372,
+        373,
+        374
+      ]
+    },
+    {
+      "id": "p_1791188981977mwch4",
+      "name": "استیچ مفصلی",
       "sizeH": 0,
-      "marginW": null,
-      "marginR": null,
-      "images": [],
-      "stock": 0,
-      "colors": [],
-      "colorStock": {},
-      "catalogDescription": "",
-      "telegramMessageIds": []
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 6,
+      "colors": [
+        {
+          "id": "color_blue",
+          "name": "آبی",
+          "hex": "#1e88e5"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791188981977mwch4/1791189024818_0_IMG_4249.jpg?v=1791189028139",
+          "path": "product-images/p_1791188981977mwch4/1791189024818_0_IMG_4249.jpg",
+          "sha": "3b4b7dedaab3fe520f9e53cae5e61b58c31bdc39"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791188981977mwch4/1791189030464_1_IMG_4246.jpg?v=1791189033017",
+          "path": "product-images/p_1791188981977mwch4/1791189030464_1_IMG_4246.jpg",
+          "sha": "49033d9307e5830e5e6e3c33849280e9fc13f079"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791188981977mwch4/1791189034027_2_IMG_4248.jpg?v=1791189036376",
+          "path": "product-images/p_1791188981977mwch4/1791189034027_2_IMG_4248.jpg",
+          "sha": "13d60bb3f24448094f19463fdda3e30e6ffe926a"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1791188981977mwch4/1791189037821_3_IMG_4247.jpg?v=1791189040721",
+          "path": "product-images/p_1791188981977mwch4/1791189037821_3_IMG_4247.jpg",
+          "sha": "12ea0d3751cb81e6ff1e8c529055656c8e34ff33"
+        }
+      ],
+      "weight": 10,
+      "marginR": 200,
+      "marginW": 150,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_blue": 6
+      },
+      "printHours": 1,
+      "productCode": "PRD-000042",
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "نگاه به قد و قوارش نکن، این **جاسوییچی استیچ مفصلی** انقدر بانمک و سبکه که بهترین رفیق کلیدا یا کیفت می‌شه! دست و پاهاش هم حرکت می‌کنه و بازی باهاش حسابی کیف میده. فعلاً کلاً ۶ تا ازش موجود داریم؛ اگه دوست داری همراهت باشه بهم پیام بده، برای دیدن مدل‌های دیگه هم یه سر به کانال بزن 😉",
+      "telegramMessageIds": [
+        361,
+        362,
+        363,
+        364
+      ]
     },
     {
       "id": "p_17906023795313h0xk",
@@ -839,102 +936,6 @@
         300
       ],
       "productCode": "PRD-000014"
-    },
-    {
-      "id": "p_1789353746923bh4pe",
-      "name": "سگ طرح بافتنی",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 0,
-      "colors": [
-        {
-          "id": "color_pink",
-          "name": "صورتی",
-          "hex": "#ec407a"
-        },
-        {
-          "id": "color_orange",
-          "name": "نارنجی",
-          "hex": "#fb8c00"
-        },
-        {
-          "id": "color_red",
-          "name": "قرمز",
-          "hex": "#e53935"
-        },
-        {
-          "id": "color_purple",
-          "name": "بنفش",
-          "hex": "#8e24aa"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789353746923bh4pe_1789658797467_0.jpg?v=1789658811922",
-          "path": "product-images/p_1789353746923bh4pe_1789658797467_0.jpg",
-          "sha": "078d3c05934df0c15f9f17e44781aef96d83a98b"
-        }
-      ],
-      "weight": 13,
-      "marginR": 90,
-      "marginW": 75,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_pink": 0,
-        "color_orange": 0,
-        "color_red": 0,
-        "color_purple": 0
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
-      "telegramMessageIds": [
-        138
-      ],
-      "productCode": "PRD-000034"
-    },
-    {
-      "id": "p_178941010031173kks",
-      "name": "فلکسی بیبی گروت چوبی",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 7,
-      "colors": [
-        {
-          "id": "color_brown",
-          "name": "قهوه‌ای",
-          "hex": "#795548"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
-          "path": "product-images/p_178941010031173kks_1789457302131_0.jpg",
-          "sha": "fee9df6ef5cdd787e2af0074aae8f14cacd71f50"
-        }
-      ],
-      "weight": 7,
-      "marginR": 200,
-      "marginW": 100,
-      "category": "g_mu0mydrdz7a1",
-      "colorStock": {
-        "color_brown": 7
-      },
-      "paintHours": 0,
-      "printHours": 0.75,
-      "manualHours": 0,
-      "accessoryCost": 10000,
-      "telegramMessageId": null,
-      "catalogDescription": "مفاصل متحرکش انقدر نرم و جذابه که اصلاً از بازی کردن باهاش خسته نمی‌شی! با ظاهر چوبیِ خاص و وزن فوق‌العاده سبکش، بهترین اکسسوری برای کلید یا کیفته تا همه‌جا یه حس خوب همراهت باشه 🌱",
-      "telegramMessageIds": [
-        137
-      ],
-      "productCode": "PRD-000037"
     },
     {
       "id": "p_1789547116518l5j1s",
@@ -2250,6 +2251,102 @@
         231
       ],
       "productCode": "PRD-000030"
+    },
+    {
+      "id": "p_1789353746923bh4pe",
+      "name": "سگ طرح بافتنی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [
+        {
+          "id": "color_pink",
+          "name": "صورتی",
+          "hex": "#ec407a"
+        },
+        {
+          "id": "color_orange",
+          "name": "نارنجی",
+          "hex": "#fb8c00"
+        },
+        {
+          "id": "color_red",
+          "name": "قرمز",
+          "hex": "#e53935"
+        },
+        {
+          "id": "color_purple",
+          "name": "بنفش",
+          "hex": "#8e24aa"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789353746923bh4pe_1789658797467_0.jpg?v=1789658811922",
+          "path": "product-images/p_1789353746923bh4pe_1789658797467_0.jpg",
+          "sha": "078d3c05934df0c15f9f17e44781aef96d83a98b"
+        }
+      ],
+      "weight": 13,
+      "marginR": 90,
+      "marginW": 75,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_pink": 0,
+        "color_orange": 0,
+        "color_red": 0,
+        "color_purple": 0
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "ظاهرش کاملاً شبیه یه بافتنی کاموایی نرم و گرمه، اما با دقت و ظرافت پرینت سه‌بعدی ساخته شده! انقدر سبک و بامزه‌ست که آویزون کردنش به کیف یا دسته‌کلیدت حسابی استایلت رو خاص می‌کنه. یه جزئیات کوچیک و دوست‌داشتنی که هر بار ببینی‌ش لبخند می‌زنی. 🐶",
+      "telegramMessageIds": [
+        138
+      ],
+      "productCode": "PRD-000034"
+    },
+    {
+      "id": "p_178941010031173kks",
+      "name": "فلکسی بیبی گروت چوبی",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 7,
+      "colors": [
+        {
+          "id": "color_brown",
+          "name": "قهوه‌ای",
+          "hex": "#795548"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_178941010031173kks_1789457302131_0.jpg?v=1789457303517",
+          "path": "product-images/p_178941010031173kks_1789457302131_0.jpg",
+          "sha": "fee9df6ef5cdd787e2af0074aae8f14cacd71f50"
+        }
+      ],
+      "weight": 7,
+      "marginR": 200,
+      "marginW": 100,
+      "category": "g_mu0mydrdz7a1",
+      "colorStock": {
+        "color_brown": 7
+      },
+      "paintHours": 0,
+      "printHours": 0.75,
+      "manualHours": 0,
+      "accessoryCost": 10000,
+      "telegramMessageId": null,
+      "catalogDescription": "مفاصل متحرکش انقدر نرم و جذابه که اصلاً از بازی کردن باهاش خسته نمی‌شی! با ظاهر چوبیِ خاص و وزن فوق‌العاده سبکش، بهترین اکسسوری برای کلید یا کیفته تا همه‌جا یه حس خوب همراهت باشه 🌱",
+      "telegramMessageIds": [
+        137
+      ],
+      "productCode": "PRD-000037"
     }
   ]
 }
