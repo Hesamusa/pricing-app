@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-10-06T17:41:59.337Z",
+  "updatedAt": "2026-10-06T17:42:48.911Z",
   "settings": {
-    "filPrice": 3500000,
-    "resinPrice": 3000000,
+    "filPrice": 4000000,
+    "resinPrice": 4000000,
     "power": 250,
-    "elec": 2000,
+    "elec": 3000,
     "depr": 15000,
-    "marginW": 85,
+    "marginW": 100,
     "marginR": 200,
     "roundStep": 5000,
     "productGroups": [
