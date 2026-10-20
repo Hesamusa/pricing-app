@@ -3003,6 +3003,11 @@ async function saveProductsToSupabaseBridge(){
           <input type="text" class="gh-field" id="s_tgApiBase" placeholder="خالی = relay اختصاصی تنظیم‌شده در برنامه (پیش‌فرض)" style="direction:ltr; text-align:left;">
           <div class="hint" style="line-height:1.8;">چون تلگرام توی ایران فیلتره، همگام‌سازی از داخل همین صفحه بدون وی‌پی‌ان معمولاً کار نمی‌کنه — این محدودیت شبکه‌ست، نه چیزی که با کد این اپ حل بشه. راه‌حل: یک پروکسی/relay کوچیک برای Bot API تلگرام (مثلاً یک Cloudflare Worker رایگان) بساز که در دسترس باشه، و آدرسش رو همینجا بذار؛ اپ به‌جای زدن مستقیم به api.telegram.org، از همون آدرس عبور می‌کنه.</div>
         </div>
+        <div class="field">
+          <label>Proxy Secret تلگرام</label>
+          <input type="password" class="gh-field" id="s_tgProxySecret" placeholder="Secret تعریف‌شده در Cloudflare Worker را وارد کن" autocomplete="new-password" style="direction:ltr; text-align:left;">
+          <div class="hint" style="line-height:1.8;">این مقدار فقط در تنظیمات محلی همین دستگاه ذخیره می‌شود و همراه درخواست‌ها در هدر <span dir="ltr">x-3dplusy-proxy-secret</span> ارسال می‌شود؛ در فایل GitHub قرار نمی‌گیرد.</div>
+        </div>
         <div class="hint" id="telegram-sync-status" style="margin:6px 0 12px; font-weight:600;"></div>
         <button type="button" class="add-btn" style="background:var(--blue); margin-top:0;" onclick="telegramSyncAllProducts()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -3806,7 +3811,7 @@ const DEFAULT_SETTINGS = {
   instagramUrl: '',
   qrImageUrl: null,
   watermarkPos: 'top-right', watermarkSize: 17, watermarkMargin: 3.5,
-  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true, telegramShowSize: true,
+  telegramCatalogEnabled: false, telegramChannelId: '', telegramBotToken: '', telegramApiBase: '', telegramShowPrice: true, telegramShowSize: true, telegramProxySecret: '',
   aiProvider: 'anthropic', aiApiKey: '', aiApiKeyGemini: '', aiGeminiProxyUrl: '', aiCaptionRules: '',
   aiSendPrice: true, aiSendCategory: true, aiSendWeight: true, aiSendStock: true, aiSendImage: true
 };
@@ -4873,6 +4878,8 @@ function renderSettings(){
   if(tgTokenEl) tgTokenEl.value = settings.telegramBotToken || '';
   const tgApiBaseEl = document.getElementById('s_tgApiBase');
   if(tgApiBaseEl) tgApiBaseEl.value = settings.telegramApiBase || '';
+  const tgProxySecretEl = document.getElementById('s_tgProxySecret');
+  if(tgProxySecretEl && document.activeElement !== tgProxySecretEl) tgProxySecretEl.value = settings.telegramProxySecret || '';
   const aiKeyEl = document.getElementById('s_aiKey');
   if(aiKeyEl) aiKeyEl.value = settings.aiApiKey || '';
   const aiKeyGeminiEl = document.getElementById('s_aiKeyGemini');
@@ -4926,7 +4933,7 @@ function groupDigits(n){
 const COMMA_FIELDS = {s_filPrice:'filPrice', s_resin:'resinPrice', s_power:'power', s_elec:'elec', s_depr:'depr'};
 const DECIMAL_FIELDS = {s_marginW:'marginW', s_marginR:'marginR'};
 const GITHUB_FIELDS = {s_ghOwner:'githubOwner', s_ghRepo:'githubRepo', s_ghBranch:'githubBranch', s_ghFolder:'githubFolder', s_ghToken:'githubToken'};
-const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken', s_tgApiBase:'telegramApiBase'};
+const TELEGRAM_FIELDS = {s_tgChannel:'telegramChannelId', s_tgToken:'telegramBotToken', s_tgApiBase:'telegramApiBase', s_tgProxySecret:'telegramProxySecret'};
 
 function bindTelegramInputs(){
   Object.keys(TELEGRAM_FIELDS).forEach(id=>{
@@ -6197,8 +6204,11 @@ function setTelegramMessageIds(prod, ids){
 async function telegramCall(method, body){
   let data;
   try{
+    const telegramHeaders = {'Content-Type':'application/json'};
+    const proxySecret = String(settings.telegramProxySecret || '').trim();
+    if(proxySecret) telegramHeaders['x-3dplusy-proxy-secret'] = proxySecret;
     const res = await fetch(telegramApi(method), {
-      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+      method:'POST', headers:telegramHeaders, body: JSON.stringify(body)
     });
     data = await res.json().catch(()=>({}));
   }catch(e){
@@ -6207,8 +6217,11 @@ async function telegramCall(method, body){
     const currentBase = ((settings.telegramApiBase || '').trim().replace(/\/+$/, '')) || DEFAULT_TELEGRAM_RELAY;
     if(currentBase !== fallbackBase){
       try{
+        const fallbackHeaders = {'Content-Type':'application/json'};
+        const fallbackSecret = String(settings.telegramProxySecret || '').trim();
+        if(fallbackSecret) fallbackHeaders['x-3dplusy-proxy-secret'] = fallbackSecret;
         const res2 = await fetch(`${fallbackBase}/bot${settings.telegramBotToken.trim()}/${method}`, {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+          method:'POST', headers:fallbackHeaders, body: JSON.stringify(body)
         });
         data = await res2.json().catch(()=>({}));
       }catch(e2){
