@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-17T17:26:28.625Z",
+  "updatedAt": "2026-10-20T10:47:18.740Z",
   "settings": {
     "filPrice": 5000000,
     "resinPrice": 4000000,
@@ -52,9 +52,50 @@
     "labor": 0,
     "paint": 25000,
     "adminPin": "373763",
-    "productCodeNextNumber": 47
+    "productCodeNextNumber": 49
   },
   "products": [
+    {
+      "id": "p_1792492990071rby97",
+      "name": "فیگور ایستاده کراتوس خدای جنگ ١٣ سانتیمتر",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 0,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1792492990071rby97/1792493075010_0_IMG_4490.jpg?v=1792493080669",
+          "path": "product-images/p_1792492990071rby97/1792493075010_0_IMG_4490.jpg",
+          "sha": "e871a55b25b1683f53bdd90230a31a8bee67f623"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1792492990071rby97/1792493084670_1_IMG_4492.jpg?v=1792493093882",
+          "path": "product-images/p_1792492990071rby97/1792493084670_1_IMG_4492.jpg",
+          "sha": "1adf92b45bdab6bf03c14bfc188025d2e9506849"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1792492990071rby97/1792493097056_2_IMG_4491.jpg?v=1792493103218",
+          "path": "product-images/p_1792492990071rby97/1792493097056_2_IMG_4491.jpg",
+          "sha": "40bc098bb00a288e1b66c38b37be12dc1e717357"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1792492990071rby97/1792493121239_3_IMG_4493.jpg?v=1792493128132",
+          "path": "product-images/p_1792492990071rby97/1792493121239_3_IMG_4493.jpg",
+          "sha": "1525e58f5fac492e718937ca1c1b30cd5dfccc12"
+        }
+      ],
+      "weight": 50,
+      "marginR": null,
+      "marginW": null,
+      "category": "g_mtreb2q5k4dk",
+      "colorStock": {},
+      "printHours": 3,
+      "productCode": "PRD-000048",
+      "accessoryCost": 10000,
+      "catalogDescription": "",
+      "telegramMessageIds": []
+    },
     {
       "id": "p_1792257352830x3xet",
       "name": "جاسوییچی اسکلت فانتزی؛ خاص، متفاوت و جذاب 🖤💀",
@@ -71,11 +112,11 @@
         }
       ],
       "weight": 10,
-      "marginR": null,
+      "marginR": 150,
       "marginW": null,
       "category": "g_mu0mydrdz7a1",
       "colorStock": {},
-      "printHours": 3,
+      "printHours": 1,
       "productCode": "PRD-000046",
       "accessoryCost": 10000,
       "catalogDescription": "یک اکسسوری خلاقانه با طراحی اسکلت نشسته و موهای جمع‌شده که با جزئیات ظریف و ظاهر فانتزی خود، انتخابی جذاب برای علاقه‌مندان به اکسسوری‌های خاص و متفاوت است.\n\nاین جاسوییچی با پرینت سه‌بعدی ساخته شده و برای استفاده روزمره، آویز کیف، کوله‌پشتی و دسته‌کلید مناسب است. طراحی متفاوت آن، گزینه‌ای جذاب برای هدیه دادن به دوستان و علاقه‌مندان به سبک‌های فانتزی، گوتیک و هالووین محسوب می‌شود.\n\nویژگی‌های محصول:\n\n• طراحی خاص و فانتزی اسکلت نشسته\n• ساخته‌شده با پرینت سه‌بعدی\n• مجهز به حلقه و قلاب اتصال\n• مناسب برای کلید، کیف و کوله‌پشتی\n• قابل ارائه در رنگ‌های مختلف\n\nبا این جاسوییچی متفاوت، استایل روزمره‌ات را خاص‌تر کن",
@@ -962,37 +1003,6 @@
         300
       ],
       "productCode": "PRD-000014"
-    },
-    {
-      "id": "p_17887965710100v1nz",
-      "name": "تیرکس مکانیکی مفصل ثابت",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 1,
-      "colors": [],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1789664987751_0.jpg?v=1789664993678",
-          "path": "product-images/p_17887965710100v1nz_1789664987751_0.jpg",
-          "sha": "8760cfe9ed64acc695aa6e09f6816d94538501f5"
-        }
-      ],
-      "weight": 45,
-      "marginR": 85,
-      "marginW": null,
-      "category": "g_mtreb2q5k4dk",
-      "colorStock": {},
-      "paintHours": 1,
-      "printHours": 4.5,
-      "manualHours": 0,
-      "accessoryCost": 0,
-      "telegramMessageId": null,
-      "catalogDescription": "وقتی خستگی کار کلافت می‌کنه، بازی کردن با مفاصل نرم و متحرک این غول ماقبل تاریخ حسابی سرگرمت می‌کنه! یه دکوری خاص و مدرن برای روی میزت که هم جلای قشنگی به فضات میده و هم بهترین فیجت برای کاهش استرسه. با توجه به اینکه فقط همین یه دونه آماده ارسال داریم، وقت رو تلف نکن. 🦖",
-      "telegramMessageIds": [
-        222
-      ],
-      "productCode": "PRD-000015"
     },
     {
       "id": "p_1788794902491u6nxw",
@@ -2085,94 +2095,6 @@
       "productCode": "PRD-000036"
     },
     {
-      "id": "p_1789909666043x7sfu",
-      "name": "چارم بگ ابر با بند پاراکورد",
-      "sizeH": 0,
-      "sizeL": 0,
-      "sizeW": 0,
-      "stock": 1,
-      "colors": [
-        {
-          "id": "color_purple",
-          "name": "بنفش",
-          "hex": "#8e24aa"
-        }
-      ],
-      "images": [
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
-          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
-          "sha": "c0595468f185a6083f674e20f13778515081c18e"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
-          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
-          "sha": "c0595468f185a6083f674e20f13778515081c18e"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
-          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
-          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
-          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
-          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
-          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
-          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
-          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
-          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
-          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
-          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
-          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
-          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
-          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
-          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
-        },
-        {
-          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
-          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
-          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
-        }
-      ],
-      "weight": 20,
-      "marginR": 500,
-      "marginW": null,
-      "category": "g_mtqsahf4t778",
-      "colorStock": {
-        "color_purple": 1
-      },
-      "paintHours": 0,
-      "printHours": 1,
-      "manualHours": 0,
-      "accessoryCost": 50000,
-      "telegramMessageId": null,
-      "catalogDescription": "ببین چقدر کیفت با این **چارم ابرِ خندون** ناز و متفاوت می‌شه! ☁️ این ابر کوچولو با پاهای آویزون و بند پاراکورد بنفشش اون‌قدر سبکه که اصلاً حسش نمی‌کنی، اما حسابی به کیفت نما میده. از این مدل **همین ۱ عدد** موجود داریم؛ اگه دوستش داری پیام بده تا مال تو بشه. برای دیدن طرح‌های جدیدتر حتماً عضو کانالمون شو 😉",
-      "telegramMessageIds": [
-        285,
-        286,
-        287,
-        288,
-        289
-      ],
-      "productCode": "PRD-000001"
-    },
-    {
       "id": "p_1789881229899p34e1",
       "name": "چارم بگ بطری شیکر باشگاه",
       "sizeH": 0,
@@ -2373,6 +2295,125 @@
         127
       ],
       "productCode": "PRD-000011"
+    },
+    {
+      "id": "p_1789909666043x7sfu",
+      "name": "چارم بگ ابر با بند پاراکورد",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [
+        {
+          "id": "color_purple",
+          "name": "بنفش",
+          "hex": "#8e24aa"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
+          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
+          "sha": "c0595468f185a6083f674e20f13778515081c18e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909767554_1.jpg?v=1789909769194",
+          "path": "product-images/p_1789909666043x7sfu_1789909767554_1.jpg",
+          "sha": "c0595468f185a6083f674e20f13778515081c18e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
+          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
+          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909741257_0.jpg?v=1789909743331",
+          "path": "product-images/p_1789909666043x7sfu_1789909741257_0.jpg",
+          "sha": "94fbe6e45c81395f11f588687caf791ca5f8a1ac"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
+          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
+          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909743488_1.jpg?v=1789909745057",
+          "path": "product-images/p_1789909666043x7sfu_1789909743488_1.jpg",
+          "sha": "5e5b28a44c4e68070c76da82f7b9af373c219b7b"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
+          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
+          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909765608_0.jpg?v=1789909767396",
+          "path": "product-images/p_1789909666043x7sfu_1789909765608_0.jpg",
+          "sha": "6d7ffebdceb87e9b995033f7df94fd8c4719fbe7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
+          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
+          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_1789909666043x7sfu_1789909813361_0.jpg?v=1789909815529",
+          "path": "product-images/p_1789909666043x7sfu_1789909813361_0.jpg",
+          "sha": "13f80d0905c38d25ad1dcbcda228d69cd507a48c"
+        }
+      ],
+      "weight": 20,
+      "marginR": 500,
+      "marginW": null,
+      "category": "g_mtqsahf4t778",
+      "colorStock": {
+        "color_purple": 1
+      },
+      "paintHours": 0,
+      "printHours": 1,
+      "manualHours": 0,
+      "accessoryCost": 50000,
+      "telegramMessageId": null,
+      "catalogDescription": "ببین چقدر کیفت با این **چارم ابرِ خندون** ناز و متفاوت می‌شه! ☁️ این ابر کوچولو با پاهای آویزون و بند پاراکورد بنفشش اون‌قدر سبکه که اصلاً حسش نمی‌کنی، اما حسابی به کیفت نما میده. از این مدل **همین ۱ عدد** موجود داریم؛ اگه دوستش داری پیام بده تا مال تو بشه. برای دیدن طرح‌های جدیدتر حتماً عضو کانالمون شو 😉",
+      "telegramMessageIds": [
+        285,
+        286,
+        287,
+        288,
+        289
+      ],
+      "productCode": "PRD-000001"
+    },
+    {
+      "id": "p_17887965710100v1nz",
+      "name": "تیرکس مکانیکی مفصل ثابت",
+      "sizeH": 0,
+      "sizeL": 0,
+      "sizeW": 0,
+      "stock": 1,
+      "colors": [],
+      "images": [
+        {
+          "url": "https://raw.githubusercontent.com/Hesamusa/pricing-app/main/product-images/p_17887965710100v1nz_1789664987751_0.jpg?v=1789664993678",
+          "path": "product-images/p_17887965710100v1nz_1789664987751_0.jpg",
+          "sha": "8760cfe9ed64acc695aa6e09f6816d94538501f5"
+        }
+      ],
+      "weight": 45,
+      "marginR": 85,
+      "marginW": null,
+      "category": "g_mtreb2q5k4dk",
+      "colorStock": {},
+      "paintHours": 1,
+      "printHours": 4.5,
+      "manualHours": 0,
+      "accessoryCost": 0,
+      "telegramMessageId": null,
+      "catalogDescription": "وقتی خستگی کار کلافت می‌کنه، بازی کردن با مفاصل نرم و متحرک این غول ماقبل تاریخ حسابی سرگرمت می‌کنه! یه دکوری خاص و مدرن برای روی میزت که هم جلای قشنگی به فضات میده و هم بهترین فیجت برای کاهش استرسه. با توجه به اینکه فقط همین یه دونه آماده ارسال داریم، وقت رو تلف نکن. 🦖",
+      "telegramMessageIds": [
+        222
+      ],
+      "productCode": "PRD-000015"
     }
   ]
 }
